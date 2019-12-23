@@ -1,0 +1,45 @@
+﻿using FilleUploadCore.FileReaders;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace FilleUploadCore.UploadManagers
+{
+    public abstract class UploadServiceBase
+    {
+        protected abstract UploadOptions GetUploadOptions();
+        protected abstract void ValidateHeader(Row headerRow);
+        protected abstract void ValidateContent(IEnumerable<Row> contentRows);
+        protected abstract Task UploadToRemote(Row headerRow, IEnumerable<Row> contentRows);
+
+        public Task Upload(IEnumerable<Row> rows)
+        {
+            var options = GetUploadOptions() ?? new UploadOptions();
+
+            if (!rows.Any())
+                throw new ArgumentException("Empty rows");
+
+            Row headerRow = new Row();
+
+            if (options.ValidateHeaders)
+            {
+                headerRow = rows.First();
+                ValidateHeader(headerRow);
+            }
+
+            var contentRows = options.ValidateHeaders ? rows.Skip(1) : rows;
+
+            ValidateContent(contentRows);
+
+            return UploadToRemote(headerRow, contentRows);
+        }
+    }
+
+    public class UploadOptions
+    {
+        public bool ValidateHeaders { get; set; } = true;
+    }
+}
