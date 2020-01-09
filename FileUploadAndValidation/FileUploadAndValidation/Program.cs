@@ -50,7 +50,7 @@ namespace FileUploadAndValidation
 
         private static string GetFileContent() =>
                 new StringBuilder()
-                .AppendLine("Name,Age,Job")
+                .AppendLine("Name,Age")
                 .AppendLine("Tunmise,30,Developer")
                 .AppendLine("James,33,DevOps")
                 .ToString();

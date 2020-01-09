@@ -7,7 +7,7 @@ using FilleUploadCore.UploadManagers;
 
 namespace FileUploadAndValidation
 {
-    internal class FIRS_WHTUploadService : UploadServiceBase
+    public class FIRS_WHTUploadService : UploadServiceBase
     {
         private readonly UploadOptions _uploadOptions;
         public FIRS_WHTUploadService()
