@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="FileDataExtractor\FirsWhtDataExtractor.cs" />
     <Compile Remove="Program.cs" />
   </ItemGroup>
 

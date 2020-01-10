@@ -35,7 +35,8 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             
-            services.AddScoped<IDataExtractor<FirsWhtTransferModel>, FirsWhtDataExtractor>();
+            //services.AddScoped<IDataExtractor<FirsWhtTransferModel>, FirsWhtDataExtractor>();
+            services.AddScoped(typeof(IDataExtractor<>), typeof(DataExtractor<>));
             services.AddScoped<IFileUploadService<FirsWhtUploadResult>, FirsWhtFileUploadService>();
             services.AddScoped<FirsWhtValidator, FirsWhtValidator>();
 

@@ -1,6 +1,7 @@
 ﻿using FileUploadAndValidation.DTOs;
 using FileUploadAndValidation.FileDataExtractor;
 using FileUploadAndValidation.Models;
+using FileUploadAndValidation.ObjectMappers;
 using FileUploadAndValidation.Validations;
 using FilleUploadCore.Exceptions;
 using FluentValidation.Results;
@@ -23,7 +24,7 @@ namespace FileUploadApi.Services
 
         public async Task<FirsWhtUploadResult> ProcessTxtCsvFile(byte[] fileInBytes)
         {
-            var records = await _firsWHTDataExtractor.ExtractDataFromTxtCsvFile(fileInBytes);
+            var records = await _firsWHTDataExtractor.ExtractDataFromTxtCsvFile(fileInBytes, new FirsWhtTxtCsvMapper());
 
             var result = await ProcessFIRS_WHTTransferList(records);
 
@@ -32,7 +33,7 @@ namespace FileUploadApi.Services
 
         public async Task<FirsWhtUploadResult> ProcessXlsFile(byte[] fileInBytes)
         {
-            var records = await _firsWHTDataExtractor.ExtractDataFromXlsFile(fileInBytes);
+            var records = await _firsWHTDataExtractor.ExtractDataFromXlsFile(fileInBytes, new FirsWhtXlsMapper());
 
             var result = await ProcessFIRS_WHTTransferList(records);
 
@@ -41,7 +42,7 @@ namespace FileUploadApi.Services
 
         public async Task<FirsWhtUploadResult> ProcessXlsxFile(byte[] fileInBytes)
         {
-            var records = await _firsWHTDataExtractor.ExtractDataFromXlxsFile(fileInBytes);
+            var records = await _firsWHTDataExtractor.ExtractDataFromXlsxFile(fileInBytes, new FirsWhtTransferModel());
 
             var result = await ProcessFIRS_WHTTransferList(records);
 
