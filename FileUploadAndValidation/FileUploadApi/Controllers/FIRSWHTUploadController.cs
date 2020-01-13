@@ -30,7 +30,7 @@ namespace FileUploadApi.Controllers
 
             foreach (var file in Request.Form.Files)
             {
-                if (file.ContentType.Equals("text") 
+                if (file.ContentType.Equals("text/plain", StringComparison.InvariantCultureIgnoreCase) 
                     || file.FileName.Split('.').Last().Equals("txt", StringComparison.InvariantCultureIgnoreCase))
                 {
                     using (var fileStream = new MemoryStream())
@@ -39,7 +39,7 @@ namespace FileUploadApi.Controllers
                         fileUploadResults.Add(await _firsFileService.ProcessTxtCsvFile(fileStream.ToArray()));
                     }
                 }
-                if (file.ContentType.Equals("application/vnd.ms-excel") 
+                if (file.ContentType.Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase) 
                     || file.FileName.Split('.').Last().Equals("xls", StringComparison.InvariantCultureIgnoreCase))
                 {
                     using (var fileStream = new MemoryStream())
