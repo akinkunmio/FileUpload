@@ -10,23 +10,25 @@ namespace FileUploadAndValidation.Models
     {
         public FileUploadResult()
         {
-            SuccessfulRecordsRowNumber = new List<int>();
+            ValidatedRecordsRowNumber = new List<int>();
             Failures = new List<Failure>();
         }
 
         public string ErrorMessage { get; set; }
 
-        public IList<int> SuccessfulRecordsRowNumber { get; set; }
+        public IList<int> ValidatedRecordsRowNumber { get; set; }
 
         public IList<Failure> Failures { get; set; }
 
-        public int TransactionsCount { get; set; }
+        public int RecordsCount { get; set; }
 
         public class Failure
         {
             public int? RowNumber { get; set; }
 
-            public IList<ValidationError> Errors { get; set; }
+            public IList<ValidationError> ValidationErrors { get; set; }
+
+            public MappingError MappingError { get; set; }
         }
     }
 }

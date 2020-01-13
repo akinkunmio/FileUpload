@@ -17,25 +17,31 @@ namespace FileUploadAndValidation.FileDataExtractor
     {
 
         public DataExtractor()
-        {          
-        }
-        public async Task<IList<T>> ExtractDataFromTxtCsvFile(byte[] fileBytes, ICsvMapping<T> csvMapping)
+        { }
+
+        public async Task<IList<CsvMappingResult<T>>> ExtractDataFromTxtCsvFile(byte[] fileBytes, ICsvMapping<T> csvMapping)
         {
-            var records = new List<T>();
+            var records = new List<CsvMappingResult<T>>();
             var mappingResultList = new List<CsvMappingResult<T>>();
-
-            using (var memoryStream = new MemoryStream(fileBytes))
+            try
             {
-                CsvParserOptions csvParserOptions = new CsvParserOptions(true, ';');
-                CsvReaderOptions csvReaderOptions = new CsvReaderOptions(new[] { Environment.NewLine });
+                using (var memoryStream = new MemoryStream(fileBytes))
+                {
+                    CsvParserOptions csvParserOptions = new CsvParserOptions(true, ';');
+                    CsvReaderOptions csvReaderOptions = new CsvReaderOptions(new[] { Environment.NewLine });
 
-                var csvParser = new CsvParser<T>(csvParserOptions, csvMapping);
+                    var csvParser = new CsvParser<T>(csvParserOptions, csvMapping);
 
-                var stringifiedStream = Encoding.UTF8.GetString(memoryStream.ToArray());
+                    var stringifiedStream = Encoding.UTF8.GetString(memoryStream.ToArray());
 
-                mappingResultList = await Task.FromResult(csvParser.ReadFromString(csvReaderOptions, stringifiedStream).ToList());
+                    mappingResultList = await Task.FromResult(csvParser.ReadFromString(csvReaderOptions, stringifiedStream).ToList());
 
-                mappingResultList.ForEach(e => records.Add(e.Result));
+                    mappingResultList.ForEach(e => records.Add(e));
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
             }
 
             return records;
@@ -44,16 +50,23 @@ namespace FileUploadAndValidation.FileDataExtractor
         public async Task<IList<T>> ExtractDataFromXlsFile(byte[] fileBytes, ExcelClassMap<T> mapper)
         {
             var records = default(List<T>);
-
-            using (MemoryStream memStream = new MemoryStream(fileBytes))
+            try
             {
-                using (var importer = new ExcelImporter(memStream))
+                using (MemoryStream memStream = new MemoryStream(fileBytes))
                 {
-                    importer.Configuration.RegisterClassMap(mapper);
-                    var sheet = importer.ReadSheet();
-                    records = await Task.FromResult(sheet.ReadRows<T>().ToList());
+                    using (var importer = new ExcelImporter(memStream))
+                    {
+                        importer.Configuration.RegisterClassMap(mapper);
+                        var sheet = importer.ReadSheet();
+                        records = await Task.FromResult(sheet.ReadRows<T>().ToList());
+                    }
                 }
             }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+
             return records;
         }
 
@@ -67,13 +80,19 @@ namespace FileUploadAndValidation.FileDataExtractor
             }
 
             var transactions = default(List<T>);
-
-            using (var stream = new MemoryStream(fileBytes))
+            try
             {
-                using (var excelPackage = new ExcelPackage(stream))
-                {
-                    await Task.FromResult(transactions = excelPackage.ToList<T>());
-                }
+                    using (var stream = new MemoryStream(fileBytes))
+                    {
+                        using (var excelPackage = new ExcelPackage(stream))
+                        {
+                            await Task.FromResult(transactions = excelPackage.ToList<T>());
+                        }
+                    }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
             }
 
             return transactions;

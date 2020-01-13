@@ -24,11 +24,39 @@ namespace FileUploadApi.Services
 
         public async Task<FirsWhtUploadResult> ProcessTxtCsvFile(byte[] fileInBytes)
         {
-            var records = await _firsWHTDataExtractor.ExtractDataFromTxtCsvFile(fileInBytes, new FirsWhtTxtCsvMapper());
+            var mappingResult = await _firsWHTDataExtractor.ExtractDataFromTxtCsvFile(fileInBytes, new FirsWhtTxtCsvMapper());
+            
+            var uploadResult = new FirsWhtUploadResult();
 
-            var result = await ProcessFIRS_WHTTransferList(records);
+            var records = mappingResult.Select(s => s.Result).ToList();
+            if(mappingResult.Any(m => m.IsValid == false))
+            {
+                foreach (var unmappedResult in mappingResult.Where(r => r.IsValid == false))
+                    uploadResult.Failures.Add(new FileUploadResult.Failure
+                    {
+                         MappingError = new MappingError 
+                         {
+                             ColumnIndex = unmappedResult.Error.ColumnIndex,
+                             ErrorMessage = unmappedResult.Error.Value,
+                             UnmappedRow = unmappedResult.Error.UnmappedRow
+                         },
+                         RowNumber = unmappedResult.RowIndex
+                    });
+            }
+            
+            uploadResult.RecordsCount = mappingResult.Count();
 
-            return result;
+            bool isValid = await RunValidation(records, uploadResult);
+
+            if (!isValid)
+            {
+                return uploadResult;
+            }
+
+            //await UploadTransactions(uploadResult);
+
+            return uploadResult;
+
         }
 
         public async Task<FirsWhtUploadResult> ProcessXlsFile(byte[] fileInBytes)
@@ -42,18 +70,45 @@ namespace FileUploadApi.Services
 
         public async Task<FirsWhtUploadResult> ProcessXlsxFile(byte[] fileInBytes)
         {
-            var records = await _firsWHTDataExtractor.ExtractDataFromXlsxFile(fileInBytes, new FirsWhtTransferModel());
-
-            var result = await ProcessFIRS_WHTTransferList(records);
+            var records = await _firsWHTDataExtractor.ExtractDataFromXlsxFile(fileInBytes, new FirsWhtXlsxMapper());
+            var transaferList = await ToFirsWhtTransferList(records);
+            var result = await ProcessFIRS_WHTTransferList(transaferList);
 
             return result;
+        }
+
+        private async Task<IList<FirsWhtTransferModel>> ToFirsWhtTransferList(IList<FirsWhtXlsxMapper> excelRecordList)
+        {
+            var firsDTO = new List<FirsWhtTransferModel>();
+            foreach(var record in excelRecordList)
+            {
+                firsDTO.Add(new FirsWhtTransferModel
+                {
+                    ContractDescription = record.ContractDescription,
+                    ContractorAddress = record.ContractorAddress,
+                    ContractorName = record.ContractorName,
+                    ContractorTIN = record.ContractorTIN,
+                    ExchangeRateToNaira = record.ExchangeRate,
+                    InvoicedValue = record.InvoicedValue,
+                    InvoiceValueofTransaction = record.InvoiceValueofTransaction,
+                    TransactionDate = record.TransactionDate,
+                    TransactionNature = record.TransactionNature,
+                    TransactionInvoiceRefNo = record.TransactionInvoiceRefNo,
+                    WVATRate = record.WVATRate,
+                    WVATValue = record.WVATValue,
+                    CurrencyOfTransaction = record.CurrencyOfTransaction,
+                    TaxAccountNumber = record.TaxAccountNumber
+                });
+            }
+           
+            return firsDTO;
         }
 
         private async Task<FirsWhtUploadResult> ProcessFIRS_WHTTransferList(IList<FirsWhtTransferModel> records)
         {
             var uploadResult = new FirsWhtUploadResult();
 
-            uploadResult.TransactionsCount = records.Count();
+            uploadResult.RecordsCount = records.Count();
 
             bool isValid = await RunValidation(records, uploadResult);
 
@@ -109,6 +164,9 @@ namespace FileUploadApi.Services
             {
                 var record = records[i];
 
+                if (record == null)
+                    continue;
+
                 try
                 {
                     var validationResult = await validator.ValidateAsync(record);
@@ -118,13 +176,13 @@ namespace FileUploadApi.Services
                         throw new ValidationException(ToValidationResultModel(validationResult.Errors, "validation failed for FIRS_WHT transaction records"));
                     }
 
-                    result.SuccessfulRecordsRowNumber.Add(i);
+                    result.ValidatedRecordsRowNumber.Add(i+1);
                 }
                 catch (ValidationException ex)
                 {
                     var failure = new FileUploadResult.Failure();
 
-                    failure.Errors = ex.ValidationResult.Errors;
+                    failure.ValidationErrors = ex.ValidationResult.Errors;
                     failure.RowNumber = i + 1;
                     result.Failures.Add(failure);
 

@@ -30,8 +30,8 @@ namespace FileUploadApi.Controllers
 
             foreach (var file in Request.Form.Files)
             {
-                if (file.ContentType.Contains("text", StringComparison.InvariantCultureIgnoreCase) 
-                    || file.ContentType.Contains("csv", StringComparison.InvariantCultureIgnoreCase))
+                if (file.ContentType.Equals("text") 
+                    || file.FileName.Split('.').Last().Equals("txt", StringComparison.InvariantCultureIgnoreCase))
                 {
                     using (var fileStream = new MemoryStream())
                     {
@@ -39,7 +39,8 @@ namespace FileUploadApi.Controllers
                         fileUploadResults.Add(await _firsFileService.ProcessTxtCsvFile(fileStream.ToArray()));
                     }
                 }
-                if (file.ContentType.Equals("xls", StringComparison.InvariantCultureIgnoreCase))
+                if (file.ContentType.Equals("application/vnd.ms-excel") 
+                    || file.FileName.Split('.').Last().Equals("xls", StringComparison.InvariantCultureIgnoreCase))
                 {
                     using (var fileStream = new MemoryStream())
                     {
@@ -47,7 +48,8 @@ namespace FileUploadApi.Controllers
                         fileUploadResults.Add(await _firsFileService.ProcessXlsFile(fileStream.ToArray()));
                     }
                 }
-                if (file.ContentType.Equals("xlsx", StringComparison.InvariantCultureIgnoreCase))
+                if (file.ContentType.Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", StringComparison.InvariantCultureIgnoreCase)
+                    || file.FileName.Split('.').Last().Equals("xlsx", StringComparison.InvariantCultureIgnoreCase))
                 {
                     using (var fileStream = new MemoryStream())
                     {

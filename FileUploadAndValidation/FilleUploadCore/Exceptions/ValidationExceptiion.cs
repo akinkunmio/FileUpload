@@ -36,4 +36,12 @@ namespace FilleUploadCore.Exceptions
         public string ErrorMessage { get; set; }
     }
 
+    [Serializable]
+    public class MappingError
+    {
+        public int ColumnIndex { get; set; }
+        public string ErrorMessage { get; set; }
+        public string UnmappedRow { get; set; }
+    }
+
 }

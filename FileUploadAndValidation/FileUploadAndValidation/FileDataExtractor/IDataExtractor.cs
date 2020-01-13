@@ -13,7 +13,7 @@ namespace FileUploadAndValidation.FileDataExtractor
 
         Task<IList<T>> ExtractDataFromXlsFile(byte[] fileBytes, ExcelClassMap<T> mapper);
 
-        Task<IList<T>> ExtractDataFromTxtCsvFile(byte[] fileBytes, ICsvMapping<T> csvMapping);
+        Task<IList<CsvMappingResult<T>>> ExtractDataFromTxtCsvFile(byte[] fileBytes, ICsvMapping<T> csvMapping);
 
     }
 }
