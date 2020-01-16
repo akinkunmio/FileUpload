@@ -9,12 +9,22 @@
 
   <ItemGroup>
     <Compile Remove="Bootstrap\**" />
+    <Compile Remove="FileDataExtractor\**" />
+    <Compile Remove="ObjectMappers\**" />
+    <Compile Remove="Validations\**" />
     <EmbeddedResource Remove="Bootstrap\**" />
+    <EmbeddedResource Remove="FileDataExtractor\**" />
+    <EmbeddedResource Remove="ObjectMappers\**" />
+    <EmbeddedResource Remove="Validations\**" />
     <None Remove="Bootstrap\**" />
+    <None Remove="FileDataExtractor\**" />
+    <None Remove="ObjectMappers\**" />
+    <None Remove="Validations\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="FileDataExtractor\FirsWhtDataExtractor.cs" />
+    <Compile Remove="DTOs\FirsWhtUploadResult.cs" />
+    <Compile Remove="DTOs\FIRS_WHTTransferModel.cs" />
     <Compile Remove="Program.cs" />
   </ItemGroup>
 

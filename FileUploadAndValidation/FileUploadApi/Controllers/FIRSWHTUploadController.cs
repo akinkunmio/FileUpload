@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using FileUploadAndValidation.DTOs;
+using FileUploadAndValidation.FileReaderImpl;
 using FileUploadAndValidation.Models;
+using FileUploadApi.ApiServices;
 using FileUploadApi.Models;
 using FileUploadApi.Services;
+using FilleUploadCore.FileReaders;
 using FilleUploadCore.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,50 +19,51 @@ namespace FileUploadApi.Controllers
     [ApiController]
     public class FIRSWHTUploadController : ControllerBase
     {
-        private readonly IFileUploadService<FirsWhtUploadResult> _firsFileService;
-        public FIRSWHTUploadController(IFileUploadService<FirsWhtUploadResult> firsFileService)
+        private readonly IApiUploadService _uploadService;
+      
+
+        public FIRSWHTUploadController(IApiUploadService uploadService)
         {
-            _firsFileService = firsFileService;
+            _uploadService = uploadService;
         }
        
         [HttpPost("multipartsfileupload")]
         public async Task<IActionResult> PostMultipartsFileUploadAsync()
         {
-            var fileUploadResults = new List<FileUploadResult>();
+            var fileUploadResult = new UploadResult();
+            var file = Request.Form.Files.First();
 
-            foreach (var file in Request.Form.Files)
+            if ((file.ContentType.Equals("text/plain", StringComparison.InvariantCultureIgnoreCase)
+                || file.FileName.Split('.').Last().Equals("txt", StringComparison.InvariantCultureIgnoreCase)) 
+                || (file.ContentType.Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase)
+                && file.FileName.Split('.').Last().Equals("csv", StringComparison.InvariantCultureIgnoreCase)))
             {
-                if (file.ContentType.Equals("text/plain", StringComparison.InvariantCultureIgnoreCase) 
-                    || file.FileName.Split('.').Last().Equals("txt", StringComparison.InvariantCultureIgnoreCase))
+                using (var fileStream = new MemoryStream())
                 {
-                    using (var fileStream = new MemoryStream())
-                    {
-                        file.CopyTo(fileStream);
-                        fileUploadResults.Add(await _firsFileService.ProcessTxtCsvFile(fileStream.ToArray()));
-                    }
+                    file.CopyTo(fileStream);
+                    fileUploadResult = await _uploadService.UploadFileAsync(FileTypes.TXT, fileStream.ToArray());
                 }
-                if (file.ContentType.Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase) 
-                    || file.FileName.Split('.').Last().Equals("xls", StringComparison.InvariantCultureIgnoreCase))
+            }
+            if (file.ContentType.Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase)
+                && file.FileName.Split('.').Last().Equals("xls", StringComparison.InvariantCultureIgnoreCase))
+            {
+                using (var fileStream = new MemoryStream())
                 {
-                    using (var fileStream = new MemoryStream())
-                    {
-                        file.CopyTo(fileStream);
-                        fileUploadResults.Add(await _firsFileService.ProcessXlsFile(fileStream.ToArray()));
-                    }
+                    file.CopyTo(fileStream);
+                    fileUploadResult = await _uploadService.UploadFileAsync(FileTypes.XLS,fileStream.ToArray());
                 }
-                if (file.ContentType.Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", StringComparison.InvariantCultureIgnoreCase)
-                    || file.FileName.Split('.').Last().Equals("xlsx", StringComparison.InvariantCultureIgnoreCase))
+            }
+            if (file.ContentType.Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", StringComparison.InvariantCultureIgnoreCase)
+                && file.FileName.Split('.').Last().Equals("xlsx", StringComparison.InvariantCultureIgnoreCase))
+            {
+                using (var fileStream = new MemoryStream())
                 {
-                    using (var fileStream = new MemoryStream())
-                    {
-                        file.CopyTo(fileStream);
-                        fileUploadResults.Add(await _firsFileService.ProcessXlsxFile(fileStream.ToArray()));
-                    }
+                    file.CopyTo(fileStream);
+                    fileUploadResult = await _uploadService.UploadFileAsync(FileTypes.XLSX, fileStream.ToArray());
                 }
-
             }
 
-            return Ok(fileUploadResults);
+            return Ok(fileUploadResult);
         }
 
         [HttpGet("ping")]
@@ -68,31 +71,6 @@ namespace FileUploadApi.Controllers
         {
             return Ok(new string[] { "hello world", "this is upload service"});
         }
-
-        [HttpPost("_uploadbase64string")]
-        public async Task<IActionResult> UploadBase64Async([FromBody] FileUploadModel model)
-        {
-            ArgumentGuard.NotNull(model, nameof(model));
-            ArgumentGuard.NotNullOrWhiteSpace(model.Base64EncodedString, nameof(model.Base64EncodedString));
-            ArgumentGuard.NotNullOrWhiteSpace(model.FileType, nameof(model.FileType));
-
-            var result = new FirsWhtUploadResult();
-
-            if (model.FileType.Equals("txt", StringComparison.InvariantCultureIgnoreCase) 
-                || model.FileType.Equals("csv", StringComparison.InvariantCultureIgnoreCase))
-                result = await _firsFileService.ProcessTxtCsvFile(Convert.FromBase64String(model.Base64EncodedString));
-
-            if (model.FileType.Equals("xls", StringComparison.InvariantCultureIgnoreCase))
-                result = await _firsFileService.ProcessXlsFile(Convert.FromBase64String(model.Base64EncodedString));
-
-            if (model.FileType.Equals("xlsx", StringComparison.InvariantCultureIgnoreCase))
-                result = await _firsFileService.ProcessXlsxFile(Convert.FromBase64String(model.Base64EncodedString));
-
-            return Ok(result);
-        }
-
-
-
 
     }
 }

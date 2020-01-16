@@ -9,24 +9,24 @@ namespace FilleUploadCore.Exceptions
     [Serializable]
     public class ValidationException : AppException
     {
-        public ValidationException(ModelValidationResult validationResult, string message = null)
-            : base(message ?? "Validation failed for the given model")
+        public ValidationException(ValidationError validationResult, string message = null)
+            : base(message ?? "Validation failed for the given row")
         {
             ArgumentGuard.NotNull(validationResult, nameof(validationResult));
 
-            ValidationResult = validationResult;
+            ValidationError = validationResult;
         }
 
-        public ModelValidationResult ValidationResult { get; set; }
+        public ValidationError ValidationError { get; set; }
     }
 
-    [Serializable]
-    public class ModelValidationResult
-    {
-        public string Message { get; set; }
+    //[Serializable]
+    //public class ModelValidationResult
+    //{
+    //    public string Message { get; set; }
 
-        public IList<ValidationError> Errors { get; set; }
-    }
+    //    public IList<ValidationError> Errors { get; set; }
+    //}
 
     [Serializable]
     public class ValidationError
@@ -40,7 +40,9 @@ namespace FilleUploadCore.Exceptions
     public class MappingError
     {
         public int ColumnIndex { get; set; }
+
         public string ErrorMessage { get; set; }
+
         public string UnmappedRow { get; set; }
     }
 

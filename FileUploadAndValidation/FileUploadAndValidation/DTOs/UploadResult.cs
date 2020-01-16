@@ -6,29 +6,27 @@ using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.Models
 {
-    public class FileUploadResult
+       public class UploadResult
     {
-        public FileUploadResult()
+        public UploadResult()
         {
-            ValidatedRecordsRowNumber = new List<int>();
+            ValidRows = new List<int>();
             Failures = new List<Failure>();
         }
 
         public string ErrorMessage { get; set; }
 
-        public IList<int> ValidatedRecordsRowNumber { get; set; }
+        public IList<int> ValidRows { get; set; }
 
         public IList<Failure> Failures { get; set; }
 
-        public int RecordsCount { get; set; }
+        public int RowsCount { get; set; }
 
         public class Failure
         {
             public int? RowNumber { get; set; }
 
-            public IList<ValidationError> ValidationErrors { get; set; }
-
-            public MappingError MappingError { get; set; }
+            public IList<ValidationError> ColumnValidationErrors { get; set; }
         }
     }
 }

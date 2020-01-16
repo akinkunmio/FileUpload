@@ -1,14 +1,19 @@
 ﻿using FileUploadAndValidation.Models;
+using FilleUploadCore.FileReaders;
+using FilleUploadCore.UploadManagers;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FileUploadApi.Services
 {
-    public interface IFileUploadService<T> where T : class
+    public interface IFileUploadService
     {
-        Task<T> ProcessXlsxFile(byte[] fileBytes);
+        UploadOptions GetUploadOptions(bool validateHeaders);
 
-        Task<T> ProcessXlsFile(byte[] fileBytes);
+        void ValidateHeader(Row headerRow);
 
-        Task<T> ProcessTxtCsvFile(byte[] fileBytes);
+        UploadResult ValidateContent(IEnumerable<Row> contentRows);
+
+        Task<UploadResult> Upload(IEnumerable<Row> rows, bool validateHeaders = true);
     }
 }

@@ -8,16 +8,13 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using FileUploadAndValidation;
-using AutoMapper;
-using FileUploadAndValidation.FileDataExtractor;
-using FileUploadAndValidation.DTOs;
 using System.Text;
 using Swashbuckle.AspNetCore.Swagger;
 using FileUploadApi.Services;
-using FileUploadAndValidation.Validations;
+using FileUploadAndValidation.FileReaders;
+using FileUploadAndValidation.FileReaderImpl;
+using FilleUploadCore.FileReaders;
+using FileUploadApi.ApiServices;
 
 namespace FileUploadApi
 {
@@ -34,11 +31,28 @@ namespace FileUploadApi
         public void ConfigureServices(IServiceCollection services)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            
-            //services.AddScoped<IDataExtractor<FirsWhtTransferModel>, FirsWhtDataExtractor>();
-            services.AddScoped(typeof(IDataExtractor<>), typeof(DataExtractor<>));
-            services.AddScoped<IFileUploadService<FirsWhtUploadResult>, FirsWhtFileUploadService>();
-            services.AddScoped<FirsWhtValidator, FirsWhtValidator>();
+
+            services.AddScoped<IFileUploadService, FirsWhtFileUploadService>();
+            services.AddScoped<IApiUploadService, ApiUploadService>();
+
+            services.AddScoped<CSVFileReader>();
+            services.AddScoped<XlsFileReader>();
+            services.AddScoped<XlsxFileReader>();
+
+            services.AddTransient<Func<FileReaderEnum, IFileReader>>(serviceProvider => key =>
+            {
+                switch (key)
+                {
+                    case FileReaderEnum.csv:
+                        return serviceProvider.GetService<CSVFileReader>();
+                    case FileReaderEnum.xls:
+                        return serviceProvider.GetService<XlsFileReader>();
+                    case FileReaderEnum.xlsx:
+                        return serviceProvider.GetService<XlsxFileReader>();
+                    default:
+                        return null;
+                }
+            });
 
             services.AddSwaggerGen(config =>
             {
