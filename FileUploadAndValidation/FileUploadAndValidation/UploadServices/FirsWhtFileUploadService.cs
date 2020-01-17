@@ -62,10 +62,9 @@ namespace FileUploadApi.Services
                 throw new ArgumentException($"Invalid number of columns. Expected: {expectedNumOfColumns}, Found: {headerRow.Columns.Count()}");
         }
 
-        public UploadResult ValidateContent(IEnumerable<Row> contentRows)
+        public UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
         {
             Console.WriteLine("Validating rows...");
-            var uploadResult = new UploadResult();
             contentRows.AsParallel().ForAll(row =>
             {
                 var isValidRow = ValidateRow(row, uploadResult);
@@ -73,6 +72,7 @@ namespace FileUploadApi.Services
                 {
                     uploadResult.ValidRows.Add(row.Index);
                     uploadResult.RowsCount++;
+
                 }
             });
 
@@ -81,11 +81,8 @@ namespace FileUploadApi.Services
 
         private bool ValidateRow(Row row, UploadResult uploadResult)
         {
-            var validationFailure = new Failure
-            {
-                ColumnValidationErrors = new List<ValidationError>(),
-                RowNumber = row.Index
-            };
+            var validationErrors = new List<ValidationError>();
+
             var errorMessage = "";
             var isValid = true;
 
@@ -100,36 +97,29 @@ namespace FileUploadApi.Services
                     {
                         errorMessage = "Value must be provided";
                     }
-                    if (contract.Max != default && column.Value.Length > contract.Max)
+                    if (contract.Max != default && column.Value != null && contract.Max < column.Value.Length )
                     {
                         errorMessage = "Specified maximum lenght exceeded";
                     }
-                    if (contract.Min != default && column.Value.Length < contract.Min)
+                    if (contract.Min != default && column.Value != null && column.Value.Length < contract.Min)
                     {
                         errorMessage = "Specified minimum length not met";
                     }
-                    if (contract.DataType != null)
+                    if (contract.DataType != default && column.Value != null)
                     {
-                        var dataTypes = new Dictionary<string, Type>();
-                        dataTypes.Add("string", typeof(string));
-                        dataTypes.Add("integer", typeof(int));
-                        dataTypes.Add("decimal", typeof(decimal));
-                        dataTypes.Add("boolean", typeof(bool));
-                        dataTypes.Add("datetime", typeof(DateTime));
-                        dataTypes.Add("character", typeof(char));
-                        dataTypes.Add("double", typeof(double));
-
-                        if (!dataTypes.ContainsKey(column.Value))
+                       
+                        if (!DataTypes().ContainsKey(contract.DataType))
                             errorMessage = "Specified data type is not supported";
                         try
                         {
-                            Convert.ChangeType(column.Value, dataTypes[column.Value]);
+                            Convert.ChangeType(column.Value, DataTypes()[contract.DataType]);
                         }
                         catch (Exception)
                         {
                             errorMessage = "Invalid value for data type specified";
                         }
                     }
+                    if(!string.IsNullOrWhiteSpace(errorMessage))
                     throw new ValidationException(
                         new ValidationError
                         {
@@ -141,18 +131,39 @@ namespace FileUploadApi.Services
                 catch (ValidationException exception)
                 {
                     isValid = false;
-                    validationFailure.ColumnValidationErrors.Add(exception.ValidationError);
+                    validationErrors.Add(exception.ValidationError);
                 }
             }
 
-            uploadResult.Failures.Add(validationFailure);
+           if(validationErrors.Count() > 0)
+            {
+                validationErrors.Reverse();
+                uploadResult.Failures.Add(
+                    new Failure { 
+                        ColumnValidationErrors = validationErrors, 
+                        RowNumber = row.Index 
+                    });
+            }
 
             return isValid;
         }
 
+        private static Dictionary<string, Type> DataTypes()
+        {
+            return new Dictionary<string, Type>() {
+                {"string", typeof(string)},
+                {"integer", typeof(int)},
+                {"decimal", typeof(decimal)},
+                {"boolean", typeof(bool) },
+                {"datetime", typeof(DateTime) },
+                {"character", typeof(char) },
+                {"double", typeof(double) }
+            };
+        }
+
         public async Task<UploadResult> Upload(IEnumerable<Row> rows, bool validateHeaders = true)
         {
-            UploadResult uploadResult;
+            var uploadResult = new UploadResult();
             var headerRow = new Row();
             var options = GetUploadOptions(validateHeaders);
 
@@ -167,8 +178,10 @@ namespace FileUploadApi.Services
 
             var contentRows = options.ValidateHeaders ? rows.Skip(1) : rows;
 
-            uploadResult = ValidateContent(contentRows);
-            uploadResult.RowsCount = rows.Count();
+            uploadResult.RowsCount = contentRows.Count();
+            uploadResult = ValidateContent(contentRows, uploadResult);
+
+            //if(uploadResult.RowsCount == uploadResult.ValidRows.Count())
 
 
             return await UploadToRemote(headerRow, contentRows, uploadResult);
@@ -176,6 +189,7 @@ namespace FileUploadApi.Services
 
         private Task<UploadResult> UploadToRemote(Row headerRow, IEnumerable<Row> contentRows, UploadResult uploadResult)
         {
+
             return Task.FromResult(uploadResult);
         }
     }

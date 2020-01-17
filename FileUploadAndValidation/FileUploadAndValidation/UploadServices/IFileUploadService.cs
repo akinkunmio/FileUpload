@@ -12,7 +12,7 @@ namespace FileUploadApi.Services
 
         void ValidateHeader(Row headerRow);
 
-        UploadResult ValidateContent(IEnumerable<Row> contentRows);
+        UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult);
 
         Task<UploadResult> Upload(IEnumerable<Row> rows, bool validateHeaders = true);
     }

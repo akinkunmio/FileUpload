@@ -20,8 +20,10 @@ namespace FileUploadAndValidation.FileReaders
                 //loop all rows
                 for (int i = worksheet.Dimension.Start.Row; i <= worksheet.Dimension.End.Row; i++)
                 {
-                    var row = new Row();
-                    row.Index = i;
+                    var row = new Row() {
+                        Index = i,
+                        Columns = new List<Column>()
+                    };
                     //loop all columns in a row
                     for (int j = worksheet.Dimension.Start.Column; j <= worksheet.Dimension.End.Column; j++)
                     {
@@ -29,6 +31,10 @@ namespace FileUploadAndValidation.FileReaders
                         if (worksheet.Cells[i, j].Value != null)
                         {
                             row.Columns.Add(new Column() { Index = j, Value = worksheet.Cells[i, j].Value.ToString() });
+                        }
+                        else
+                        {
+                            row.Columns.Add(new Column() { Index = j, Value = "" });
                         }
                     }
                     rowList.Add(row);
