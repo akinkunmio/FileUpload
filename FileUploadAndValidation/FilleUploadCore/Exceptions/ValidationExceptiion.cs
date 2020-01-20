@@ -20,14 +20,6 @@ namespace FilleUploadCore.Exceptions
         public ValidationError ValidationError { get; set; }
     }
 
-    //[Serializable]
-    //public class ModelValidationResult
-    //{
-    //    public string Message { get; set; }
-
-    //    public IList<ValidationError> Errors { get; set; }
-    //}
-
     [Serializable]
     public class ValidationError
     {
@@ -35,15 +27,5 @@ namespace FilleUploadCore.Exceptions
 
         public string ErrorMessage { get; set; }
     }
-
-    [Serializable]
-    public class MappingError
-    {
-        public int ColumnIndex { get; set; }
-
-        public string ErrorMessage { get; set; }
-
-        public string UnmappedRow { get; set; }
-    }
-
+    
 }

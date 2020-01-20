@@ -14,16 +14,8 @@ namespace FileUploadApi.Services
 {
     public class FirsWhtFileUploadService : IFileUploadService
     {
-        private readonly IFileReader _csvFileReader;
-        private readonly IFileReader _xlsxFileReader;
-        private readonly IFileReader _xlsFileReader;
-
-        public FirsWhtFileUploadService(Func<FileReaderEnum, IFileReader> fileReader)
-        {
-            _csvFileReader = fileReader(FileReaderEnum.csv);
-            _xlsxFileReader = fileReader(FileReaderEnum.xlsx);
-            _xlsFileReader = fileReader(FileReaderEnum.xls);
-        }
+        public FirsWhtFileUploadService()
+        { }
 
         private ColumnContract[] GetColumns()
         {
@@ -71,8 +63,6 @@ namespace FileUploadApi.Services
                 if (isValidRow)
                 {
                     uploadResult.ValidRows.Add(row.Index);
-                    uploadResult.RowsCount++;
-
                 }
             });
 
@@ -137,7 +127,6 @@ namespace FileUploadApi.Services
 
            if(validationErrors.Count() > 0)
             {
-                validationErrors.Reverse();
                 uploadResult.Failures.Add(
                     new Failure { 
                         ColumnValidationErrors = validationErrors, 
@@ -151,13 +140,13 @@ namespace FileUploadApi.Services
         private static Dictionary<string, Type> DataTypes()
         {
             return new Dictionary<string, Type>() {
-                {"string", typeof(string)},
-                {"integer", typeof(int)},
-                {"decimal", typeof(decimal)},
-                {"boolean", typeof(bool) },
-                {"datetime", typeof(DateTime) },
-                {"character", typeof(char) },
-                {"double", typeof(double) }
+                { "string", typeof(string) },
+                { "integer", typeof(int) },
+                { "decimal", typeof(decimal) },
+                { "boolean", typeof(bool) },
+                { "datetime", typeof(DateTime) },
+                { "character", typeof(char) },
+                { "double", typeof(double) }
             };
         }
 
