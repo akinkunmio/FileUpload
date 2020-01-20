@@ -17,7 +17,7 @@ namespace FileUploadApi.Services
         public FirsWhtFileUploadService()
         { }
 
-        private ColumnContract[] GetColumns()
+        private static ColumnContract[] GetColumns()
         {
             return new[]
             {
@@ -39,12 +39,12 @@ namespace FileUploadApi.Services
 
         }
 
-        public UploadOptions GetUploadOptions(bool validateHeaders = true)
+        private static UploadOptions GetUploadOptions(bool validateHeaders = true)
         {
             return new UploadOptions { ValidateHeaders = validateHeaders };
         }
 
-        public void ValidateHeader(Row headerRow)
+        private void ValidateHeader(Row headerRow)
         {
             if (headerRow == null)
                 throw new ArgumentException("Header row not found");
@@ -54,7 +54,7 @@ namespace FileUploadApi.Services
                 throw new ArgumentException($"Invalid number of columns. Expected: {expectedNumOfColumns}, Found: {headerRow.Columns.Count()}");
         }
 
-        public UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
+        private UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
         {
             Console.WriteLine("Validating rows...");
             contentRows.AsParallel().ForAll(row =>
@@ -97,17 +97,17 @@ namespace FileUploadApi.Services
                     }
                     if (contract.DataType != default && column.Value != null)
                     {
-                       
                         if (!DataTypes().ContainsKey(contract.DataType))
                             errorMessage = "Specified data type is not supported";
                         try
                         {
-                            Convert.ChangeType(column.Value, DataTypes()[contract.DataType]);
+                            dynamic typedValue = Convert.ChangeType(column.Value, DataTypes()[contract.DataType]);
                         }
                         catch (Exception)
                         {
                             errorMessage = "Invalid value for data type specified";
                         }
+
                     }
                     if(!string.IsNullOrWhiteSpace(errorMessage))
                     throw new ValidationException(
