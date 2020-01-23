@@ -23,8 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="DTOs\FirsWhtUploadResult.cs" />
-    <Compile Remove="DTOs\FIRS_WHTTransferModel.cs" />
     <Compile Remove="Program.cs" />
   </ItemGroup>
 
