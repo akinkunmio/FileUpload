@@ -4,10 +4,11 @@ using System.Text;
 
 namespace FileUploadAndValidation.FileReaderImpl
 {
-    public enum FileReaderEnum
+    public enum FileReaderTypeEnum
     {
-        csv,
-        xls,
-        xlsx
+        TXT,
+        CSV,
+        XLS,
+        XLSX
     }
 }

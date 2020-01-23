@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace FileUploadAndValidation.FileReaders
+namespace FileUploadAndValidation.FileReaderImpl
 {
-    public class CsvFileReader : IFileReader
+    public class TxtFileReader : IFileReader
     {
         public IEnumerable<Row> Read(byte[] content)
         {
@@ -21,7 +21,7 @@ namespace FileUploadAndValidation.FileReaders
             return new Row
             {
                 Index = index,
-                Columns = row.Split(",")
+                Columns = row.Split(";")
                           .Select((value, i) => new Column { Index = i, Value = value })
                           .ToList()
             };

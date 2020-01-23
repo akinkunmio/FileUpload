@@ -8,7 +8,7 @@ namespace FileUploadApi
     {
         public void Apply(Operation operation, OperationFilterContext context)
         {
-            if (operation.OperationId == nameof(FIRSWHTUploadController.PostMultipartsFileUploadAsync))
+            if (operation.OperationId == nameof(UploadController.PostMultipartsFileUploadAsync))
             {
                 operation.Parameters.Add(new NonBodyParameter
                 {

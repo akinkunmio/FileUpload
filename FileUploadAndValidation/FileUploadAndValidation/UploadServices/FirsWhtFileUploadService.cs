@@ -12,7 +12,7 @@ using static FileUploadAndValidation.Models.UploadResult;
 
 namespace FileUploadApi.Services
 {
-    public class FirsWhtFileUploadService : IFileUploadService
+    public class FirsWhtFileUploadService : IFileService
     {
         public FirsWhtFileUploadService()
         { }
@@ -26,7 +26,7 @@ namespace FileUploadApi.Services
                 new ColumnContract{ ColumnName="ContractorTIN", DataType="string", Max=15, Required=true},
                 new ColumnContract{ ColumnName="ContractDescription", DataType="string", Max=100, Required=true},
                 new ColumnContract{ ColumnName="TransactionNature", DataType="string", Max=100, Required=true},
-                new ColumnContract{ ColumnName="TransactionDate", DataType="datetime", Max=12, Required=true},
+                new ColumnContract{ ColumnName="TransactionDate", DataType="datetime", Required=true},
                 new ColumnContract{ ColumnName="TransactionInvoiceRefNo", DataType="string", Max=25, Required=true},
                 new ColumnContract{ ColumnName="CurrencyOfTransaction", DataType="string", Max=6, Required=true},
                 new ColumnContract{ ColumnName="InvoicedValue", DataType="decimal", Max=15, Required=true},
@@ -39,11 +39,6 @@ namespace FileUploadApi.Services
 
         }
 
-        private static UploadOptions GetUploadOptions(bool validateHeaders = true)
-        {
-            return new UploadOptions { ValidateHeaders = validateHeaders };
-        }
-
         private void ValidateHeader(Row headerRow)
         {
             if (headerRow == null)
@@ -52,6 +47,8 @@ namespace FileUploadApi.Services
             var expectedNumOfColumns = GetColumns().Count();
             if (headerRow.Columns.Count() != expectedNumOfColumns)
                 throw new ArgumentException($"Invalid number of columns. Expected: {expectedNumOfColumns}, Found: {headerRow.Columns.Count()}");
+            
+            //validate row header names
         }
 
         private UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
@@ -150,36 +147,52 @@ namespace FileUploadApi.Services
             };
         }
 
-        public async Task<UploadResult> Upload(IEnumerable<Row> rows, bool validateHeaders = true)
+        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows)
         {
             var uploadResult = new UploadResult();
             var headerRow = new Row();
-            var options = GetUploadOptions(validateHeaders);
+            var contentType = "FIRS_WHT";
 
             if (!rows.Any())
                 throw new ArgumentException("Empty rows");
 
-            if (options.ValidateHeaders)
+            if (uploadOptions.ValidateHeaders)
             {
                 headerRow = rows.First();
                 ValidateHeader(headerRow);
             }
 
-            var contentRows = options.ValidateHeaders ? rows.Skip(1) : rows;
+            var contentRows = uploadOptions.ValidateHeaders ? rows.Skip(1) : rows;
 
-            uploadResult.RowsCount = contentRows.Count();
+            uploadResult.RowsCount = rows.Count();
             uploadResult = ValidateContent(contentRows, uploadResult);
-
-            //if(uploadResult.RowsCount == uploadResult.ValidRows.Count())
-
 
             return await UploadToRemote(headerRow, contentRows, uploadResult);
         }
 
+        private Guid GenerateUniqueId()
+        {
+            throw new NotImplementedException();
+        }
+
         private Task<UploadResult> UploadToRemote(Row headerRow, IEnumerable<Row> contentRows, UploadResult uploadResult)
         {
-
             return Task.FromResult(uploadResult);
+        }
+
+        public Task SaveToDBForReporting(Guid scheduleId, byte[] contents)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SendToEventQueue(Guid scheduleId, byte[] contents)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UploadToNas(Guid scheduleId, byte[] contents, string contentType)
+        {
+            throw new NotImplementedException();
         }
     }
   

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace FileUploadApi.Models
 {
-    public class FileUploadModel
+    public class FileUploadOptions
     {
-        public string Base64EncodedString { get; set; }
-        public string FileType { get; set; }
+        public bool ValidateAllRows { get; set; }
+        public string ContentType { get; set; }
     }
 }

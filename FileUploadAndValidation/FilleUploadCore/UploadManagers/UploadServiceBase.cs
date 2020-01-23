@@ -41,5 +41,10 @@ namespace FilleUploadCore.UploadManagers
     public class UploadOptions
     {
         public bool ValidateHeaders { get; set; } = true;
+
+        public bool ValidateAllRows { get; set; }
+
+        public string ContentType { get; set; }
+
     }
 }

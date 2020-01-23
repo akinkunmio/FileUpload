@@ -16,6 +16,8 @@ namespace FileUploadAndValidation.Models
 
         public string ErrorMessage { get; set; }
 
+        public Guid ScheduleId { get; set; }
+
         public IList<int> ValidRows { get; set; }
 
         public IList<Failure> Failures { get; set; }

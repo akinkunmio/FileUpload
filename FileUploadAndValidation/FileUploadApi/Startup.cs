@@ -15,6 +15,7 @@ using FileUploadAndValidation.FileReaders;
 using FileUploadAndValidation.FileReaderImpl;
 using FilleUploadCore.FileReaders;
 using FileUploadApi.ApiServices;
+using FileUploadAndValidation.UploadServices;
 
 namespace FileUploadApi
 {
@@ -32,22 +33,45 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            services.AddScoped<IFileUploadService, FirsWhtFileUploadService>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
+            services.AddScoped<FirsWhtFileUploadService>();
+            services.AddScoped<AutoPayFileService>();
+            services.AddScoped<BulkSmsFileUploadService>();
+            services.AddScoped<BulkBillPaymentFileUploadService>();
 
-            services.AddScoped<CSVFileReader>();
-            services.AddScoped<XlsFileReader>();
-            services.AddScoped<XlsxFileReader>();
-
-            services.AddTransient<Func<FileReaderEnum, IFileReader>>(serviceProvider => key =>
+            services.AddTransient<Func<FileServiceTypeEnum, IFileService>>(serviceProvider => key => 
             {
                 switch (key)
                 {
-                    case FileReaderEnum.csv:
-                        return serviceProvider.GetService<CSVFileReader>();
-                    case FileReaderEnum.xls:
+                    case FileServiceTypeEnum.FirsWht:
+                        return serviceProvider.GetService<FirsWhtFileUploadService>();
+                    case FileServiceTypeEnum.AutoPay:
+                        return serviceProvider.GetService<AutoPayFileService>();
+                    case FileServiceTypeEnum.BulkSMS:
+                        return serviceProvider.GetService<BulkSmsFileUploadService>();
+                    case FileServiceTypeEnum.BulkBillPayment:
+                        return serviceProvider.GetService<BulkBillPaymentFileUploadService>();
+                    default:
+                        return null;
+                }
+            });
+
+            services.AddScoped<TxtFileReader>();
+            services.AddScoped<CsvFileReader>();
+            services.AddScoped<XlsFileReader>();
+            services.AddScoped<XlsxFileReader>();
+            
+            services.AddTransient<Func<FileReaderTypeEnum, IFileReader>>(serviceProvider => key =>
+            {
+                switch (key)
+                {
+                    case FileReaderTypeEnum.TXT:
+                        return serviceProvider.GetService<TxtFileReader>();
+                    case FileReaderTypeEnum.CSV:
+                        return serviceProvider.GetService<CsvFileReader>();
+                    case FileReaderTypeEnum.XLS:
                         return serviceProvider.GetService<XlsFileReader>();
-                    case FileReaderEnum.xlsx:
+                    case FileReaderTypeEnum.XLSX:
                         return serviceProvider.GetService<XlsxFileReader>();
                     default:
                         return null;
