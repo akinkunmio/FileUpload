@@ -20,7 +20,7 @@ namespace FileUploadAndValidation.FileReaders
         {
             return new Row
             {
-                Index = index,
+                Index = index + 1,
                 Columns = row.Split(",")
                           .Select((value, i) => new Column { Index = i, Value = value })
                           .ToList()

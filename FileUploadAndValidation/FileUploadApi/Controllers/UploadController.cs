@@ -31,9 +31,9 @@ namespace FileUploadApi.Controllers
         [HttpPost("multipartsfileupload")]
         public async Task<IActionResult> PostMultipartsFileUploadAsync()
         {
-            var contentType = Request.Form["contentType"].ToString();
-            var validateAllRows = Request.Form["validateAllRows"].ToString().Equals("true", StringComparison.InvariantCultureIgnoreCase);
-            var validateHeaders = Request.Form["validateHeaders"].ToString().Equals("true", StringComparison.InvariantCultureIgnoreCase);
+            var contentType = Request.Form["contentType"].ToString().Trim();
+            var validateAllRows = Request.Form["validateAllRows"].ToString().Trim().Equals("true", StringComparison.InvariantCultureIgnoreCase);
+            var validateHeaders = Request.Form["validateHeaders"].ToString().Trim().Equals("true", StringComparison.InvariantCultureIgnoreCase);
 
             var uploadOptions = new UploadOptions
             {
@@ -63,12 +63,13 @@ namespace FileUploadApi.Controllers
                         file.CopyTo(fileStream);
                         fileUploadResult = await _uploadService.UploadFileAsync(uploadOptions, FileTypes.CSV, fileStream.ToArray());
                     }
-                if(file.FileName.Split('.').Last().Equals("xls", StringComparison.InvariantCultureIgnoreCase))
+                else if(file.FileName.Split('.').Last().Equals("xls", StringComparison.InvariantCultureIgnoreCase))
                     using (var fileStream = new MemoryStream())
                     {
                         file.CopyTo(fileStream);
                         fileUploadResult = await _uploadService.UploadFileAsync(uploadOptions, FileTypes.XLS, fileStream.ToArray());
                     }
+                else { /* throw an error*/ }
             }
             else if (file.ContentType.Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", StringComparison.InvariantCultureIgnoreCase)
                 && file.FileName.Split('.').Last().Equals("xlsx", StringComparison.InvariantCultureIgnoreCase))
@@ -81,7 +82,7 @@ namespace FileUploadApi.Controllers
             }
             else
             {
-                return BadRequest();
+                return BadRequest("File extension not supported");
             }
 
             return Ok(fileUploadResult);

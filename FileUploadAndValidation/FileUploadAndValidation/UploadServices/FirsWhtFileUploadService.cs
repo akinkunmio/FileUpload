@@ -48,19 +48,24 @@ namespace FileUploadApi.Services
             if (headerRow.Columns.Count() != expectedNumOfColumns)
                 throw new ArgumentException($"Invalid number of columns. Expected: {expectedNumOfColumns}, Found: {headerRow.Columns.Count()}");
             
-            //validate row header names
+            for(int i = 0; i < expectedNumOfColumns; i++)
+            {
+                var columnName = GetColumns()[i].ColumnName;
+                var headerRowColumn = headerRow.Columns[i].Value.ToString().Trim();
+                if (!headerRowColumn.ToLower().Contains(columnName.ToLower()))
+                    throw new ArgumentException($"Invalid header name. Expected: {columnName}, Found: {headerRowColumn}");
+            }
         }
 
         private UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
         {
             Console.WriteLine("Validating rows...");
+
             contentRows.AsParallel().ForAll(row =>
             {
                 var isValidRow = ValidateRow(row, uploadResult);
                 if (isValidRow)
-                {
                     uploadResult.ValidRows.Add(row.Index);
-                }
             });
 
             return uploadResult;
@@ -104,7 +109,6 @@ namespace FileUploadApi.Services
                         {
                             errorMessage = "Invalid value for data type specified";
                         }
-
                     }
                     if(!string.IsNullOrWhiteSpace(errorMessage))
                     throw new ValidationException(
@@ -151,28 +155,34 @@ namespace FileUploadApi.Services
         {
             var uploadResult = new UploadResult();
             var headerRow = new Row();
-            var contentType = "FIRS_WHT";
-
-            if (!rows.Any())
-                throw new ArgumentException("Empty rows");
-
-            if (uploadOptions.ValidateHeaders)
-            {
-                headerRow = rows.First();
-                ValidateHeader(headerRow);
-            }
-
-            var contentRows = uploadOptions.ValidateHeaders ? rows.Skip(1) : rows;
-
             uploadResult.RowsCount = rows.Count();
-            uploadResult = ValidateContent(contentRows, uploadResult);
+            try
+            {
+                if (!rows.Any())
+                    throw new ArgumentException("Empty rows");
 
-            return await UploadToRemote(headerRow, contentRows, uploadResult);
+                if (uploadOptions.ValidateHeaders)
+                {
+                    headerRow = rows.First();
+                    ValidateHeader(headerRow);
+                }
+
+                var contentRows = uploadOptions.ValidateHeaders ? rows.Skip(1) : rows;
+
+                uploadResult = ValidateContent(contentRows, uploadResult);
+                uploadResult.ScheduleId = GenerateUniqueId();
+                return await UploadToRemote(headerRow, contentRows, uploadResult);
+            }
+            catch (Exception exception)
+            {
+                uploadResult.ErrorMessage = exception.Message;
+                return uploadResult;
+            }
         }
 
         private Guid GenerateUniqueId()
         {
-            throw new NotImplementedException();
+            return Guid.NewGuid();
         }
 
         private Task<UploadResult> UploadToRemote(Row headerRow, IEnumerable<Row> contentRows, UploadResult uploadResult)

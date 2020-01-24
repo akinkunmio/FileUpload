@@ -41,6 +41,7 @@ namespace FileUploadApi.ApiServices
             IEnumerable<Row> rows;
             var uploadResult = new UploadResult();
             uploadOptions.ContentType = "FIRS_WHT";
+            uploadOptions.ValidateHeaders = true;
 
             switch (fileExtension)
             {
