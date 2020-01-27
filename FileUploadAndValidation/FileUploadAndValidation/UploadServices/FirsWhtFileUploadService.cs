@@ -151,9 +151,9 @@ namespace FileUploadApi.Services
             };
         }
 
-        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows)
+        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult)
         {
-            var uploadResult = new UploadResult();
+            //var uploadResult = new UploadResult();
             var headerRow = new Row();
             uploadResult.RowsCount = rows.Count();
             try

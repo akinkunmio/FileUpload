@@ -20,7 +20,7 @@ namespace FileUploadApi
             throw new NotImplementedException();
         }
 
-        public Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows)
+        public Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             throw new System.NotImplementedException();
         }

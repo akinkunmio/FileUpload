@@ -8,35 +8,35 @@ using System.Threading.Tasks;
 
 namespace FilleUploadCore.UploadManagers
 {
-    public abstract class UploadServiceBase
-    {
-        protected abstract UploadOptions GetUploadOptions();
-        protected abstract void ValidateHeader(Row headerRow);
-        protected abstract void ValidateContent(IEnumerable<Row> contentRows);
-        protected abstract Task UploadToRemote(Row headerRow, IEnumerable<Row> contentRows);
+    //public abstract class UploadServiceBase
+    //{
+    //    protected abstract UploadOptions GetUploadOptions();
+    //    protected abstract void ValidateHeader(Row headerRow);
+    //    protected abstract void ValidateContent(IEnumerable<Row> contentRows);
+    //    protected abstract Task UploadToRemote(Row headerRow, IEnumerable<Row> contentRows);
 
-        public Task Upload(IEnumerable<Row> rows)
-        {
-            var options = GetUploadOptions() ?? new UploadOptions();
+    //    public Task Upload(IEnumerable<Row> rows)
+    //    {
+    //        var options = GetUploadOptions() ?? new UploadOptions();
 
-            if (!rows.Any())
-                throw new ArgumentException("Empty rows");
+    //        if (!rows.Any())
+    //            throw new ArgumentException("Empty rows");
 
-            Row headerRow = new Row();
+    //        Row headerRow = new Row();
 
-            if (options.ValidateHeaders)
-            {
-                headerRow = rows.First();
-                ValidateHeader(headerRow);
-            }
+    //        if (options.ValidateHeaders)
+    //        {
+    //            headerRow = rows.First();
+    //            ValidateHeader(headerRow);
+    //        }
 
-            var contentRows = options.ValidateHeaders ? rows.Skip(1) : rows;
+    //        var contentRows = options.ValidateHeaders ? rows.Skip(1) : rows;
 
-            ValidateContent(contentRows);
+    //        ValidateContent(contentRows);
 
-            return UploadToRemote(headerRow, contentRows);
-        }
-    }
+    //        return UploadToRemote(headerRow, contentRows);
+    //    }
+    //}
 
     public class UploadOptions
     {

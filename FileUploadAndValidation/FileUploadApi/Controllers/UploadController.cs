@@ -61,7 +61,7 @@ namespace FileUploadApi.Controllers
                     using (var fileStream = new MemoryStream())
                     {
                         file.CopyTo(fileStream);
-                        fileUploadResult = await _uploadService.UploadFileAsync(uploadOptions, FileTypes.CSV, fileStream.ToArray());
+                        fileUploadResult = await _uploadService.UploadFileAsync(uploadOptions, FileTypes.TXT, fileStream.ToArray());
                     }
                 else if(file.FileName.Split('.').Last().Equals("xls", StringComparison.InvariantCultureIgnoreCase))
                     using (var fileStream = new MemoryStream())

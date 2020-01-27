@@ -15,7 +15,7 @@ namespace FileUploadApi.Services
 
         Task UploadToNas(Guid scheduleId, byte[] contents, string contentType);
 
-        Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows);
+        Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult);
     }
    
 }

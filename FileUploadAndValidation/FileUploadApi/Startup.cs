@@ -56,8 +56,9 @@ namespace FileUploadApi
                 }
             });
 
-            services.AddScoped<TxtFileReader>();
-            services.AddScoped<CsvFileReader>();
+            // services.AddScoped<TxtFileReader>();
+            // services.AddScoped<CsvFileReader>();
+            services.AddScoped(typeof(ITxtCsvReader<>), typeof(TxtCsvFileReader<>));
             services.AddScoped<XlsFileReader>();
             services.AddScoped<XlsxFileReader>();
             
@@ -65,10 +66,10 @@ namespace FileUploadApi
             {
                 switch (key)
                 {
-                    case FileReaderTypeEnum.TXT:
-                        return serviceProvider.GetService<TxtFileReader>();
-                    case FileReaderTypeEnum.CSV:
-                        return serviceProvider.GetService<CsvFileReader>();
+                    //case FileReaderTypeEnum.TXT:
+                    //    return serviceProvider.GetService<TxtFileReader>();
+                    //case FileReaderTypeEnum.CSV:
+                    //    return serviceProvider.GetService<CsvFileReader>();
                     case FileReaderTypeEnum.XLS:
                         return serviceProvider.GetService<XlsFileReader>();
                     case FileReaderTypeEnum.XLSX:
