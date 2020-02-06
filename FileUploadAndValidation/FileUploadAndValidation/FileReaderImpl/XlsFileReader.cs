@@ -10,11 +10,10 @@ namespace FileUploadAndValidation.FileReaders
 {
     public class XlsFileReader : IFileReader
     {
-        public IEnumerable<Row> Read(byte[] content)
+        public IEnumerable<Row> Read(Stream stream)
         {
             var rowList = new List<Row>();
 
-            using (var stream = new MemoryStream(content))
             using (var reader = ExcelReaderFactory.CreateReader(stream))
             {
                 var result = reader.AsDataSet();

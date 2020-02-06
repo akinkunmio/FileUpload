@@ -6,8 +6,7 @@ namespace FileUploadAndValidation.FileReaderImpl
 {
     public enum FileReaderTypeEnum
     {
-        TXT,
-        CSV,
+        TXT_CSV,
         XLS,
         XLSX
     }

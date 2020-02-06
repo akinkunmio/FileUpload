@@ -9,11 +9,11 @@ namespace FileUploadApi.Services
 {
     public interface IFileService
     {
-        Task SaveToDBForReporting(Guid scheduleId, byte[] contents);
+        UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult);
 
-        Task SendToEventQueue(Guid scheduleId, byte[] contents);
+        //Task SaveRowsToDB(string scheduleId, IEnumerable<Row> contents);
 
-        Task UploadToNas(Guid scheduleId, byte[] contents, string contentType);
+        //Task UploadToNas(string scheduleId, IEnumerable<Row> contents, string contentType);
 
         Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult);
     }

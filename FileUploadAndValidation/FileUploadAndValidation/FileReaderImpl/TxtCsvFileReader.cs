@@ -1,35 +1,60 @@
-﻿using FilleUploadCore.FileReaders;
+﻿using CsvHelper;
+using FilleUploadCore.FileReaders;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using TinyCsvParser;
-using TinyCsvParser.Mapping;
-using TinyCsvParser.Tokenizer;
 
-namespace FileUploadAndValidation.FileReaders
+namespace FileUploadAndValidation.FileReaderImpl
 {
-    public class TxtCsvFileReader<T> : ITxtCsvReader<T> where T : class
+    public class TxtCsvFileReader : IFileReader
     {
-        public TxtCsvFileReader()
-        { }
-        public async Task<List<CsvMappingResult<T>>> Read(byte[] fileBytes, ICsvMapping<T> csvMapping)
+        public IEnumerable<Row> Read(Stream stream)
         {
-            var csvReaderOptions = new CsvReaderOptions(new[] { Environment.NewLine });
-            var csvParserOptions = new CsvParserOptions(false, new QuotedStringTokenizer(','));
-            using (var memoryStream = new MemoryStream(fileBytes))
-            {
-                var csvParser = new CsvParser<T>(csvParserOptions, csvMapping);
-                var stringifiedStream = Encoding.UTF8.GetString(memoryStream.ToArray());
-                return await Task.FromResult(csvParser.ReadFromString(csvReaderOptions, stringifiedStream).ToList());
-            }
-        }
-    }
+            var rowList = new List<Row>();
 
-    public interface ITxtCsvReader<T> where T : class
-    {
-        Task<List<CsvMappingResult<T>>> Read(byte[] fileBytes, ICsvMapping<T> csvMapping);
+            using (FromBase64Transform tr = new FromBase64Transform(FromBase64TransformMode.IgnoreWhiteSpaces))
+            using (CryptoStream cs = new CryptoStream(stream, tr, CryptoStreamMode.Read))
+            using (StreamReader sr = new StreamReader(cs, Encoding.UTF8))
+            using (var csv = new CsvReader(sr, CultureInfo.InvariantCulture))
+            {
+                // Do any configuration to `CsvReader` before creating CsvDataReader.
+                using (var dr = new CsvDataReader(csv))
+                {
+                    var dataTable = new DataTable();
+                    dataTable.Load(dr);
+
+                    for (int i = 0; i < dataTable.Rows.Count; i++)
+                    {
+                        var row = new Row()
+                        {
+                            Index = i + 1,
+                            Columns = new List<Column>()
+                        };
+                        DataRow dataRow = dataTable.Rows[i];
+                        //loop all columns in a row
+                        for (int j = 0; j < dataTable.Columns.Count; j++)
+                        {
+                            //add the cell data to the List
+                            if (dataRow[j].ToString() != null)
+                            {
+                                row.Columns.Add(new Column() { Index = j, Value = dataRow[j].ToString() });
+                            }
+                            else
+                            {
+                                row.Columns.Add(new Column() { Index = j, Value = "" });
+                            }
+                        }
+                        rowList.Add(row);
+                    }
+                }
+            }
+            return rowList;
+        }
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FileUploadAndValidation;
 using FileUploadAndValidation.FileReaderImpl;
+using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
 using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
@@ -15,49 +16,11 @@ namespace FileUploadApi.Services
     public class FirsWhtFileUploadService : IFileService
     {
         public FirsWhtFileUploadService()
-        { }
-
-        private static ColumnContract[] GetColumns()
-        {
-            return new[]
-            {
-                new ColumnContract{ ColumnName="ContractorName", DataType="string", Max=256, Required=true },
-                new ColumnContract{ ColumnName="ContractorAddress", DataType="string", Max=256, Required=true },
-                new ColumnContract{ ColumnName="ContractorTIN", DataType="string", Max=15, Required=true},
-                new ColumnContract{ ColumnName="ContractDescription", DataType="string", Max=100, Required=true},
-                new ColumnContract{ ColumnName="TransactionNature", DataType="string", Max=100, Required=true},
-                new ColumnContract{ ColumnName="TransactionDate", DataType="datetime", Required=true},
-                new ColumnContract{ ColumnName="TransactionInvoiceRefNo", DataType="string", Max=25, Required=true},
-                new ColumnContract{ ColumnName="CurrencyOfTransaction", DataType="string", Max=6, Required=true},
-                new ColumnContract{ ColumnName="InvoicedValue", DataType="decimal", Max=15, Required=true},
-                new ColumnContract{ ColumnName="ExchangeRateToNaira", DataType="decimal", Max=4, Required=true},
-                new ColumnContract{ ColumnName="InvoiceValueofTransaction", DataType="decimal", Max=15, Required=true},
-                new ColumnContract{ ColumnName="WVATRate", DataType="decimal", Max=4, Required=true},
-                new ColumnContract{ ColumnName="WVATValue", DataType="decimal", Max=12, Required=true},
-                new ColumnContract{ ColumnName="TaxAccountNumber", DataType="decimal", Max=20, Required=true}
-            };
+        { 
 
         }
 
-        private void ValidateHeader(Row headerRow)
-        {
-            if (headerRow == null)
-                throw new ArgumentException("Header row not found");
-
-            var expectedNumOfColumns = GetColumns().Count();
-            if (headerRow.Columns.Count() != expectedNumOfColumns)
-                throw new ArgumentException($"Invalid number of columns. Expected: {expectedNumOfColumns}, Found: {headerRow.Columns.Count()}");
-            
-            for(int i = 0; i < expectedNumOfColumns; i++)
-            {
-                var columnName = GetColumns()[i].ColumnName;
-                var headerRowColumn = headerRow.Columns[i].Value.ToString().Trim();
-                if (!headerRowColumn.ToLower().Contains(columnName.ToLower()))
-                    throw new ArgumentException($"Invalid header name. Expected: {columnName}, Found: {headerRowColumn}");
-            }
-        }
-
-        private UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
+        public UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
         {
             Console.WriteLine("Validating rows...");
 
@@ -78,14 +41,14 @@ namespace FileUploadApi.Services
             var errorMessage = "";
             var isValid = true;
 
-            for(var i = 0; i < GetColumns().Length; i++)
+            for(var i = 0; i < ContentTypeColumnContract.FirsWht().Length; i++)
             {
-                ColumnContract contract = GetColumns()[i];
+                ColumnContract contract = ContentTypeColumnContract.FirsWht()[i];
                 Column column = row.Columns[i];
 
                 try
                 {
-                    if (contract.Required && column.Value == null)
+                    if (contract.Required == true && column.Value == null)
                     {
                         errorMessage = "Value must be provided";
                     }
@@ -99,11 +62,11 @@ namespace FileUploadApi.Services
                     }
                     if (contract.DataType != default && column.Value != null)
                     {
-                        if (!DataTypes().ContainsKey(contract.DataType))
+                        if (!GenericHelpers.ColumnDataTypes().ContainsKey(contract.DataType))
                             errorMessage = "Specified data type is not supported";
                         try
                         {
-                            dynamic typedValue = Convert.ChangeType(column.Value, DataTypes()[contract.DataType]);
+                            dynamic typedValue = Convert.ChangeType(column.Value, GenericHelpers.ColumnDataTypes()[contract.DataType]);
                         }
                         catch (Exception)
                         {
@@ -138,19 +101,6 @@ namespace FileUploadApi.Services
             return isValid;
         }
 
-        private static Dictionary<string, Type> DataTypes()
-        {
-            return new Dictionary<string, Type>() {
-                { "string", typeof(string) },
-                { "integer", typeof(int) },
-                { "decimal", typeof(decimal) },
-                { "boolean", typeof(bool) },
-                { "datetime", typeof(DateTime) },
-                { "character", typeof(char) },
-                { "double", typeof(double) }
-            };
-        }
-
         public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             //var uploadResult = new UploadResult();
@@ -164,7 +114,7 @@ namespace FileUploadApi.Services
                 if (uploadOptions.ValidateHeaders)
                 {
                     headerRow = rows.First();
-                    ValidateHeader(headerRow);
+                    GenericHelpers.ValidateHeaderRow(headerRow, ContentTypeColumnContract.FirsWht());
                 }
 
                 var contentRows = uploadOptions.ValidateHeaders ? rows.Skip(1) : rows;
@@ -180,9 +130,9 @@ namespace FileUploadApi.Services
             }
         }
 
-        private Guid GenerateUniqueId()
+        private string GenerateUniqueId()
         {
-            return Guid.NewGuid();
+            return Guid.NewGuid().ToString() + "|" + DateTime.Now.ToString();
         }
 
         private Task<UploadResult> UploadToRemote(Row headerRow, IEnumerable<Row> contentRows, UploadResult uploadResult)
@@ -190,7 +140,7 @@ namespace FileUploadApi.Services
             return Task.FromResult(uploadResult);
         }
 
-        public Task SaveToDBForReporting(Guid scheduleId, byte[] contents)
+        public Task SaveRowsToDB(Guid scheduleId, byte[] contents)
         {
             throw new NotImplementedException();
         }
@@ -201,6 +151,16 @@ namespace FileUploadApi.Services
         }
 
         public Task UploadToNas(Guid scheduleId, byte[] contents, string contentType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SaveRowsToDB(string scheduleId, IEnumerable<Row> contents)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UploadToNas(string scheduleId, IEnumerable<Row> contents, string contentType)
         {
             throw new NotImplementedException();
         }

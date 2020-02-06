@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FilleUploadCore", "FilleUpl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileUploadApi", "FileUploadApi\FileUploadApi.csproj", "{13F5398A-929C-4FE3-AC4F-F83AAC017C92}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{5EF67129-055E-4B23-AEF9-98BAA9161469}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{5EF67129-055E-4B23-AEF9-98BAA9161469}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

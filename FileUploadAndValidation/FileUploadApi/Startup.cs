@@ -16,6 +16,7 @@ using FileUploadAndValidation.FileReaderImpl;
 using FilleUploadCore.FileReaders;
 using FileUploadApi.ApiServices;
 using FileUploadAndValidation.UploadServices;
+using FileUploadAndValidation.Utils;
 
 namespace FileUploadApi
 {
@@ -33,6 +34,7 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
+            services.AddSingleton<IAppConfig, AppConfig>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
             services.AddScoped<FirsWhtFileUploadService>();
             services.AddScoped<AutoPayFileService>();
@@ -56,9 +58,7 @@ namespace FileUploadApi
                 }
             });
 
-            // services.AddScoped<TxtFileReader>();
-            // services.AddScoped<CsvFileReader>();
-            services.AddScoped(typeof(ITxtCsvReader<>), typeof(TxtCsvFileReader<>));
+            services.AddScoped<TxtCsvFileReader>();
             services.AddScoped<XlsFileReader>();
             services.AddScoped<XlsxFileReader>();
             
@@ -66,10 +66,8 @@ namespace FileUploadApi
             {
                 switch (key)
                 {
-                    //case FileReaderTypeEnum.TXT:
-                    //    return serviceProvider.GetService<TxtFileReader>();
-                    //case FileReaderTypeEnum.CSV:
-                    //    return serviceProvider.GetService<CsvFileReader>();
+                    case FileReaderTypeEnum.TXT_CSV:
+                        return serviceProvider.GetService<TxtCsvFileReader>();
                     case FileReaderTypeEnum.XLS:
                         return serviceProvider.GetService<XlsFileReader>();
                     case FileReaderTypeEnum.XLSX:

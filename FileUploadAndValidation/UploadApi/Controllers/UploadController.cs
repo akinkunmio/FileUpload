@@ -21,13 +21,13 @@ namespace FileUploadApi.Controllers
     public class UploadController : ControllerBase
     {
         private readonly IApiUploadService _uploadService;
-      
+
 
         public UploadController(IApiUploadService uploadService)
         {
             _uploadService = uploadService;
         }
-       
+
         [HttpPost("multipartsfileupload")]
         public async Task<IActionResult> PostMultipartsFileUploadAsync()
         {
@@ -55,15 +55,15 @@ namespace FileUploadApi.Controllers
                     fileUploadResult = await _uploadService.UploadFileAsync(uploadOptions, FileTypes.TXT, fileStream.ToArray());
                 }
             }
-            else if(file.ContentType.Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
+            else if (file.ContentType.Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
             {
-                if(file.FileName.Split('.').Last().Equals("csv", StringComparison.InvariantCultureIgnoreCase))
+                if (file.FileName.Split('.').Last().Equals("csv", StringComparison.InvariantCultureIgnoreCase))
                     using (var fileStream = new MemoryStream())
                     {
                         file.CopyTo(fileStream);
                         fileUploadResult = await _uploadService.UploadFileAsync(uploadOptions, FileTypes.TXT, fileStream.ToArray());
                     }
-                else if(file.FileName.Split('.').Last().Equals("xls", StringComparison.InvariantCultureIgnoreCase))
+                else if (file.FileName.Split('.').Last().Equals("xls", StringComparison.InvariantCultureIgnoreCase))
                     using (var fileStream = new MemoryStream())
                     {
                         file.CopyTo(fileStream);
@@ -91,7 +91,7 @@ namespace FileUploadApi.Controllers
         [HttpGet("ping")]
         public IActionResult Get()
         {
-            return Ok(new string[] { "hello world", "this is upload service"});
+            return Ok(new string[] { "hello world", "this is upload service" });
         }
 
     }

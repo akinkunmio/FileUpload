@@ -10,11 +10,16 @@ namespace FilleUploadCore.Exceptions
     public class ValidationException : AppException
     {
         public ValidationException(ValidationError validationResult, string message = null)
-            : base(message ?? "Validation failed for the given row")
+            : base(message ?? "Validation failed")
         {
             ArgumentGuard.NotNull(validationResult, nameof(validationResult));
 
             ValidationError = validationResult;
+        }
+
+        public ValidationException(string message)
+            : base(message ?? "Validation failed")
+        {
         }
 
         public ValidationError ValidationError { get; set; }

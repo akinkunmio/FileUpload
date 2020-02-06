@@ -19,6 +19,12 @@ namespace FilleUploadCore.Exceptions
         {
         }
 
+        public AppException(string message, int? errorCode)
+           : base(message)
+        {
+            StatusCode = errorCode;
+        }
+
         public AppException(string message, string friendlyMessage)
             : base(message)
         {
@@ -31,6 +37,8 @@ namespace FilleUploadCore.Exceptions
         }
 
         public string FriendlyMessage { get; set; }
+
+        public int? StatusCode { get; set; }
     }
 
 }

@@ -10,27 +10,30 @@ using FilleUploadCore.Helpers;
 using FilleUploadCore.UploadManagers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
-using TinyCsvParser.Mapping;
-using static FileUploadAndValidation.Models.UploadResult;
+using System.Linq;
+using FileUploadApi.Models;
 
 namespace FileUploadApi.ApiServices
 {
     public class ApiUploadService : IApiUploadService
     {
-        private readonly ITxtCsvReader<FirsWhtsModel> _txtCsvReader;
+        private readonly IFileReader _txtCsvFileReader;
         private readonly IFileReader _xlsxFileReader;
         private readonly IFileReader _xlsFileReader;
         private readonly IFileService _firsWhtService;
         private readonly IFileService _autoPayService;
         private readonly IFileService _bulkBillPaymentService;
         private readonly IFileService _bulkSmsService;
+        private readonly IBillPaymentDbRepository _dbRepository;
 
         public ApiUploadService(Func<FileReaderTypeEnum, IFileReader> fileReader,
-            Func<FileServiceTypeEnum, IFileService> fileService,
-            ITxtCsvReader<FirsWhtsModel> txtCsvReader)
+            Func<FileServiceTypeEnum, IFileService> fileService, 
+            IBillPaymentDbRepository dbRepository)
         {
-            _txtCsvReader = txtCsvReader;
+            _dbRepository = dbRepository;
+            _txtCsvFileReader = fileReader(FileReaderTypeEnum.TXT_CSV);
             _xlsxFileReader = fileReader(FileReaderTypeEnum.XLSX);
             _xlsFileReader = fileReader(FileReaderTypeEnum.XLS);
             _firsWhtService = fileService(FileServiceTypeEnum.FirsWht);
@@ -39,101 +42,102 @@ namespace FileUploadApi.ApiServices
             _bulkBillPaymentService = fileService(FileServiceTypeEnum.BulkBillPayment);
         }
 
-        public async Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, FileTypes fileExtension, byte[] content)
+        public async Task<BatchFileSummaryDto> GetBatchFileSummary(string scheduleId, string userName)
         {
-            ArgumentGuard.NotNull(fileExtension, nameof(fileExtension));
+            BatchFileSummary batchFileSummary;
+            var batchFileSummaryDto = new BatchFileSummaryDto();
+            try
+            {
+                batchFileSummary = await _dbRepository.GetBatchFileSummary(scheduleId, userName);
+                batchFileSummaryDto = new BatchFileSummaryDto
+                {
+                    BatchId = batchFileSummary.BatchId,
+                    ContentType = batchFileSummary.ContentType,
+                    ItemType = batchFileSummary.ItemType,
+                    NumOfAllRecords = batchFileSummary.NumOfAllRecords,
+                    NumOfValidRecords = batchFileSummary.NumOfValidRecords,
+                    Status = batchFileSummary.Status,
+                    UploadDate = batchFileSummary.UploadDate
+                };
+            }
+            catch (Exception)
+            {
+
+            }
+            return batchFileSummaryDto;
+        }
+
+        public async Task<IEnumerable<BillPaymentStatus>> GetBillPaymentsStatus(string scheduleId, string userName)
+        {
+            var billPayments = new List<BillPayment>();
+            IEnumerable<BillPaymentStatus> billPaymentStatuses = default;
+
+            try
+            {
+                billPayments = await _dbRepository
+                    .GetBillPayments(scheduleId, userName);
+
+                billPaymentStatuses = billPayments
+                    .Select(p => new BillPaymentStatus 
+                    {
+                         ErrorResponse = p.EnterpriseErrorResponse,
+                         RowNumber = p.RowNumber,
+                         ReferenceId = p.EnterpriseReferenceId,
+                         Status = p.Status,
+                         UploadDate = p.CreatedDate
+                    });
+            }
+            catch(Exception)
+            {
+
+            }
+            return billPaymentStatuses;
+        }
+
+        public async Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream)
+        {
             IEnumerable<Row> rows = new List<Row>();
             var uploadResult = new UploadResult();
-            List<CsvMappingResult<FirsWhtsModel>> csvMappingResult;
-            uploadOptions.ContentType = "FIRS_WHT";
+
+            if(uploadOptions == null)
+                throw new AppException("Upload options must be set!.");
+
+            uploadOptions.ContentType = "BILLPAYMENT";
             uploadOptions.ValidateHeaders = true;
+
+            var fileExtension = Path.GetExtension(uploadOptions.FileName).Replace(".", string.Empty).ToLower();
 
             switch (fileExtension)
             {
-                case FileTypes.TXT:
-                    var mappedRows = new List<Row>();
-                    csvMappingResult = await _txtCsvReader.Read(content, new FirsWhtMapper());
-                    if (csvMappingResult.Exists(r => r.IsValid == false))
-                    {
-                        csvMappingResult.ForEach(row =>
-                        {
-                            uploadResult.ErrorMessage += row.Error.ToString() + Environment.NewLine;
-                            uploadResult.Failures = new List<Failure>
-                            {
-                                new Failure
-                                {
-                                   RowNumber = row.RowIndex,
-                                    
-                                }
-                            };
-                        });
-
-                        if (uploadOptions.ValidateAllRows)
-                        {
-                            return uploadResult;
-                        }
-                    }
-                    else
-                    {
-                        csvMappingResult.ForEach(r =>
-                        {
-                            if (r.IsValid)
-                            {
-                                mappedRows.Add(
-                                    new Row
-                                    {
-                                        Index = r.RowIndex,
-                                        Columns = new List<Column>
-                                        {
-                                                new Column{ Index = 0 , Value = r.Result.ContractorName },
-                                                new Column{ Index = 1 , Value = r.Result.ContractorAddress },
-                                                new Column{ Index = 2 , Value = r.Result.ContractorTIN },
-                                                new Column{ Index = 3 , Value = r.Result.ContractDescription },
-                                                new Column{ Index = 4 , Value = r.Result.TransactionNature },
-                                                new Column{ Index = 5 , Value = r.Result.TransactionDate },
-                                                new Column{ Index = 6 , Value = r.Result.TransactionInvoiceRefNo },
-                                                new Column{ Index = 7 , Value = r.Result.CurrencyOfTransaction },
-                                                new Column{ Index = 8 , Value = r.Result.InvoicedValue },
-                                                new Column{ Index = 9 , Value = r.Result.ExchangeRateToNaira },
-                                                new Column{ Index = 10 , Value = r.Result.InvoiceValueofTransaction },
-                                                new Column{ Index = 11 , Value = r.Result.WVATRate },
-                                                new Column{ Index = 12 , Value = r.Result.WVATValue },
-                                                new Column{ Index = 13 , Value = r.Result.TaxAccountNumber },
-                                        }
-                                    }
-                                );
-                            }
-                        });
-                        if (mappedRows.Count < 0 || mappedRows == null)
-                            return uploadResult;
-                        rows = mappedRows;
-                    }
+                case "txt":
+                case "csv":
+                    rows = _txtCsvFileReader.Read(stream);
                     break;
-                case FileTypes.XLSX:
-                    rows = _xlsxFileReader.Read(content);
+                case "xlsx":
+                    rows = _xlsxFileReader.Read(stream);
                     break;
-                case FileTypes.XLS:
-                    rows = _xlsFileReader.Read(content);
+                case "xls":
+                    rows = _xlsFileReader.Read(stream);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("File type not supported");
+                    throw new AppException("File extension not supported!.");
             }
 
-            switch (uploadOptions.ContentType.ToUpperInvariant())      {
-                case "FIRS_WHT":
-                    return await _firsWhtService.Upload(uploadOptions, rows, uploadResult);
-                case "AUTOPAY":
-                    return await _autoPayService.Upload(uploadOptions, rows, uploadResult);
-                case "BULKSMS":
-                    return await _bulkSmsService.Upload(uploadOptions, rows, uploadResult);
-                case "BULKBILLPAYMENT":
-                    return await _bulkBillPaymentService.Upload(uploadOptions, rows, uploadResult);
+            switch (uploadOptions.ContentType.ToLower())
+            {
+                case "firs_wht":
+                    return await _firsWhtService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                case "autopay":
+                    return await _autoPayService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                case "sms":
+                    return await _bulkSmsService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                case "billpayment":
+                    return await _bulkBillPaymentService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
                 default:
-                    throw new ArgumentOutOfRangeException("Content type not supported!.");
+                    throw new AppException("Content type not supported!.");
             }
         }
-    }
 
-    public enum FileTypes { XLS, XLSX, TXT, CSV }
+    }
 
 }

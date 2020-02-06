@@ -7,11 +7,10 @@ namespace FileUploadAndValidation.FileReaders
 {
     public class XlsxFileReader : IFileReader
     {
-        public IEnumerable<Row> Read(byte[] content)
+        public IEnumerable<Row> Read(Stream stream)
         {
             var rowList = new List<Row>();
 
-            using (var stream = new MemoryStream(content))
             using (ExcelPackage excelPackage = new ExcelPackage(stream))
             {
                 //loop all worksheets

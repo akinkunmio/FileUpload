@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FilleUploadCore.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace FilleUploadCore.Helpers
         {
             if (argument == null)
             {
-                throw new ArgumentNullException($"'{argumentName}' cannot be null");
+                throw new AppException($"'{argumentName}' cannot be null");
             }
         }
 
@@ -20,7 +21,7 @@ namespace FilleUploadCore.Helpers
         {
             if (value.Equals(default(T)))
             {
-                throw new ArgumentNullException($"'{argumentName}' needs to be set.");
+                throw new AppException($"'{argumentName}' needs to be set.");
             }
         }
 
@@ -28,7 +29,7 @@ namespace FilleUploadCore.Helpers
         {
             if (argument == null || !argument.Any())
             {
-                throw new ArgumentException($"'{argumentName}' cannot be null or empty");
+                throw new AppException($"'{argumentName}' cannot be null or empty");
             }
         }
 
@@ -36,7 +37,7 @@ namespace FilleUploadCore.Helpers
         {
             if (string.IsNullOrWhiteSpace(argument))
             {
-                throw new ArgumentException($"'{argumentName}' cannot be null or empty");
+                throw new AppException($"'{argumentName}' cannot be null or empty");
             }
         }
 
@@ -44,7 +45,7 @@ namespace FilleUploadCore.Helpers
         {
             if (argument == Guid.Empty)
             {
-                throw new ArgumentException($"'{argumentName}' cannot be an empty Guid");
+                throw new AppException($"'{argumentName}' cannot be an empty Guid");
             }
         }
 

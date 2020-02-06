@@ -42,9 +42,15 @@ namespace FilleUploadCore.UploadManagers
     {
         public bool ValidateHeaders { get; set; } = true;
 
-        public bool ValidateAllRows { get; set; }
-
         public string ContentType { get; set; }
 
+        public string FileName { get; set; }
+
+        public long FileSize { get; set; }
+
+        public string ItemType { get; set; }
+
+        public string UserName { get; set; }
+        public string AuthToken { get; set; }
     }
 }
