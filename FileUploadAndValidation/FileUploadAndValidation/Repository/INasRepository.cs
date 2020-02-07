@@ -13,13 +13,12 @@ namespace FileUploadAndValidation.Repository
         {
 
         }
-        public Task<string> SaveAsJsonFile(string batchId, IEnumerable<BillPayment> billPayments)
+
+        public Task<FileProperties> SaveAsJsonFile(string batchId, IEnumerable<BillPayment> billPayments)
         {
             throw new NotImplementedException();
         }
-
     }
-
     public interface INasRepository
     {
         Task<FileProperties> SaveAsJsonFile(string batchId, IEnumerable<BillPayment> billPayments);

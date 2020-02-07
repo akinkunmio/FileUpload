@@ -1,6 +1,7 @@
 ﻿namespace FileUploadAndValidation.UploadServices
 {
-    internal class TqSystemCodes
+    public class TqSystemCodes
     {
+
     }
 }

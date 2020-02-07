@@ -48,7 +48,7 @@ namespace FileUploadApi.ApiServices
             var batchFileSummaryDto = new BatchFileSummaryDto();
             try
             {
-                batchFileSummary = await _dbRepository.GetBatchFileSummary(scheduleId, userName);
+                batchFileSummary = await _dbRepository.GetBatchUploadSummary(scheduleId, userName);
                 batchFileSummaryDto = new BatchFileSummaryDto
                 {
                     BatchId = batchFileSummary.BatchId,
@@ -67,15 +67,15 @@ namespace FileUploadApi.ApiServices
             return batchFileSummaryDto;
         }
 
-        public async Task<IEnumerable<BillPaymentStatus>> GetBillPaymentsStatus(string scheduleId, string userName)
+        public async Task<IEnumerable<BillPaymentStatus>> GetBillPaymentsStatus(string batchId, string userName)
         {
-            var billPayments = new List<BillPayment>();
+            IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPaymentStatus> billPaymentStatuses = default;
 
             try
             {
                 billPayments = await _dbRepository
-                    .GetBillPayments(scheduleId, userName);
+                    .GetBillPayments(batchId, userName);
 
                 billPaymentStatuses = billPayments
                     .Select(p => new BillPaymentStatus 

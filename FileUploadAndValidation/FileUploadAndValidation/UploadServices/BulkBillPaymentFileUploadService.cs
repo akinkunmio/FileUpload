@@ -142,17 +142,6 @@ namespace FileUploadApi
                 var batchId = GenerateBatchId();
 
                 var dateTimeNow = DateTime.Now.ToString();
-                await _dbRepository.AddBatchFileInfo(
-                    new BatchFileSummary
-                    {
-                        BatchId = batchId,
-                        NumOfAllRecords = uploadResult.RowsCount,
-                        NumOfValidRecords = uploadResult.ValidRows.Count(),
-                        Status = GenericConstants.PendingValidation,
-                        UploadDate = dateTimeNow,
-                        CustomerFileName = uploadOptions.FileName
-                    });
-
                 if (uploadResult.ValidRows.Count() > 0 || uploadResult.ValidRows.Any())
                 {
                     billPayments = rows
@@ -167,11 +156,22 @@ namespace FileUploadApi
                             CreatedDate = dateTimeNow
                         });
                 }
+                await _dbRepository.CreateBatchPaymentUpload(
+                    new BatchFileSummary
+                    {
+                        BatchId = batchId,
+                        NumOfAllRecords = uploadResult.RowsCount,
+                        NumOfValidRecords = uploadResult.ValidRows.Count(),
+                        Status = GenericConstants.PendingValidation,
+                        UploadDate = dateTimeNow,
+                        CustomerFileName = uploadOptions.FileName
+                    }, billPayments.ToList());
+
 
                 var fileProperties = await _nasRepository.SaveAsJsonFile(batchId, billPayments);
 
                 var validateResponse = await _billPaymentService
-                    .ValidateBillRecords(fileProperties.fileName, fileProperties.fileLocation, uploadOptions.AuthToken);
+                    .ValidateBillRecords(fileProperties.FileName, fileProperties.FileLocation, uploadOptions.AuthToken);
 
                 uploadResult.ScheduleId = batchId;
                 return uploadResult;

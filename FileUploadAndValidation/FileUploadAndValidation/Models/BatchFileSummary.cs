@@ -5,6 +5,8 @@ namespace FileUploadApi
 {
     public class BatchFileSummary
     {
+        public int Id { get; set; }
+
         public string BatchId { get; set; }
 
         public string UploadDate { get; set; }
