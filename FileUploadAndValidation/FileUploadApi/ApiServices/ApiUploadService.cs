@@ -1,5 +1,4 @@
 ﻿using FileUploadAndValidation.FileReaderImpl;
-using FileUploadAndValidation.FileReaderImpl.CsvTxtMappers;
 using FileUploadAndValidation.FileReaders;
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation.UploadServices;
@@ -14,6 +13,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
 using FileUploadApi.Models;
+using FileUploadAndValidation.Helpers;
 
 namespace FileUploadApi.ApiServices
 {
@@ -103,11 +103,10 @@ namespace FileUploadApi.ApiServices
                 throw new AppException("Upload options must be set!.");
 
             uploadOptions.ContentType = "BILLPAYMENT";
-            uploadOptions.ValidateHeaders = true;
+            //uploadOptions.ValidateHeaders = true;
+            uploadOptions.ItemType = GenericConstants.BillPaymentIdPlusItem;
 
-            var fileExtension = Path.GetExtension(uploadOptions.FileName).Replace(".", string.Empty).ToLower();
-
-            switch (fileExtension)
+            switch (uploadOptions.fileExtension)
             {
                 case "txt":
                 case "csv":

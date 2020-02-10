@@ -47,7 +47,8 @@ namespace FileUploadApi.Controllers
                     FileName = fileName,
                     FileSize = file.Length,
                     AuthToken = HttpContext.Request.Headers["Authorization"],
-                    UserName = Request.Headers["userName"]
+                    UserName = Request.Headers["userName"],
+                    fileExtension = Path.GetExtension(file.FileName).Replace(".", string.Empty).ToLower()
                 };
 
                 using (var contentStream = file.OpenReadStream())
@@ -59,9 +60,9 @@ namespace FileUploadApi.Controllers
             {
                 return new ObjectResult(new { uploadResult, errorMessage = appEx.Message }) { StatusCode = appEx.StatusCode };
             }
-            catch(Exception)
+            catch(Exception ex)
             {
-                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!." });
+                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!."+ex.Message });
             }
             
             return Ok(uploadResult);

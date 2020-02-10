@@ -40,7 +40,7 @@ namespace FilleUploadCore.UploadManagers
 
     public class UploadOptions
     {
-        public bool ValidateHeaders { get; set; } = true;
+        public bool ValidateHeaders { get; set; }
 
         public string ContentType { get; set; }
 
@@ -51,6 +51,9 @@ namespace FilleUploadCore.UploadManagers
         public string ItemType { get; set; }
 
         public string UserName { get; set; }
+
         public string AuthToken { get; set; }
+
+        public string fileExtension { get; set; }
     }
 }

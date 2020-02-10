@@ -16,17 +16,17 @@ namespace FileUploadAndValidation.Utils
 
         public string UploadServiceConnectionString => _configuration["ConnectionStrings:UploadServiceConnectionString"];
         
-        public string NasFolderLocation => _configuration["AppSettings:NasFolderLocation"];
+        public string NasFolderLocation => _configuration["AppConfig:NasFolderLocation"];
 
-        public string BillPaymentTransactionServiceBaseUrl => _configuration["AppSettings:BillPaymentTransactionServiceBaseUrl"];
+        public string BillPaymentTransactionServiceBaseUrl => _configuration["AppConfig:BillPaymentTransactionServiceBaseUrl"];
 
-        public string ValidateQueueUrl =>  _configuration["AppSettings:ValidateQueueUrl"];
+        public string ValidateQueueUrl =>  _configuration["AppConfig:ValidateQueueUrl"];
 
-        public string ValidateQueueName => _configuration["AppSettings:ValidateQueueName"];  
+        public string ValidateQueueName => _configuration["AppConfig:ValidateQueueName"];  
 
-        public string QueuePassword => _configuration["AppSettings:QueuePassword"];
+        public string QueuePassword => _configuration["AppConfig:QueuePassword"];
 
-        public string QueueUsername => _configuration["AppSettings:QueueUsername"];
+        public string QueueUsername => _configuration["AppConfig:QueueUsername"];
     }
 
     public interface IAppConfig

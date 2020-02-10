@@ -9,7 +9,7 @@ namespace FileUploadApi.Services
 {
     public interface IFileService
     {
-        UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult);
+        Task<UploadResult> ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult);
 
         //Task SaveRowsToDB(string scheduleId, IEnumerable<Row> contents);
 
