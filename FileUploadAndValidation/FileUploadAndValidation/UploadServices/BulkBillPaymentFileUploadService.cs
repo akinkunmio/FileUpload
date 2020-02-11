@@ -22,13 +22,13 @@ namespace FileUploadApi
     public class BulkBillPaymentFileService : IFileService
     {
         private readonly IBillPaymentDbRepository _dbRepository;
-        //private readonly INasRepository _nasRepository;
+        private readonly INasRepository _nasRepository;
         private readonly IBillPaymentService _billPaymentService;
 
-        public BulkBillPaymentFileService(IBillPaymentDbRepository dbRepository/*, INasRepository nasRepository*/, IBillPaymentService billPaymentService)
+        public BulkBillPaymentFileService(IBillPaymentDbRepository dbRepository, INasRepository nasRepository, IBillPaymentService billPaymentService)
         {
             _dbRepository = dbRepository;
-           // _nasRepository = nasRepository;
+            _nasRepository = nasRepository;
             _billPaymentService = billPaymentService;
         }
 
@@ -36,12 +36,12 @@ namespace FileUploadApi
         {
             Console.WriteLine("Validating rows...");
 
-            contentRows.AsParallel().ForAll(async row =>
+            foreach (var row in contentRows)
             {
                 var isValidRow = await ValidateRow(row, uploadResult);
                 if (isValidRow)
                     uploadResult.ValidRows.Add(row.Index);
-            });
+            }
 
             return uploadResult;
         }
@@ -156,21 +156,21 @@ namespace FileUploadApi
                             CreatedDate = dateTimeNow
                         });
                 }
-                //await _dbRepository.CreateBatchPaymentUpload(
-                //    new BatchFileSummary
-                //    {
-                //        BatchId = batchId,
-                //        NumOfAllRecords = uploadResult.RowsCount,
-                //        NumOfValidRecords = uploadResult.ValidRows.Count(),
-                //        Status = GenericConstants.PendingValidation,
-                //        UploadDate = dateTimeNow,
-                //        CustomerFileName = uploadOptions.FileName
-                //    }, billPayments.ToList());
+                await _dbRepository.InsertPaymentUpload(
+                    new BatchFileSummary
+                    {
+                        BatchId = batchId,
+                        NumOfAllRecords = uploadResult.RowsCount,
+                        NumOfValidRecords = uploadResult.ValidRows.Count(),
+                        Status = GenericConstants.PendingValidation,
+                        UploadDate = dateTimeNow,
+                        CustomerFileName = uploadOptions.FileName
+                    }, billPayments.ToList());
 
 
-                //var fileProperties = await _nasRepository.SaveAsJsonFile(batchId, billPayments);
+                var fileProperties = await _nasRepository.SaveAsJsonFile(batchId, billPayments);
 
-              //  var validateResponse = await _billPaymentService
+                //  var validateResponse = await _billPaymentService
                 //    .ValidateBillRecords(fileProperties.FileName, fileProperties.FileLocation, uploadOptions.AuthToken);
 
                 uploadResult.ScheduleId = batchId;

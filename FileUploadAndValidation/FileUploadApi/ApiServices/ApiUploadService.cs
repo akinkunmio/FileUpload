@@ -125,13 +125,13 @@ namespace FileUploadApi.ApiServices
             switch (uploadOptions.ContentType.ToLower())
             {
                 case "firs_wht":
-                    return await _firsWhtService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                    return await _firsWhtService.Upload(uploadOptions, rows, uploadResult);
                 case "autopay":
-                    return await _autoPayService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                    return await _autoPayService.Upload(uploadOptions, rows, uploadResult);
                 case "sms":
-                    return await _bulkSmsService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                    return await _bulkSmsService.Upload(uploadOptions, rows, uploadResult);
                 case "billpayment":
-                    return await _bulkBillPaymentService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                    return await _bulkBillPaymentService.Upload(uploadOptions, rows, uploadResult);
                 default:
                     throw new AppException("Content type not supported!.");
             }

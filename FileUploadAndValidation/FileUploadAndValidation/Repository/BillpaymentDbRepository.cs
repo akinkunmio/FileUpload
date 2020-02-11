@@ -20,7 +20,7 @@ namespace FileUploadAndValidation.Repository
         {
             _appConfig = appConfig;
         }
-        public async Task<string> CreateBatchPaymentUpload(BatchFileSummary fileDetail, List<BillPayment> billPayments)
+        public async Task<string> InsertPaymentUpload(BatchFileSummary fileDetail, List<BillPayment> billPayments)
         {
             try
             {
@@ -33,7 +33,7 @@ namespace FileUploadAndValidation.Repository
                         try
                         {
                             //use automapper to map objects
-                            var transactionSummaryId = await connection.ExecuteScalarAsync(sql: "sp_add_bill_payment_batch_transaction_summary",
+                            var transactionSummaryId = await connection.ExecuteScalarAsync(sql: "sp_insert_bill_payment_transaction_summary",
                                param: new
                                {
                                    batch_id = fileDetail.BatchId,
@@ -42,8 +42,7 @@ namespace FileUploadAndValidation.Repository
                                    num_of_records = fileDetail.NumOfAllRecords,
                                    upload_date = fileDetail.UploadDate,
                                    uploaded_by = fileDetail.UploadedBy,
-                                   num_of_valid_records = fileDetail.NumOfValidRecords,
-                                   content_type = fileDetail.ContentType,
+                                   content_type = fileDetail.ContentType
                                },
                                transaction: sqlTransaction,
                                commandType: System.Data.CommandType.StoredProcedure);
@@ -51,22 +50,20 @@ namespace FileUploadAndValidation.Repository
 
                             foreach (var billPayment in billPayments)
                             {
-                                await connection.ExecuteAsync(sql: "sp_add_billpayments",
+                                await connection.ExecuteAsync(sql: "sp_insert_bill_payments",
                                     param: new
                                     {
                                         product_code = billPayment.ProductCode,
                                         item_code = billPayment.ItemCode,
                                         customer_id = billPayment.CustomerId,
                                         amount = billPayment.Amount,
-                                        batch_id = billPayment.BatchId,
-                                        ent_error_response = billPayment.EnterpriseErrorResponse,
-                                        ent_reference_id = billPayment.EnterpriseReferenceId,
-                                        status = billPayment.Status,
+                                        row_status = billPayment.Status,
                                         created_date = billPayment.CreatedDate,
-                                        modified_date = billPayment.ModifiedDate,
-                                        row_number = billPayment.RowNumber,
+                                        row_num = billPayment.RowNumber,
                                         transactions_summary_Id = transactionSummaryId
-                                    });
+                                    },
+                                    transaction: sqlTransaction,
+                                    commandType: System.Data.CommandType.StoredProcedure);
                             }
                             sqlTransaction.Commit();
                             return fileDetail.BatchId;
@@ -79,9 +76,9 @@ namespace FileUploadAndValidation.Repository
                     }
                 }
             }
-            catch (Exception exception) 
+            catch (Exception) 
             {
-                throw exception;
+                throw new AppException("An error occured while connecting to database!.", 500);
             }
         }
 
@@ -104,9 +101,9 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<IEnumerable<BillPayment>> GetBillPayments(long id)
         {
-                using (var conn = new SqlConnection(_appConfig.UploadServiceConnectionString))
+                using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
                 {
-                    var result = await conn.QueryAsync<BillPayment>(
+                    var result = await sqlConnection.QueryAsync<BillPayment>(
                         sql: @"sp_get_bill_payments",
                         param: new 
                         { 
@@ -176,9 +173,9 @@ namespace FileUploadAndValidation.Repository
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
+                    throw new AppException(ex.Message);
                 }
             }
             //if does not exist throw an error

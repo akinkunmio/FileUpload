@@ -7,7 +7,7 @@ namespace FileUploadApi
   
     public interface IBillPaymentDbRepository
     {
-        Task<string> CreateBatchPaymentUpload(BatchFileSummary fileDetail, List<BillPayment> billPayments);
+        Task<string> InsertPaymentUpload(BatchFileSummary fileDetail, List<BillPayment> billPayments);
 
         Task<BatchFileSummary> GetBatchUploadSummary(string batchId, string userName);
 
