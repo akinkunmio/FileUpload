@@ -40,7 +40,7 @@ namespace FileUploadApi
             throw new NotImplementedException();
         }
 
-        public UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
+        public Task<UploadResult> ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
         {
             throw new NotImplementedException();
         }

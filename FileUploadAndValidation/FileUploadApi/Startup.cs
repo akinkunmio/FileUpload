@@ -17,6 +17,7 @@ using FilleUploadCore.FileReaders;
 using FileUploadApi.ApiServices;
 using FileUploadAndValidation.UploadServices;
 using FileUploadAndValidation.Utils;
+using FileUploadAndValidation.Repository;
 
 namespace FileUploadApi
 {
@@ -35,24 +36,27 @@ namespace FileUploadApi
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             services.AddSingleton<IAppConfig, AppConfig>();
+            services.AddHttpClient<IBillPaymentService, BillPaymentService>();
+            services.AddScoped<IBillPaymentDbRepository, BillPaymentRepository>();
+            services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
-            services.AddScoped<FirsWhtFileUploadService>();
+            services.AddScoped<FirsWhtFileService>();
             services.AddScoped<AutoPayFileService>();
-            services.AddScoped<BulkSmsFileUploadService>();
-            services.AddScoped<BulkBillPaymentFileUploadService>();
+            services.AddScoped<BulkSmsFileService>();
+            services.AddScoped<BulkBillPaymentFileService>();
 
             services.AddTransient<Func<FileServiceTypeEnum, IFileService>>(serviceProvider => key => 
             {
                 switch (key)
                 {
                     case FileServiceTypeEnum.FirsWht:
-                        return serviceProvider.GetService<FirsWhtFileUploadService>();
+                        return serviceProvider.GetService<FirsWhtFileService>();
                     case FileServiceTypeEnum.AutoPay:
                         return serviceProvider.GetService<AutoPayFileService>();
                     case FileServiceTypeEnum.BulkSMS:
-                        return serviceProvider.GetService<BulkSmsFileUploadService>();
+                        return serviceProvider.GetService<BulkSmsFileService>();
                     case FileServiceTypeEnum.BulkBillPayment:
-                        return serviceProvider.GetService<BulkBillPaymentFileUploadService>();
+                        return serviceProvider.GetService<BulkBillPaymentFileService>();
                     default:
                         return null;
                 }
@@ -83,7 +87,7 @@ namespace FileUploadApi
 
                 config.OperationFilter<FormFileSwaggerFilter>();
             });
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2).AddViewComponentsAsServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

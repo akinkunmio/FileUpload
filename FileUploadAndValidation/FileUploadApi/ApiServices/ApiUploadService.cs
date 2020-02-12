@@ -1,5 +1,4 @@
 ﻿using FileUploadAndValidation.FileReaderImpl;
-using FileUploadAndValidation.FileReaderImpl.CsvTxtMappers;
 using FileUploadAndValidation.FileReaders;
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation.UploadServices;
@@ -14,6 +13,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
 using FileUploadApi.Models;
+using FileUploadAndValidation.Helpers;
 
 namespace FileUploadApi.ApiServices
 {
@@ -48,7 +48,7 @@ namespace FileUploadApi.ApiServices
             var batchFileSummaryDto = new BatchFileSummaryDto();
             try
             {
-                batchFileSummary = await _dbRepository.GetBatchFileSummary(scheduleId, userName);
+                batchFileSummary = await _dbRepository.GetBatchUploadSummary(scheduleId, userName);
                 batchFileSummaryDto = new BatchFileSummaryDto
                 {
                     BatchId = batchFileSummary.BatchId,
@@ -67,15 +67,15 @@ namespace FileUploadApi.ApiServices
             return batchFileSummaryDto;
         }
 
-        public async Task<IEnumerable<BillPaymentStatus>> GetBillPaymentsStatus(string scheduleId, string userName)
+        public async Task<IEnumerable<BillPaymentStatus>> GetBillPaymentsStatus(string batchId, string userName)
         {
-            var billPayments = new List<BillPayment>();
+            IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPaymentStatus> billPaymentStatuses = default;
 
             try
             {
                 billPayments = await _dbRepository
-                    .GetBillPayments(scheduleId, userName);
+                    .GetBillPayments(batchId, userName);
 
                 billPaymentStatuses = billPayments
                     .Select(p => new BillPaymentStatus 
@@ -103,11 +103,10 @@ namespace FileUploadApi.ApiServices
                 throw new AppException("Upload options must be set!.");
 
             uploadOptions.ContentType = "BILLPAYMENT";
-            uploadOptions.ValidateHeaders = true;
+            //uploadOptions.ValidateHeaders = true;
+            uploadOptions.ItemType = GenericConstants.BillPaymentIdPlusItem;
 
-            var fileExtension = Path.GetExtension(uploadOptions.FileName).Replace(".", string.Empty).ToLower();
-
-            switch (fileExtension)
+            switch (uploadOptions.fileExtension)
             {
                 case "txt":
                 case "csv":
@@ -126,13 +125,13 @@ namespace FileUploadApi.ApiServices
             switch (uploadOptions.ContentType.ToLower())
             {
                 case "firs_wht":
-                    return await _firsWhtService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                    return await _firsWhtService.Upload(uploadOptions, rows, uploadResult);
                 case "autopay":
-                    return await _autoPayService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                    return await _autoPayService.Upload(uploadOptions, rows, uploadResult);
                 case "sms":
-                    return await _bulkSmsService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                    return await _bulkSmsService.Upload(uploadOptions, rows, uploadResult);
                 case "billpayment":
-                    return await _bulkBillPaymentService.Upload(uploadOptions: uploadOptions, rows: rows, uploadResult: uploadResult);
+                    return await _bulkBillPaymentService.Upload(uploadOptions, rows, uploadResult);
                 default:
                     throw new AppException("Content type not supported!.");
             }

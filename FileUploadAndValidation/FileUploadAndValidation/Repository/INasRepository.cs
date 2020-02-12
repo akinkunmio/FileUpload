@@ -1,4 +1,6 @@
 ﻿using FileUploadAndValidation.Models;
+using FileUploadAndValidation.Utils;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,17 +11,25 @@ namespace FileUploadAndValidation.Repository
 {
     public class NasRepository : INasRepository
     {
-        public NasRepository()
+        private readonly IAppConfig _appConfig;
+        public NasRepository(IAppConfig appConfig)
         {
-
-        }
-        public Task<string> SaveAsJsonFile(string batchId, IEnumerable<BillPayment> billPayments)
-        {
-            throw new NotImplementedException();
+            _appConfig = appConfig;
         }
 
+        public Task<FileProperties> SaveAsJsonFile(string batchId, IEnumerable<BillPayment> billPayments)
+        {
+            var fileLocation = $"{_appConfig.NasFolderLocation}/Validated";
+            var fileName = $"validate_{batchId}.json";
+            // serialize JSON directly to a file
+            using (StreamWriter file = File.CreateText($"{fileLocation}{fileName}"))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, billPayments);
+            }
+            return Task.FromResult(new FileProperties { FileLocation = fileLocation, FileName = fileName });
+        }
     }
-
     public interface INasRepository
     {
         Task<FileProperties> SaveAsJsonFile(string batchId, IEnumerable<BillPayment> billPayments);

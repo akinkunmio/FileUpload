@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.UploadServices
 {
-    public class BillPaymentService : IPaymentService
+    public class BillPaymentService : IBillPaymentService
     {
         private readonly HttpClient _httpClient;
         private readonly IAppConfig _appConfig;
@@ -23,7 +23,7 @@ namespace FileUploadAndValidation.UploadServices
             _httpClient = httpClient;
 
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri(_appConfig.BillPaymentTransactionServiceBaseUrl);
+            _httpClient.BaseAddress = new Uri(appConfig.BillPaymentTransactionServiceBaseUrl);
             _httpClient.DefaultRequestHeaders
                 .Accept
                 .Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -63,7 +63,7 @@ namespace FileUploadAndValidation.UploadServices
         }
     }
 
-    public interface IPaymentService
+    public interface IBillPaymentService
     {
         Task<ValidationResponse> ValidateBillRecords(string fileName, string filePath, string authToken);
     }

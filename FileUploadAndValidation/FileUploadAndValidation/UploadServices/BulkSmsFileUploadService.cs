@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FileUploadApi
 {
-    public class BulkSmsFileUploadService : IFileService
+    public class BulkSmsFileService : IFileService
     {
         public Task SaveRowsToDB(Guid scheduleId, byte[] contents)
         {
@@ -30,17 +30,8 @@ namespace FileUploadApi
             throw new System.NotImplementedException();
         }
 
-        public Task UploadToNas(Guid scheduleId, byte[] contents, string contentType)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UploadToNas(string scheduleId, IEnumerable<Row> contents, string contentType)
-        {
-            throw new NotImplementedException();
-        }
-
-        public UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
+      
+        public async Task<UploadResult> ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
         {
             throw new NotImplementedException();
         }

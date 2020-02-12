@@ -13,14 +13,14 @@ using static FileUploadAndValidation.Models.UploadResult;
 
 namespace FileUploadApi.Services
 {
-    public class FirsWhtFileUploadService : IFileService
+    public class FirsWhtFileService : IFileService
     {
-        public FirsWhtFileUploadService()
+        public FirsWhtFileService()
         { 
 
         }
 
-        public UploadResult ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
+        public async Task<UploadResult> ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
         {
             Console.WriteLine("Validating rows...");
 
@@ -119,7 +119,7 @@ namespace FileUploadApi.Services
 
                 var contentRows = uploadOptions.ValidateHeaders ? rows.Skip(1) : rows;
 
-                uploadResult = ValidateContent(contentRows, uploadResult);
+                uploadResult = await ValidateContent(contentRows, uploadResult);
                 uploadResult.ScheduleId = GenerateUniqueId();
                 return await UploadToRemote(headerRow, contentRows, uploadResult);
             }

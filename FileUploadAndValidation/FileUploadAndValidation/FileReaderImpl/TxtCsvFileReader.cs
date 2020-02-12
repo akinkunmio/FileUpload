@@ -17,40 +17,45 @@ namespace FileUploadAndValidation.FileReaderImpl
         {
             var rowList = new List<Row>();
 
-            using (FromBase64Transform tr = new FromBase64Transform(FromBase64TransformMode.IgnoreWhiteSpaces))
-            using (CryptoStream cs = new CryptoStream(stream, tr, CryptoStreamMode.Read))
-            using (StreamReader sr = new StreamReader(cs, Encoding.UTF8))
+            using (StreamReader sr = new StreamReader(stream))
             using (var csv = new CsvReader(sr, CultureInfo.InvariantCulture))
             {
                 // Do any configuration to `CsvReader` before creating CsvDataReader.
-                using (var dr = new CsvDataReader(csv))
+                try
                 {
-                    var dataTable = new DataTable();
-                    dataTable.Load(dr);
-
-                    for (int i = 0; i < dataTable.Rows.Count; i++)
+                    using (var dr = new CsvDataReader(csv))
                     {
-                        var row = new Row()
+                        var dataTable = new DataTable();
+                        dataTable.Load(dr);
+
+                        for (int i = 0; i < dataTable.Rows.Count; i++)
                         {
-                            Index = i + 1,
-                            Columns = new List<Column>()
-                        };
-                        DataRow dataRow = dataTable.Rows[i];
-                        //loop all columns in a row
-                        for (int j = 0; j < dataTable.Columns.Count; j++)
-                        {
-                            //add the cell data to the List
-                            if (dataRow[j].ToString() != null)
+                            var row = new Row()
                             {
-                                row.Columns.Add(new Column() { Index = j, Value = dataRow[j].ToString() });
-                            }
-                            else
+                                Index = i + 1,
+                                Columns = new List<Column>()
+                            };
+                            DataRow dataRow = dataTable.Rows[i];
+                            //loop all columns in a row
+                            for (int j = 0; j < dataTable.Columns.Count; j++)
                             {
-                                row.Columns.Add(new Column() { Index = j, Value = "" });
+                                //add the cell data to the List
+                                if (dataRow[j].ToString() != null)
+                                {
+                                    row.Columns.Add(new Column() { Index = j, Value = dataRow[j].ToString() });
+                                }
+                                else
+                                {
+                                    row.Columns.Add(new Column() { Index = j, Value = "" });
+                                }
                             }
+                            rowList.Add(row);
                         }
-                        rowList.Add(row);
                     }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
                 }
             }
             return rowList;
