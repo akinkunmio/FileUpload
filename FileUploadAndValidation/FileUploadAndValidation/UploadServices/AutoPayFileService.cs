@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FileUploadApi
 {
-    public class AutoPayFileService : IFileService
+    public class AutoPayFileService
     {
         public Task SaveRowsToDB(Guid scheduleId, byte[] contents)
         {
@@ -41,6 +41,11 @@ namespace FileUploadApi
         }
 
         public Task<UploadResult> ValidateContent(IEnumerable<Row> contentRows, UploadResult uploadResult)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows)
         {
             throw new NotImplementedException();
         }

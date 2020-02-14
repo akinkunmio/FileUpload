@@ -1,15 +1,75 @@
 ﻿
 IF (OBJECT_ID('sp_insert_bill_payments') IS NOT NULL)
 BEGIN
-	DROP PROCEDURE usp_fetch_saved_payment_collections_by_business
+	DROP PROCEDURE sp_insert_bill_payments
 END
 GO
 
 
 IF (OBJECT_ID('sp_insert_bill_payment_transaction_summary') IS NOT NULL)
 BEGIN
-	DROP PROCEDURE usp_fetch_saved_payments_by_collection
+	DROP PROCEDURE sp_insert_bill_payment_transaction_summary
 END
+GO
+
+
+IF (OBJECT_ID('sp_get_batch_upload_summary_by_batch_id') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_get_batch_upload_summary_by_batch_id
+END
+GO
+
+IF (OBJECT_ID('sp_get_bill_payments_by_transactions_summary_id') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_get_bill_payments_by_transactions_summary_id
+END
+GO
+
+
+IF (OBJECT_ID('sp_update_bill_payment_upload_summary') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_update_bill_payment_upload_summary
+END
+GO
+
+IF (OBJECT_ID('sp_update_bill_payments') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_update_bill_payments
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_by_batch_id]
+@batch_id NVARCHAR (100)
+AS
+	SELECT * FROM tbl_transactions_summary WHERE batch_id = @batch_id;
+GO
+
+CREATE PROCEDURE [dbo].[sp_get_bill_payments_by_transactions_summary_id]
+@transactions_summary_id bigint
+AS
+	SELECT * FROM tbl_bill_payment_transactions_detail WHERE transactions_summary_id = @transactions_summary_id;
+GO
+
+CREATE PROCEDURE [dbo].[sp_update_bill_payment_upload_summary]
+@Id Bigint,
+@batch_id  NVARCHAR (256),
+@num_of_valid_records INT,
+@status NVARCHAR (50),
+@modified_date NVARCHAR (50),
+@nas_tovalidate_file NVARCHAR(MAX)
+AS
+	UPDATE tbl_transactions_summary SET num_of_valid_records=@num_of_valid_records, transaction_status=@status, modified_date=@modified_date, nas_tovalidate_file=@nas_tovalidate_file 
+	WHERE batch_id=@batch_id select @Id=@@IDENTITY;
+GO
+
+CREATE PROCEDURE [dbo].[sp_update_bill_payments]
+@transactions_summary_id BIGINT,
+@error NVARCHAR (256),
+@row_num INT,
+@row_status NVARCHAR (50)
+AS
+	UPDATE tbl_bill_payment_transactions_detail SET error=@error, row_num=@row_num, row_status=@row_status
+	WHERE transactions_summary_id=@transactions_summary_id;
 GO
 
 CREATE PROCEDURE [dbo].[sp_insert_bill_payment_transaction_summary]
@@ -18,11 +78,10 @@ CREATE PROCEDURE [dbo].[sp_insert_bill_payment_transaction_summary]
 @item_type nvarchar(50),
 @num_of_records int,
 @upload_date nvarchar(50),
-@uploaded_by nvarchar(256),
 @content_type nvarchar(256)
 AS
-	INSERT INTO tbl_transactions_summary(batch_id,transaction_status,item_type,num_of_records,upload_date,uploaded_by,content_type) 
-VALUES(@batch_id,@status,@item_type,@num_of_records,@upload_date,@uploaded_by,@content_type) SELECT SCOPE_IDENTITY();
+	INSERT INTO tbl_transactions_summary(batch_id,transaction_status,item_type,num_of_records,upload_date,content_type) 
+VALUES(@batch_id,@status,@item_type,@num_of_records,@upload_date,@content_type) SELECT SCOPE_IDENTITY();
 GO
 
 CREATE PROCEDURE [dbo].[sp_insert_bill_payments]

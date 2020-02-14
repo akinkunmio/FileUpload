@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using FileUploadApi.Models;
 using FileUploadAndValidation.Helpers;
+using FileUploadAndValidation.Repository;
+using FileUploadApi.Controllers;
 
 namespace FileUploadApi.ApiServices
 {
@@ -27,10 +29,12 @@ namespace FileUploadApi.ApiServices
         private readonly IFileService _bulkBillPaymentService;
         private readonly IFileService _bulkSmsService;
         private readonly IBillPaymentDbRepository _dbRepository;
+        private readonly INasRepository _nasRepository;
 
         public ApiUploadService(Func<FileReaderTypeEnum, IFileReader> fileReader,
             Func<FileServiceTypeEnum, IFileService> fileService, 
-            IBillPaymentDbRepository dbRepository)
+            IBillPaymentDbRepository dbRepository,
+            INasRepository nasRepository)
         {
             _dbRepository = dbRepository;
             _txtCsvFileReader = fileReader(FileReaderTypeEnum.TXT_CSV);
@@ -40,56 +44,33 @@ namespace FileUploadApi.ApiServices
             _autoPayService = fileService(FileServiceTypeEnum.AutoPay);
             _bulkSmsService = fileService(FileServiceTypeEnum.BulkSMS);
             _bulkBillPaymentService = fileService(FileServiceTypeEnum.BulkBillPayment);
+            _nasRepository = nasRepository;
         }
 
-        public async Task<BatchFileSummaryDto> GetBatchFileSummary(string scheduleId, string userName)
+        public async Task<BatchFileSummaryDto> GetFileSummary(string batchId)
         {
-            BatchFileSummary batchFileSummary;
-            var batchFileSummaryDto = new BatchFileSummaryDto();
+            BatchFileSummaryDto batchFileSummaryDto;
             try
             {
-                batchFileSummary = await _dbRepository.GetBatchUploadSummary(scheduleId, userName);
-                batchFileSummaryDto = new BatchFileSummaryDto
-                {
-                    BatchId = batchFileSummary.BatchId,
-                    ContentType = batchFileSummary.ContentType,
-                    ItemType = batchFileSummary.ItemType,
-                    NumOfAllRecords = batchFileSummary.NumOfAllRecords,
-                    NumOfValidRecords = batchFileSummary.NumOfValidRecords,
-                    Status = batchFileSummary.Status,
-                    UploadDate = batchFileSummary.UploadDate
-                };
+                batchFileSummaryDto = await _bulkBillPaymentService.GetBatchUploadSummary(batchId);
             }
             catch (Exception)
             {
-
+                throw;
             }
             return batchFileSummaryDto;
         }
 
-        public async Task<IEnumerable<BillPaymentStatus>> GetBillPaymentsStatus(string batchId, string userName)
+        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId)
         {
-            IEnumerable<BillPayment> billPayments = new List<BillPayment>();
-            IEnumerable<BillPaymentStatus> billPaymentStatuses = default;
-
+            IEnumerable<BillPaymentRowStatus> billPaymentStatuses;
             try
             {
-                billPayments = await _dbRepository
-                    .GetBillPayments(batchId, userName);
-
-                billPaymentStatuses = billPayments
-                    .Select(p => new BillPaymentStatus 
-                    {
-                         ErrorResponse = p.EnterpriseErrorResponse,
-                         RowNumber = p.RowNumber,
-                         ReferenceId = p.EnterpriseReferenceId,
-                         Status = p.Status,
-                         UploadDate = p.CreatedDate
-                    });
+                billPaymentStatuses = await _bulkBillPaymentService.GetBillPaymentResults(batchId);
             }
-            catch(Exception)
+            catch (Exception)
             {
-
+                throw;
             }
             return billPaymentStatuses;
         }
@@ -105,8 +86,13 @@ namespace FileUploadApi.ApiServices
             uploadOptions.ContentType = "BILLPAYMENT";
             //uploadOptions.ValidateHeaders = true;
             uploadOptions.ItemType = GenericConstants.BillPaymentIdPlusItem;
+            var batchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
-            switch (uploadOptions.fileExtension)
+            uploadResult.BatchId = batchId;
+
+            uploadOptions.NasFileLocation = await _nasRepository.SaveRawFile(batchId, stream, uploadOptions.FileExtension);
+
+            switch (uploadOptions.FileExtension)
             {
                 case "txt":
                 case "csv":
@@ -135,6 +121,7 @@ namespace FileUploadApi.ApiServices
                 default:
                     throw new AppException("Content type not supported!.");
             }
+            
         }
 
     }

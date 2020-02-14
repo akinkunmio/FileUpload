@@ -16,11 +16,13 @@ namespace FileUploadAndValidation.Repository
     public class BillPaymentRepository : IBillPaymentDbRepository
     {
         private readonly IAppConfig _appConfig;
+
         public BillPaymentRepository(IAppConfig appConfig)
         {
             _appConfig = appConfig;
         }
-        public async Task<string> InsertPaymentUpload(BatchFileSummary fileDetail, List<BillPayment> billPayments)
+
+        public async Task<string> InsertPaymentUpload(UploadSummaryDto fileDetail, List<BillPayment> billPayments)
         {
             try
             {
@@ -41,7 +43,6 @@ namespace FileUploadAndValidation.Repository
                                    item_type = fileDetail.ItemType,
                                    num_of_records = fileDetail.NumOfAllRecords,
                                    upload_date = fileDetail.UploadDate,
-                                   uploaded_by = fileDetail.UploadedBy,
                                    content_type = fileDetail.ContentType
                                },
                                transaction: sqlTransaction,
@@ -76,22 +77,21 @@ namespace FileUploadAndValidation.Repository
                     }
                 }
             }
-            catch (Exception) 
+            catch (Exception)
             {
                 throw new AppException("An error occured while connecting to database!.", 500);
             }
         }
 
-        public async Task<BatchFileSummary> GetBatchUploadSummary(string batchId, string userName)
+        public async Task<BatchFileSummary> GetBatchUploadSummary(string batchId)
         {
             using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
                 var batchFileSummary = await sqlConnection.QueryFirstOrDefaultAsync<BatchFileSummary>(
-                    sql: @"sp_get_batch_upload_summary",
+                    sql: @"sp_get_batch_upload_summary_by_batch_id",
                     param: new 
                     { 
-                        batchId, 
-                        userName 
+                        batch_id = batchId
                     }, 
                     commandType: CommandType.StoredProcedure);
 
@@ -106,8 +106,8 @@ namespace FileUploadAndValidation.Repository
                     var result = await sqlConnection.QueryAsync<BillPayment>(
                         sql: @"sp_get_bill_payments",
                         param: new 
-                        { 
-                            id 
+                        {
+                            transactions_summary_id = id
                         }, 
                         commandType: CommandType.StoredProcedure);
 
@@ -115,12 +115,12 @@ namespace FileUploadAndValidation.Repository
                 }
         }
 
-        public Task<IEnumerable<BillPayment>> GetBillPayments(string batchId, string userName)
+        public Task<IEnumerable<BillPayment>> GetBillPayments(string batchId)
         {
             throw new NotImplementedException();
         }
 
-        public async Task UpdateBatchUpload(UpdateBillPaymentsCollection updateBillPayments)
+        public async Task UpdateValidationResponse(UpdateValidationResponseModel updateBillPayments)
         {
             //get batchfilesummary from db 
             using (var connection = new SqlConnection(_appConfig.UploadServiceConnectionString))
@@ -128,38 +128,39 @@ namespace FileUploadAndValidation.Repository
                 connection.Open();
                 try
                 {
-                    BatchFileSummary fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId, updateBillPayments.UserName);
+                    var fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId);
                     if (fileSummary == null)
                         throw new AppException($"Upload with Batch Id {updateBillPayments.BatchId} not found!.");
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
                         try
                         {
-                            await connection.ExecuteAsync(
+
+
+                            var summaryId =  await connection.ExecuteScalarAsync(
                                 sql: "sp_update_bill_payment_upload_summary",
                                 param: new
                                 {
-                                    id = fileSummary.Id,
-                                    user_name = updateBillPayments.UserName,
-                                    batch_id = updateBillPayments.BatchId,
+                                    batch_id = fileSummary.BatchId,
+                                    num_of_valid_records = updateBillPayments.NumOfValidRecords,
                                     status = updateBillPayments.Status,
                                     modified_date = updateBillPayments.ModifiedDate,
-                                    nas_validated_file_name = updateBillPayments.NasValidatedFileName,
-                                    nas_confirmed_file_name = updateBillPayments.NasConfirmedFileName,
+                                    nas_tovalidate_file = updateBillPayments.NasToValidateFile
                                 },
                             commandType: CommandType.StoredProcedure,
                             transaction: sqlTransaction);
 
-                            foreach(var billPayment in updateBillPayments.BillPayments)
+                            foreach(var status in updateBillPayments.RowStatuses)
                             {
 
                                 await connection.ExecuteAsync(
-                                    sql: "sp_update_bill_payment",
+                                    sql: "sp_update_bill_payments",
                                     param: new
                                     {
-                                        modified_date = billPayment.ModifiedDate,
-                                        status = billPayment.Status,
-                                        transactions_summary_id = fileSummary.Id
+                                        transactions_summary_id = summaryId,
+                                        error = status.Error,
+                                        row_num = status.Row,
+                                        row_status = status.Status
                                     },
                                     commandType: CommandType.StoredProcedure,
                                     transaction: sqlTransaction);
@@ -181,6 +182,11 @@ namespace FileUploadAndValidation.Repository
             //if does not exist throw an error
             //then 
             //update batchfilesummary and all transactions
+        }
+
+        public Task UpdateValidationResponse(string batchId, IEnumerable<RowValidationStatus> validationStatuses)
+        {
+            throw new NotImplementedException();
         }
     }
 }

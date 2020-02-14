@@ -18,9 +18,7 @@ namespace FileUploadAndValidation.Models
 
         public int RowNumber { get; set; }
 
-        public string EnterpriseErrorResponse { get; set; }
-
-        public string EnterpriseReferenceId { get; set; }
+        public string Error { get; set; }
 
         public string Status { get; set; }
 

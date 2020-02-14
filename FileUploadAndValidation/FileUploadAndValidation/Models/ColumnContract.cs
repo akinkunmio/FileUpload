@@ -10,6 +10,5 @@ namespace FileUploadAndValidation
         public string DataType { get; set; }
         public int? Min { get; set; }
         public int? Max { get; set; }
-        public IEnumerable<ValidationTypes> ValidationTypes { get; set; }
     }
 }

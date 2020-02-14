@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
 using System;
 using System.Collections.Generic;
@@ -53,9 +54,9 @@ namespace FileUploadAndValidation.FileReaderImpl
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    throw ex;
+                    throw new AppException("An error occured while extracting content of file!.");
                 }
             }
             return rowList;

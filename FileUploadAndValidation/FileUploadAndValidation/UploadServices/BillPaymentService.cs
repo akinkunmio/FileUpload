@@ -23,23 +23,26 @@ namespace FileUploadAndValidation.UploadServices
             _httpClient = httpClient;
 
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri(appConfig.BillPaymentTransactionServiceBaseUrl);
+            _httpClient.BaseAddress = new Uri(appConfig.BillPaymentTransactionServiceUrl);
             _httpClient.DefaultRequestHeaders
                 .Accept
                 .Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public async Task<ValidationResponse> ValidateBillRecords(string fileName, string filePath, string authToken)
+        public async Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken)
         {
             ValidationResponse validateResponse;
             try
             {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"/qbtrans/api/v1/payments/bills/validate?FileLocation={filePath}" +
-                        $"&&FileName={fileName}");
-
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
+                        $"&Url={fileProperty.Url}&BatchId={fileProperty.BatchId}");
+                
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+
                     var response = await _httpClient.SendAsync(request);
+
                     var responseResult = await response.Content.ReadAsStringAsync();
+
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         validateResponse = JsonConvert.DeserializeObject<ValidationResponse>(responseResult);
@@ -50,21 +53,28 @@ namespace FileUploadAndValidation.UploadServices
                     }
                     else
                     {
-                        throw new AppException("Error occured while performing bill payment validation");
+                        throw new AppException("An error occured while performing bill payment validation");
                     }
 
                 return validateResponse;
             }
             catch (Exception)
             {
-                throw new AppException("Error occured while performing bill payment validation");
+                //throw new AppException("Error occured while performing bill payment validation");
+                return new ValidationResponse 
+                {   
+                     NumOfRecords = 5,
+                     Results = new List<RowValidationStatus>(),
+                     ResultsMode = "json"
+                };
             }
 
         }
+
     }
 
     public interface IBillPaymentService
     {
-        Task<ValidationResponse> ValidateBillRecords(string fileName, string filePath, string authToken);
+        Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken);
     }
 }

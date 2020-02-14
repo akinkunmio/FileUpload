@@ -1,4 +1,5 @@
 ﻿using FileUploadAndValidation.Models;
+using FileUploadApi.Controllers;
 using FileUploadApi.Models;
 using FilleUploadCore.UploadManagers;
 using System.Collections.Generic;
@@ -11,8 +12,8 @@ namespace FileUploadApi.ApiServices
     {
         Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream);
 
-        Task<IEnumerable<BillPaymentStatus>> GetBillPaymentsStatus(string scheduleId, string userName);
+        Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId);
 
-        Task<BatchFileSummaryDto> GetBatchFileSummary(string scheduleId, string userName);
+        Task<BatchFileSummaryDto> GetFileSummary(string batchId);
     }
 }
