@@ -24,6 +24,9 @@
 
   <ItemGroup>
     <Compile Remove="Program.cs" />
+    <Compile Remove="UploadServices\AutoPayFileService.cs" />
+    <Compile Remove="UploadServices\BulkSmsFileUploadService.cs" />
+    <Compile Remove="UploadServices\FirsWhtFileUploadService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +39,7 @@
     <PackageReference Include="ExcelDataReader" Version="3.6.0" />
     <PackageReference Include="ExcelDataReader.DataSet" Version="3.6.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="8.4.0" />
+    <PackageReference Include="MimeMapping" Version="1.0.1.26" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.0" />
     <PackageReference Include="TinyCsvParser" Version="2.5.2" />

@@ -6,21 +6,29 @@ namespace FileUploadAndValidation.Models
 {
     public class ValidationResponse
     {
-        public int NumbOfRecords { get; set; }
+        public int NumOfRecords { get; set; }
         public string ResultsMode { get; set; }
-        public List<ValidateStatus> Results { get; set; }
+        public List<RowValidationStatus> Results { get; set; }
     }
 
-    public class ValidateStatus
+    public class RowValidationStatus
     {
         public int Row { get; set; }
         public string Status { get; set; }
         public string Error { get; set; }
     }
 
-    public class FileProperties
+    public class FileProperty
     {
-        public string FileLocation { get; set; }
-        public string FileName { get; set; }
+        public int DataStore { get; set; }
+        public string Url { get; set; }
+        public string BatchId { get; set; }
+    }
+
+    public class BillPaymentValidatedQueueMessage
+    {
+        public string BatchId { get; set; }
+
+        public string ResultLocation { get; set; }
     }
 }

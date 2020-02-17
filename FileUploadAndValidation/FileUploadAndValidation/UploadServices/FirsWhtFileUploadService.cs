@@ -120,7 +120,7 @@ namespace FileUploadApi.Services
                 var contentRows = uploadOptions.ValidateHeaders ? rows.Skip(1) : rows;
 
                 uploadResult = await ValidateContent(contentRows, uploadResult);
-                uploadResult.ScheduleId = GenerateUniqueId();
+                uploadResult.BatchId = GenerateUniqueId();
                 return await UploadToRemote(headerRow, contentRows, uploadResult);
             }
             catch (Exception exception)
@@ -161,6 +161,11 @@ namespace FileUploadApi.Services
         }
 
         public Task UploadToNas(string scheduleId, IEnumerable<Row> contents, string contentType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows)
         {
             throw new NotImplementedException();
         }

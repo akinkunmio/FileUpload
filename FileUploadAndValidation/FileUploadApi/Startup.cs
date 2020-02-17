@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +16,6 @@ using FileUploadApi.ApiServices;
 using FileUploadAndValidation.UploadServices;
 using FileUploadAndValidation.Utils;
 using FileUploadAndValidation.Repository;
-
 namespace FileUploadApi
 {
     public class Startup
@@ -40,21 +37,21 @@ namespace FileUploadApi
             services.AddScoped<IBillPaymentDbRepository, BillPaymentRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
-            services.AddScoped<FirsWhtFileService>();
-            services.AddScoped<AutoPayFileService>();
-            services.AddScoped<BulkSmsFileService>();
+            //services.AddScoped<FirsWhtFileService>();
+            //services.AddScoped<AutoPayFileService>();
+            //services.AddScoped<BulkSmsFileService>();
             services.AddScoped<BulkBillPaymentFileService>();
 
             services.AddTransient<Func<FileServiceTypeEnum, IFileService>>(serviceProvider => key => 
             {
                 switch (key)
                 {
-                    case FileServiceTypeEnum.FirsWht:
-                        return serviceProvider.GetService<FirsWhtFileService>();
-                    case FileServiceTypeEnum.AutoPay:
-                        return serviceProvider.GetService<AutoPayFileService>();
-                    case FileServiceTypeEnum.BulkSMS:
-                        return serviceProvider.GetService<BulkSmsFileService>();
+                    //case FileServiceTypeEnum.FirsWht:
+                    //    return serviceProvider.GetService<FirsWhtFileService>();
+                    //case FileServiceTypeEnum.AutoPay:
+                    //    return serviceProvider.GetService<AutoPayFileService>();
+                    //case FileServiceTypeEnum.BulkSMS:
+                    //    return serviceProvider.GetService<BulkSmsFileService>();
                     case FileServiceTypeEnum.BulkBillPayment:
                         return serviceProvider.GetService<BulkBillPaymentFileService>();
                     default:
@@ -81,6 +78,7 @@ namespace FileUploadApi
                 }
             });
 
+            services.AddHealthChecks();
             services.AddSwaggerGen(config =>
             {
                 config.SwaggerDoc("v1", new Info { Title = "My API", Version = "V1" });
@@ -103,6 +101,7 @@ namespace FileUploadApi
                 app.UseHsts();
             }
 
+            app.UseHealthChecks(path: "/health");
             app.UseHttpsRedirection();
             app.UseMvc();
             app.UseSwagger();
@@ -110,5 +109,6 @@ namespace FileUploadApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
         }
+
     }
 }

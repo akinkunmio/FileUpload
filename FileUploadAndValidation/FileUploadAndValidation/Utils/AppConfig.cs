@@ -18,25 +18,35 @@ namespace FileUploadAndValidation.Utils
         
         public string NasFolderLocation => _configuration["AppConfig:NasFolderLocation"];
 
-        public string BillPaymentTransactionServiceBaseUrl => _configuration["AppConfig:BillPaymentTransactionServiceBaseUrl"];
+        public string BillPaymentTransactionServiceUrl => _configuration["AppConfig:BillPaymentTransactionServiceUrl"];
 
-        public string ValidateQueueUrl =>  _configuration["AppConfig:ValidateQueueUrl"];
-
-        public string ValidateQueueName => _configuration["AppConfig:ValidateQueueName"];  
+        public string BillPaymentQueueUrl => _configuration["AppConfig:BillPaymentQueueUrl"];  
 
         public string QueuePassword => _configuration["AppConfig:QueuePassword"];
 
         public string QueueUsername => _configuration["AppConfig:QueueUsername"];
+
+        public string ProxyAddress => _configuration["AppConfig:ProxyAddress"];
+
+        public string ProxyPort => _configuration["AppConfig:ProxyPort"];
+
+        public string RabbitMqUrl => _configuration["AppConfig:RabbitMqUrl"];
+
+        public string BillPaymentQueueName => _configuration["AppConfig:BillPaymentQueueName"];
+
     }
 
     public interface IAppConfig
     {
         string NasFolderLocation { get; }
-        string BillPaymentTransactionServiceBaseUrl { get; }
-        string ValidateQueueUrl { get; }
-        string ValidateQueueName { get; }
+        string BillPaymentTransactionServiceUrl { get; }
+        string BillPaymentQueueUrl { get; }
+        string BillPaymentQueueName { get; }
         string QueuePassword { get; }
         string QueueUsername { get; }
         string UploadServiceConnectionString { get; }
+        string ProxyAddress { get; }
+        string ProxyPort { get; }
+        string RabbitMqUrl { get; }
     }
 }

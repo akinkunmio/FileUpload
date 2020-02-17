@@ -7,16 +7,16 @@ namespace FileUploadApi
   
     public interface IBillPaymentDbRepository
     {
-        Task<string> InsertPaymentUpload(BatchFileSummary fileDetail, List<BillPayment> billPayments);
+        Task<string> InsertPaymentUpload(UploadSummaryDto fileDetail, List<BillPayment> billPayments);
 
-        Task<BatchFileSummary> GetBatchUploadSummary(string batchId, string userName);
+        Task<BatchFileSummary> GetBatchUploadSummary(string batchId);
 
         Task<IEnumerable<BillPayment>> GetBillPayments(long id);
 
-        Task<IEnumerable<BillPayment>> GetBillPayments(string batchId, string userName);
+        Task<IEnumerable<BillPayment>> GetBillPayments(string batchId);
 
-        Task UpdateBatchUpload(UpdateBillPaymentsCollection updateBillPayments);
+        Task UpdateValidationResponse(UpdateValidationResponseModel updateBillPayments);
+
+        Task UpdateValidationResponse(string batchId, IEnumerable<RowValidationStatus> validationStatuses);
     }
-   
-   
 }

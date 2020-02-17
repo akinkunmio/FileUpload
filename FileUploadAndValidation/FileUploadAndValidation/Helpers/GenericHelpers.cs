@@ -39,5 +39,17 @@ namespace FileUploadAndValidation.Helpers
                 { "double", typeof(double) }
             };
         }
+
+        public static string GenerateBatchId(string fileName, DateTime date)
+        {
+            return fileName + "_" + RandomString() + "_" + date.ToString("yyyyMMddHHmmssffff");
+        }
+        
+        private static string RandomString()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, 6)
+                .Select(s => s[new Random().Next(s.Length)]).ToArray());
+        }
     }
 }

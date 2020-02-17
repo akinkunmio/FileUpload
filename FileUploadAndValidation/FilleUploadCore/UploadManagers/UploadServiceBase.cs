@@ -54,6 +54,8 @@ namespace FilleUploadCore.UploadManagers
 
         public string AuthToken { get; set; }
 
-        public string fileExtension { get; set; }
+        public string FileExtension { get; set; }
+
+        public string  NasFileLocation { get; set; }
     }
 }
