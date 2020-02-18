@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\FileUploadAndValidation\FileUploadAndValidation.csproj" />
     <ProjectReference Include="..\FilleUploadCore\FilleUploadCore.csproj" />
-    <ProjectReference Include="..\ServiceBus\ServiceBus.csproj" />
   </ItemGroup>
 
 </Project>
