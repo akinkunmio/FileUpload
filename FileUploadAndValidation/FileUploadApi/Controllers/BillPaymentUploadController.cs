@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using FileUploadAndValidation.FileReaderImpl;
+using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
 using FileUploadApi.ApiServices;
 using FileUploadApi.Models;
@@ -29,16 +31,25 @@ namespace FileUploadApi.Controllers
             _uploadService = uploadService;
         }
        
-        [HttpPost("uploadfile")]
-        public async Task<IActionResult> PostBulkBillPaymentAsync()
+        [HttpPost("uploadfile/{itemType}")]
+        public async Task<IActionResult> PostBulkBillPaymentAsync(string itemType)
         {
             var contentType = Request.Form["contentType"].ToString().Trim();
-           
+            //var itemType = Request.Form["itemType"].ToString().Trim();
+
             var uploadResult = new UploadResult();
 
             var file = Request.Form.Files.First();
+
             try
             {
+                if (string.IsNullOrEmpty(itemType))
+                    throw new AppException("Item type cannot be empty");
+
+                if (!itemType.ToLower().Equals("billpaymentid+item") 
+                    && !itemType.ToLower().Equals("billpaymentid"))
+                    throw new AppException("Invalid Item Type specified");
+           
                 var uploadOptions = new UploadOptions
                 {
                     ContentType = contentType,
@@ -46,6 +57,7 @@ namespace FileUploadApi.Controllers
                     FileSize = file.Length,
                     AuthToken = HttpContext.Request.Headers["Authorization"],
                     FileExtension = Path.GetExtension(file.FileName).Replace(".", string.Empty).ToLower(),
+                    ItemType = itemType
                 };
 
                 using (var contentStream = file.OpenReadStream())
@@ -55,7 +67,7 @@ namespace FileUploadApi.Controllers
             }
             catch(AppException appEx)
             {
-                return new ObjectResult(new { uploadResult, errorMessage = appEx.Message }) { StatusCode = appEx.StatusCode };
+                return new ObjectResult(new { appEx.Message }) { StatusCode = appEx.StatusCode, Value = appEx.Value };
             }
             catch(Exception ex)
             {
@@ -77,7 +89,7 @@ namespace FileUploadApi.Controllers
             }
             catch(AppException appEx)
             {
-                return BadRequest(appEx.Message);
+                return new ObjectResult(new { errorMessage = appEx.Message }) { StatusCode = appEx.StatusCode };
             }
             catch (Exception ex)
             {
@@ -88,7 +100,7 @@ namespace FileUploadApi.Controllers
         }
 
         [HttpGet("uploadfile/{batchId}")]
-        public async Task<IActionResult> GetUploadFileSummary([FromQuery]string batchId)
+        public async Task<IActionResult> GetUploadFileSummary(string batchId)
         {
             BatchFileSummaryDto batchFileSummaryDto;
             try
@@ -97,7 +109,7 @@ namespace FileUploadApi.Controllers
             }
             catch (AppException appEx)
             {
-                return BadRequest(appEx.Message);
+                return new ObjectResult(new { errorMessage = appEx.Message }) { StatusCode = appEx.StatusCode };
             }
             catch (Exception ex)
             {
@@ -108,7 +120,7 @@ namespace FileUploadApi.Controllers
         }
 
         [HttpGet("uploadfile/{batchId}/authorize")]
-        public async Task<IActionResult> InitiateTransactionsApprovalAsync([FromQuery]string batchId)
+        public async Task<IActionResult> InitiateTransactionsApprovalAsync(string batchId)
         {
             throw new NotImplementedException();
         }

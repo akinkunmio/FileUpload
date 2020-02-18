@@ -25,6 +25,11 @@ BEGIN
 END
 GO
 
+IF (OBJECT_ID('sp_get_bill_payments_status_by_transactions_summary_id') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_get_bill_payments_status_by_transactions_summary_id
+END
+GO
 
 IF (OBJECT_ID('sp_update_bill_payment_upload_summary') IS NOT NULL)
 BEGIN
@@ -38,6 +43,8 @@ BEGIN
 END
 GO
 
+
+
 CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_by_batch_id]
 @batch_id NVARCHAR (100)
 AS
@@ -48,6 +55,18 @@ CREATE PROCEDURE [dbo].[sp_get_bill_payments_by_transactions_summary_id]
 @transactions_summary_id bigint
 AS
 	SELECT * FROM tbl_bill_payment_transactions_detail WHERE transactions_summary_id = @transactions_summary_id;
+GO
+
+CREATE PROCEDURE [dbo].[sp_get_bill_payments_status_by_transactions_summary_id]
+@transactions_summary_id bigint
+AS
+	SELECT [error],[row_status],[row_num] FROM tbl_bill_payment_transactions_detail WHERE transactions_summary_id = @transactions_summary_id;
+GO
+
+CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_id_by_batch_id]
+@transactions_summary_id bigint
+AS
+	SELECT [id] FROM tbl_transactions_summary WHERE transactions_summary_id = @transactions_summary_id;
 GO
 
 CREATE PROCEDURE [dbo].[sp_update_bill_payment_upload_summary]

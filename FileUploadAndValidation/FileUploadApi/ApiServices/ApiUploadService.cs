@@ -85,12 +85,13 @@ namespace FileUploadApi.ApiServices
 
             uploadOptions.ContentType = "BILLPAYMENT";
             //uploadOptions.ValidateHeaders = true;
-            uploadOptions.ItemType = GenericConstants.BillPaymentIdPlusItem;
+            //uploadOptions.ItemType = GenericConstants.BillPaymentIdPlusItem;
             var batchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
             uploadResult.BatchId = batchId;
 
             uploadOptions.NasFileLocation = await _nasRepository.SaveRawFile(batchId, stream, uploadOptions.FileExtension);
+            stream.Seek(0, SeekOrigin.Begin);
 
             switch (uploadOptions.FileExtension)
             {

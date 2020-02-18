@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 namespace FilleUploadCore.Exceptions
@@ -25,6 +26,13 @@ namespace FilleUploadCore.Exceptions
             StatusCode = errorCode;
         }
 
+        public AppException(string message, int? errorCode, object value)
+          : base(message)
+        {
+            StatusCode = errorCode;
+            Value = value;
+        }
+
         public AppException(string message, string friendlyMessage)
             : base(message)
         {
@@ -38,7 +46,9 @@ namespace FilleUploadCore.Exceptions
 
         public string FriendlyMessage { get; set; }
 
-        public int? StatusCode { get; set; }
+        public int? StatusCode { get; set; } = (int)HttpStatusCode.BadRequest;
+
+        public object Value { get; set; }
     }
 
 }

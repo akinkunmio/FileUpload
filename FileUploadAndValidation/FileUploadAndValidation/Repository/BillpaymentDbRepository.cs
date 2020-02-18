@@ -10,6 +10,7 @@ using System.Data.SqlClient;
 using static Dapper.DefaultTypeMap;
 using System.Data;
 using FilleUploadCore.Exceptions;
+using System.Net;
 
 namespace FileUploadAndValidation.Repository
 {
@@ -85,8 +86,10 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<BatchFileSummary> GetBatchUploadSummary(string batchId)
         {
+
             using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
+                MatchNamesWithUnderscores = true;
                 var batchFileSummary = await sqlConnection.QueryFirstOrDefaultAsync<BatchFileSummary>(
                     sql: @"sp_get_batch_upload_summary_by_batch_id",
                     param: new 
@@ -99,10 +102,30 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
+        public async Task<long> GetBatchUploadSummaryId(string batchId)
+        {
+            using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
+            {
+                MatchNamesWithUnderscores = true;
+
+                var batchSummaryId = await sqlConnection.QueryFirstOrDefaultAsync<long>(
+                    sql: @"sp_get_batch_upload_summary_id_by_batch_id",
+                    param: new
+                    {
+                        batch_id = batchId
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return batchSummaryId;
+            }
+        }
+
         public async Task<IEnumerable<BillPayment>> GetBillPayments(long id)
         {
                 using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
                 {
+                    MatchNamesWithUnderscores = true;
+
                     var result = await sqlConnection.QueryAsync<BillPayment>(
                         sql: @"sp_get_bill_payments",
                         param: new 
@@ -115,9 +138,23 @@ namespace FileUploadAndValidation.Repository
                 }
         }
 
-        public Task<IEnumerable<BillPayment>> GetBillPayments(string batchId)
+        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentRowStatuses(string batchId)
         {
-            throw new NotImplementedException();
+            using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
+            {
+                MatchNamesWithUnderscores = true;
+
+                var summaryId = await GetBatchUploadSummaryId(batchId);
+                var result = await sqlConnection.QueryAsync<BillPaymentRowStatus>(
+                    sql: @"sp_get_bill_payments_status_by_batch_id",
+                    param: new
+                    {
+                        transactions_summary_id = summaryId
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return result;
+            }
         }
 
         public async Task UpdateValidationResponse(UpdateValidationResponseModel updateBillPayments)
@@ -176,17 +213,12 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    throw new AppException(ex.Message);
+                    throw new AppException("An error occured while updating validation to DB", (int)HttpStatusCode.InternalServerError);
                 }
             }
             //if does not exist throw an error
             //then 
             //update batchfilesummary and all transactions
-        }
-
-        public Task UpdateValidationResponse(string batchId, IEnumerable<RowValidationStatus> validationStatuses)
-        {
-            throw new NotImplementedException();
         }
     }
 }

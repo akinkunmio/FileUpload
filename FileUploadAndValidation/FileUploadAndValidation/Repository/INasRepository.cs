@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FilleUploadCore.Exceptions;
 using System.Linq;
+using FileUploadAndValidation.QueueMessages;
 
 namespace FileUploadAndValidation.Repository
 {
@@ -23,10 +24,14 @@ namespace FileUploadAndValidation.Repository
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation;
-                var fileName = @"/UploadService/" + batchId + "_validate.json";
+                var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
+                var fileName = batchId + "_validate.json";
+
                 string json = JsonConvert.SerializeObject(billPayments);
-                File.WriteAllText(fileLocation + fileName, json);
+
+                var path = Path.Combine(fileLocation, fileName);
+
+                File.WriteAllText(path, json);
                 
                 return Task.FromResult(new FileProperty 
                 { 
@@ -43,24 +48,26 @@ namespace FileUploadAndValidation.Repository
 
         public Task<string> SaveRawFile(string batchId, Stream stream, string extension)
         {
-            var filePath = _appConfig.NasFolderLocation + @"/UploadService";
+            var fileLocation = _appConfig.NasFolderLocation + @"\raw\";
             var fileName = batchId + "_raw." + extension;
-            string path = Path.Combine(filePath, fileName);
+
+            string path = Path.Combine(fileLocation, fileName);
+
             try
             {
-                using (FileStream outputFileStream = new FileStream(path, FileMode.Create))
+                using (FileStream outputFileStream = new FileStream(path, FileMode.Create, FileAccess.Write))
                 {
                     stream.CopyTo(outputFileStream);
                 }
                 return Task.FromResult(path);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new AppException($"An error occured while saving raw file with batch id : {batchId} to NAS", 500);
+                throw new AppException($"An error occured while saving raw file with batch id : {batchId} to NAS"+ ex.Message, 500);
             }
         }
 
-        public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidatedQueueMessage queueMessage)
+        public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidateMessage queueMessage)
         {
             var result = new List<RowValidationStatus>();
             var fileLocation = Path.Combine(_appConfig.NasFolderLocation, queueMessage.ResultLocation);
@@ -75,7 +82,7 @@ namespace FileUploadAndValidation.Repository
             catch (Exception)
             {
                 //log error to db 
-                //throw new AppException($"An error occured while extracting file with batch id : {batchId} to NAS for validation", 500);
+                throw new AppException($"An error occured while extracting File Validation Result with BatchId : {queueMessage.BatchId} to NAS for validation", 500);
             }
 
             return await Task.FromResult(result?.AsEnumerable());
@@ -87,7 +94,7 @@ namespace FileUploadAndValidation.Repository
 
         Task<string> SaveRawFile(string batchId, Stream stream, string extension);
 
-        Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidatedQueueMessage queueMessage);
+        Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidateMessage queueMessage);
     }
 
 }
