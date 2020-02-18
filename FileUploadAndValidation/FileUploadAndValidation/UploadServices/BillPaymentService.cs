@@ -5,6 +5,7 @@ using FilleUploadCore.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -49,11 +50,11 @@ namespace FileUploadAndValidation.UploadServices
                     }
                     else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                     {
-                        throw new AppException("Unable to perform bill payment validation");
+                        throw new AppException("Unable to perform bill payment validation", (int)HttpStatusCode.BadRequest);
                     }
                     else
                     {
-                        throw new AppException("An error occured while performing bill payment validation");
+                        throw new AppException("An error occured while performing bill payment validation", (int)response.StatusCode);
                     }
 
                 return validateResponse;

@@ -9,8 +9,8 @@ namespace FileUploadAndValidation.Helpers
         public static string PendingValidation = "PendingValidation";
         public static string AwaitingInitiation = "AwaitingInitiation";
         public static string AwaitingApproval = "AwaitingApproval";
-        public static string BillPaymentIdPlusItem = "BillPaymentId+Item";
-        public static string BillPaymentId = "BillPaymentId";
+        public const string BillPaymentIdPlusItem = "BillPaymentId+Item";
+        public const string BillPaymentId = "BillPaymentId";
         public const string FirsWht = "firswht";
         public const string Autopay = "autopay";
         public const string Sms = "sms";

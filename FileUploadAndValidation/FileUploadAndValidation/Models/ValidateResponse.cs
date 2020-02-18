@@ -25,10 +25,5 @@ namespace FileUploadAndValidation.Models
         public string BatchId { get; set; }
     }
 
-    public class BillPaymentValidatedQueueMessage
-    {
-        public string BatchId { get; set; }
-
-        public string ResultLocation { get; set; }
-    }
+   
 }

@@ -7,6 +7,7 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -28,8 +29,10 @@ namespace FileUploadAndValidation.FileReaderImpl
                     {
                         var dataTable = new DataTable();
                         dataTable.Load(dr);
+                        var rowCount = dataTable.Rows.Count;
+                        var columnCount = dataTable.Columns.Count;
 
-                        for (int i = 0; i < dataTable.Rows.Count; i++)
+                        for (int i = 0; i < rowCount; i++)
                         {
                             var row = new Row()
                             {
@@ -38,7 +41,7 @@ namespace FileUploadAndValidation.FileReaderImpl
                             };
                             DataRow dataRow = dataTable.Rows[i];
                             //loop all columns in a row
-                            for (int j = 0; j < dataTable.Columns.Count; j++)
+                            for (int j = 0; j < columnCount; j++)
                             {
                                 //add the cell data to the List
                                 if (dataRow[j].ToString() != null)
@@ -54,9 +57,9 @@ namespace FileUploadAndValidation.FileReaderImpl
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    throw new AppException("An error occured while extracting content of file!.");
+                    throw new AppException("An error occured while extracting content of file!."+ ex.Message, (int)HttpStatusCode.InternalServerError);
                 }
             }
             return rowList;

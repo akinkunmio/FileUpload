@@ -1,6 +1,7 @@
 ﻿using FileUploadAndValidation;
 using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
+using FileUploadAndValidation.QueueMessages;
 using FileUploadAndValidation.Repository;
 using FileUploadAndValidation.UploadServices;
 using FileUploadAndValidation.Utils;
@@ -10,13 +11,17 @@ using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
 using FilleUploadCore.Helpers;
 using FilleUploadCore.UploadManagers;
+using QueueServiceBus.BusProviders;
+using QueueServiceBus.MessageBus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using static FileUploadAndValidation.Models.UploadResult;
+
 
 namespace FileUploadApi
 {
@@ -25,44 +30,53 @@ namespace FileUploadApi
         private readonly IBillPaymentDbRepository _dbRepository;
         private readonly INasRepository _nasRepository;
         private readonly IBillPaymentService _billPaymentService;
+        private readonly IMessageBus _bus;
 
-        public BulkBillPaymentFileService(IBillPaymentDbRepository dbRepository, INasRepository nasRepository, IBillPaymentService billPaymentService)
+        public BulkBillPaymentFileService(IBillPaymentDbRepository dbRepository, 
+            INasRepository nasRepository, IBillPaymentService billPaymentService,
+            IMessageBus bus)
         {
             _dbRepository = dbRepository;
             _nasRepository = nasRepository;
             _billPaymentService = billPaymentService;
+            _bus = bus;
         }
 
-        public async Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows)
+        public async Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
         {
             Console.WriteLine("Validating rows...");
 
             List<int> validRows = new List<int>();
             var validateRowModel = new ValidateRowModel();
+            var failures = new List<Failure>();
 
             foreach (var row in contentRows)
             {
-                validateRowModel = await ValidateRow(row);
+                validateRowModel = await ValidateRow(row, columnContracts);
 
                 if (validateRowModel.IsValid)
                     validRows.Add(row.Index);
+
+                if (validateRowModel.Failure.ColumnValidationErrors != null && validateRowModel.Failure.RowNumber != null)
+                    failures.Add(validateRowModel.Failure);
             }
 
-            return new ValidateRowsResult { Failures = validateRowModel.Failures, ValidRows = validRows } ;
+            return new ValidateRowsResult { Failures = failures, ValidRows = validRows } ;
         }
 
-        private async Task<ValidateRowModel> ValidateRow(Row row)
+        private async Task<ValidateRowModel> ValidateRow(Row row, ColumnContract[] columnContracts)
         {
             var validationErrors = new List<ValidationError>();
-            var failures = new List<Failure>();
+            var failure = new Failure();
 
             var errorMessage = "";
             var isValid = true;
 
-            for (var i = 0; i < ContentTypeColumnContract.BillerPayment().Length; i++)
+            for (var i = 0; i < columnContracts.Length; i++)
             {
-                ColumnContract contract = ContentTypeColumnContract.BillerPayment()[i];
+                ColumnContract contract = columnContracts[i];
                 Column column = row.Columns[i];
+                
 
                 try
                 {
@@ -109,15 +123,15 @@ namespace FileUploadApi
 
             if (validationErrors.Count() > 0)
             {
-                failures.Add(
+                failure = 
                     new Failure
                     {
                         ColumnValidationErrors = validationErrors,
                         RowNumber = row.Index
-                    });
+                    };
             }
 
-            return new ValidateRowModel { IsValid = isValid, Failures = failures };
+            return await Task.FromResult(new ValidateRowModel { IsValid = isValid, Failure = failure });
         }
 
         public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult)
@@ -128,21 +142,31 @@ namespace FileUploadApi
 
             var headerRow = new Row();
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
+            IEnumerable<BillPayment> nonDistinct = new List<BillPayment>();
             uploadResult.RowsCount = rows.Count();
+
             try
             {
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.");
 
-                if (uploadOptions.ValidateHeaders)
-                {
-                    headerRow = rows.First();
-                    GenericHelpers.ValidateHeaderRow(headerRow, ContentTypeColumnContract.BillerPayment());
-                }
+                
+                headerRow = rows.First();
+
+                var columnContract = new ColumnContract[] { };
+
+                if (uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+                    columnContract = ContentTypeColumnContract.BillerPaymentIdWithItem();
+
+                if (uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
+                    columnContract = ContentTypeColumnContract.BillerPaymentId();
+
+                //GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+                
 
                 var contentRows = uploadOptions.ValidateHeaders ? rows.Skip(1) : rows;
 
-                var validateRowsResult = await ValidateContent(contentRows);
+                var validateRowsResult = await ValidateContent(contentRows, columnContract);
 
                 uploadResult.Failures = validateRowsResult.Failures;
                 uploadResult.ValidRows = validateRowsResult.ValidRows;
@@ -163,6 +187,50 @@ namespace FileUploadApi
                             BatchId = uploadResult.BatchId,
                             CreatedDate = dateTimeNow.ToString()
                         });
+
+                    if(uploadOptions.ItemType
+                        .ToLower()
+                        .Equals(GenericConstants.BillPaymentId.ToLower()))
+                    {
+                        nonDistinct = billPayments
+                            .GroupBy(b => new { b.ProductCode, b.CustomerId })
+                            .Where(g => g.Count() > 1)
+                            .SelectMany(r => r);
+
+                        foreach (var nonDist in nonDistinct)
+                            uploadResult.Failures.Add(new Failure 
+                            {
+                                RowNumber = nonDist.RowNumber,
+                                ColumnValidationErrors = new List<ValidationError>
+                                {
+                                    new ValidationError { PropertyName = "ProductCode, CustomerId", ErrorMessage = "Values should be unique and not be repeated" }
+                                }
+                            });
+                    }
+
+                    if (uploadOptions.ItemType
+                        .ToLower()
+                        .Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+                    {
+                        nonDistinct = billPayments
+                            .GroupBy(b => new { b.ItemCode, b.CustomerId })
+                            .Where(g => g.Count() > 1)
+                            .SelectMany(r => r);
+
+                        foreach (var nonDist in nonDistinct)
+                            uploadResult.Failures.Add(new Failure
+                            {
+                                RowNumber = nonDist.RowNumber,
+                                ColumnValidationErrors = new List<ValidationError>
+                                {
+                                    new ValidationError { PropertyName = "ItemCode, CustomerId", ErrorMessage = "Values should be unique and not be repeated" }
+                                }
+                            });
+                    }
+
+                    billPayments = billPayments
+                        .Where(b => !nonDistinct.Any(n => n.RowNumber == b.RowNumber))
+                        .Select(r => r);
                 }
 
                 await _dbRepository.InsertPaymentUpload(
@@ -194,7 +262,9 @@ namespace FileUploadApi
 
                 ValidationResponse validationResponse = await _billPaymentService.ValidateBillRecords(fileProperty, uploadOptions.AuthToken);
 
-                if(validationResponse.NumOfRecords < 50 && validationResponse.Results.Any() && validationResponse.Results.Count > 0)
+                if(validationResponse.Results
+                    .Where(v => v.Status.ToLower().Equals("valid")).Count() < 50 
+                    && validationResponse.Results.Any() && validationResponse.Results.Count > 0)
                 {
                     await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel 
                     { 
@@ -206,8 +276,19 @@ namespace FileUploadApi
                          RowStatuses = validationResponse.Results
                     });
                 }
+                else
+                {
+                    // send file location to queue
+                    await _bus.PublishAsync(new BillPaymentConfirmedMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
+                }
 
                 return uploadResult;
+            }
+            catch(AppException appEx)
+            {
+                uploadResult.ErrorMessage = appEx.Message;
+                appEx.Value = uploadResult;
+                throw appEx;
             }
             catch (Exception exception)
             {
@@ -223,16 +304,11 @@ namespace FileUploadApi
 
             try
             {
-                billPayments = await _dbRepository
-                    .GetBillPayments(batchId);
+                billPaymentStatuses = await _dbRepository
+                    .GetBillPaymentRowStatuses(batchId);
 
-                billPaymentStatuses = billPayments
-                    .Select(p => new BillPaymentRowStatus
-                    {
-                        Error = p.Error,
-                        Row = p.RowNumber,
-                        Status = p.Status,
-                    });
+                if (billPaymentStatuses.Count() < 0)
+                    throw new AppException($"Upload with Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);
             }
             catch (AppException appEx)
             {
@@ -275,24 +351,32 @@ namespace FileUploadApi
             return batchFileSummaryDto;
         }
 
-        public async Task<Task> UpdateStatusFromQueueStatus(BillPaymentValidatedQueueMessage queueMessage)
+        public async Task UpdateStatusFromQueue(BillPaymentValidateMessage queueMessage)
         {
             IEnumerable<RowValidationStatus> validationStatuses; 
+
             try
             {
                 validationStatuses = await _nasRepository.ExtractValidationResult(queueMessage);
 
-                if(validationStatuses.Count() > 0)
-                {
-                    await _dbRepository.UpdateValidationResponse(queueMessage.BatchId, validationStatuses);
+                if (validationStatuses.Count() > 0)
+                    await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
+                    {
+                        BatchId = queueMessage.BatchId,
+                        ModifiedDate = DateTime.Now.ToString(),
+                        NasToValidateFile = queueMessage.ResultLocation,
+                        NumOfValidRecords = validationStatuses.Where(v => v.Status.ToLower().Equals("valid")).Count(),
+                        Status = GenericConstants.AwaitingInitiation,
+                        RowStatuses = validationStatuses.ToList()
+                    });
+                else
+                    throw new AppException($"File to be validated with batch Id:{queueMessage.BatchId} has no content on NAS!");
 
-                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
-            return Task.CompletedTask;
         }
 
     }
@@ -300,7 +384,7 @@ namespace FileUploadApi
     public class ValidateRowModel
     {
         public bool IsValid { get; set; }
-        public List<Failure> Failures { get; set; }
+        public Failure Failure { get; set; }
     }
     public class ValidateRowsResult
     {
