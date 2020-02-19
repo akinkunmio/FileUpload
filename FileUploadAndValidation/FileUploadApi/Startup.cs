@@ -50,6 +50,7 @@ namespace FileUploadApi
             services.AddScoped<IBillPaymentDbRepository, BillPaymentRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
+
             //services.AddScoped<FirsWhtFileService>();
             //services.AddScoped<AutoPayFileService>();
             //services.AddScoped<BulkSmsFileService>();
@@ -72,7 +73,8 @@ namespace FileUploadApi
                 }
             });
 
-            services.AddScoped<TxtCsvFileReader>();
+            services.AddScoped<TxtFileReader>();
+            services.AddScoped<CsvFileReader>();
             services.AddScoped<XlsFileReader>();
             services.AddScoped<XlsxFileReader>();
             
@@ -80,8 +82,10 @@ namespace FileUploadApi
             {
                 switch (key)
                 {
-                    case FileReaderTypeEnum.TXT_CSV:
-                        return serviceProvider.GetService<TxtCsvFileReader>();
+                    case FileReaderTypeEnum.TXT:
+                        return serviceProvider.GetService<TxtFileReader>();
+                    case FileReaderTypeEnum.CSV:
+                        return serviceProvider.GetService<CsvFileReader>();
                     case FileReaderTypeEnum.XLS:
                         return serviceProvider.GetService<XlsFileReader>();
                     case FileReaderTypeEnum.XLSX:

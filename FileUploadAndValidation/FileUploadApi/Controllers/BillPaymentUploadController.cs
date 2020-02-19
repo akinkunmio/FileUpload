@@ -34,30 +34,28 @@ namespace FileUploadApi.Controllers
         [HttpPost("uploadfile/{itemType}")]
         public async Task<IActionResult> PostBulkBillPaymentAsync(string itemType)
         {
-            var contentType = Request.Form["contentType"].ToString().Trim();
-            //var itemType = Request.Form["itemType"].ToString().Trim();
-
             var uploadResult = new UploadResult();
 
             var file = Request.Form.Files.First();
-
+            
             try
             {
                 if (string.IsNullOrEmpty(itemType))
                     throw new AppException("Item type cannot be empty");
 
-                if (!itemType.ToLower().Equals("billpaymentid+item") 
-                    && !itemType.ToLower().Equals("billpaymentid"))
+                if (!itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) 
+                    && !itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
                     throw new AppException("Invalid Item Type specified");
            
                 var uploadOptions = new UploadOptions
                 {
-                    ContentType = contentType,
+                    ContentType = "BillPayment",
                     FileName = file.FileName.Split('.')[0],
                     FileSize = file.Length,
                     AuthToken = HttpContext.Request.Headers["Authorization"],
                     FileExtension = Path.GetExtension(file.FileName).Replace(".", string.Empty).ToLower(),
-                    ItemType = itemType
+                    ItemType = itemType,
+                    ValidateHeaders = true
                 };
 
                 using (var contentStream = file.OpenReadStream())
@@ -71,7 +69,7 @@ namespace FileUploadApi.Controllers
             }
             catch(Exception ex)
             {
-                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!. "+ex.Message });
+                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!.  |"+ex.Message });
             }
             
             return Ok(uploadResult);

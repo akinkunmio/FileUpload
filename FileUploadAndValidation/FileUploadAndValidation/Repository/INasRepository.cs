@@ -63,7 +63,7 @@ namespace FileUploadAndValidation.Repository
             }
             catch (Exception ex)
             {
-                throw new AppException($"An error occured while saving raw file with batch id : {batchId} to NAS"+ ex.Message, 500);
+                throw new AppException($"An error occured while saving raw file with batch id : {batchId} to NAS "+ ex.Message, 500);
             }
         }
 
@@ -71,6 +71,7 @@ namespace FileUploadAndValidation.Repository
         {
             var result = new List<RowValidationStatus>();
             var fileLocation = Path.Combine(_appConfig.NasFolderLocation, queueMessage.ResultLocation);
+
             try
             {
                 if (File.Exists(fileLocation))

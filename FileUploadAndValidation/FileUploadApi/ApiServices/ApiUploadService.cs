@@ -21,7 +21,8 @@ namespace FileUploadApi.ApiServices
 {
     public class ApiUploadService : IApiUploadService
     {
-        private readonly IFileReader _txtCsvFileReader;
+        private readonly IFileReader _txtFileReader;
+        private readonly IFileReader _csvFileReader;
         private readonly IFileReader _xlsxFileReader;
         private readonly IFileReader _xlsFileReader;
         private readonly IFileService _firsWhtService;
@@ -37,7 +38,8 @@ namespace FileUploadApi.ApiServices
             INasRepository nasRepository)
         {
             _dbRepository = dbRepository;
-            _txtCsvFileReader = fileReader(FileReaderTypeEnum.TXT_CSV);
+            _txtFileReader = fileReader(FileReaderTypeEnum.TXT);
+            _csvFileReader = fileReader(FileReaderTypeEnum.CSV);
             _xlsxFileReader = fileReader(FileReaderTypeEnum.XLSX);
             _xlsFileReader = fileReader(FileReaderTypeEnum.XLS);
             _firsWhtService = fileService(FileServiceTypeEnum.FirsWht);
@@ -50,6 +52,7 @@ namespace FileUploadApi.ApiServices
         public async Task<BatchFileSummaryDto> GetFileSummary(string batchId)
         {
             BatchFileSummaryDto batchFileSummaryDto;
+
             try
             {
                 batchFileSummaryDto = await _bulkBillPaymentService.GetBatchUploadSummary(batchId);
@@ -64,6 +67,7 @@ namespace FileUploadApi.ApiServices
         public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId)
         {
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses;
+
             try
             {
                 billPaymentStatuses = await _bulkBillPaymentService.GetBillPaymentResults(batchId);
@@ -83,8 +87,6 @@ namespace FileUploadApi.ApiServices
             if(uploadOptions == null)
                 throw new AppException("Upload options must be set!.");
 
-            uploadOptions.ContentType = "BILLPAYMENT";
-            //uploadOptions.ValidateHeaders = true;
             //uploadOptions.ItemType = GenericConstants.BillPaymentIdPlusItem;
             var batchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
@@ -96,8 +98,10 @@ namespace FileUploadApi.ApiServices
             switch (uploadOptions.FileExtension)
             {
                 case "txt":
+                    rows = _txtFileReader.Read(stream);
+                    break;
                 case "csv":
-                    rows = _txtCsvFileReader.Read(stream);
+                    rows = _csvFileReader.Read(stream);
                     break;
                 case "xlsx":
                     rows = _xlsxFileReader.Read(stream);

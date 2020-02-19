@@ -134,6 +134,24 @@ namespace FileUploadApi
             return await Task.FromResult(new ValidateRowModel { IsValid = isValid, Failure = failure });
         }
 
+        public void ValidateHeaderRow(Row headerRow, ColumnContract[] columnContracts)
+        {
+            if (headerRow == null)
+                throw new ValidationException("Header row not found");
+
+            var expectedNumOfColumns = columnContracts.Count();
+            if (headerRow.Columns.Count() != expectedNumOfColumns)
+                throw new ValidationException($"Invalid number of header columns. Expected: {expectedNumOfColumns}, Found: {headerRow.Columns.Count()}");
+
+            for (int i = 0; i < expectedNumOfColumns; i++)
+            {
+                var columnName = columnContracts[i].ColumnName;
+                var headerRowColumn = headerRow.Columns[i].Value.ToString().Trim();
+                if (!headerRowColumn.ToLower().Contains(columnName.ToLower()))
+                    throw new ValidationException($"Invalid header column name. Expected: {columnName}, Found: {headerRowColumn}");
+            }
+        }
+
         public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
@@ -161,7 +179,7 @@ namespace FileUploadApi
                 if (uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
                     columnContract = ContentTypeColumnContract.BillerPaymentId();
 
-                //GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+                ValidateHeaderRow(headerRow, columnContract);
                 
 
                 var contentRows = uploadOptions.ValidateHeaders ? rows.Skip(1) : rows;
@@ -188,6 +206,7 @@ namespace FileUploadApi
                             CreatedDate = dateTimeNow.ToString()
                         });
 
+
                     if(uploadOptions.ItemType
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentId.ToLower()))
@@ -203,7 +222,11 @@ namespace FileUploadApi
                                 RowNumber = nonDist.RowNumber,
                                 ColumnValidationErrors = new List<ValidationError>
                                 {
-                                    new ValidationError { PropertyName = "ProductCode, CustomerId", ErrorMessage = "Values should be unique and not be repeated" }
+                                    new ValidationError 
+                                    { 
+                                        PropertyName = "ProductCode, CustomerId", 
+                                        ErrorMessage = "Values should be unique and not be repeated" 
+                                    }
                                 }
                             });
                     }
@@ -223,7 +246,11 @@ namespace FileUploadApi
                                 RowNumber = nonDist.RowNumber,
                                 ColumnValidationErrors = new List<ValidationError>
                                 {
-                                    new ValidationError { PropertyName = "ItemCode, CustomerId", ErrorMessage = "Values should be unique and not be repeated" }
+                                    new ValidationError 
+                                    { 
+                                        PropertyName = "ItemCode, CustomerId", 
+                                        ErrorMessage = "Values should be unique and not be repeated" 
+                                    }
                                 }
                             });
                     }
@@ -232,6 +259,7 @@ namespace FileUploadApi
                         .Where(b => !nonDistinct.Any(n => n.RowNumber == b.RowNumber))
                         .Select(r => r);
                 }
+
 
                 await _dbRepository.InsertPaymentUpload(
                     new UploadSummaryDto
