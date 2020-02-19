@@ -11,8 +11,6 @@ using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
 using FilleUploadCore.Helpers;
 using FilleUploadCore.UploadManagers;
-using QueueServiceBus.BusProviders;
-using QueueServiceBus.MessageBus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,11 +28,11 @@ namespace FileUploadApi
         private readonly IBillPaymentDbRepository _dbRepository;
         private readonly INasRepository _nasRepository;
         private readonly IBillPaymentService _billPaymentService;
-        private readonly IMessageBus _bus;
+        private readonly IMassTransitQueue _bus;
 
         public BulkBillPaymentFileService(IBillPaymentDbRepository dbRepository, 
             INasRepository nasRepository, IBillPaymentService billPaymentService,
-            IMessageBus bus)
+            IMassTransitQueue bus)
         {
             _dbRepository = dbRepository;
             _nasRepository = nasRepository;
@@ -300,7 +298,7 @@ namespace FileUploadApi
                         RowStatuses = validationResponse.Results
                     });
                 else if (validationResponse.NumOfRecords > 50 && !validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("queue"))
-                    await _bus.PublishAsync(new BillPaymentConfirmedMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
+                    await _bus.PublishMessage(new BillPaymentValidateMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
                 else
                     throw new AppException("Invalid response from Bill Payment Validate endpoint", (int)HttpStatusCode.InternalServerError);
 
@@ -429,7 +427,7 @@ namespace FileUploadApi
             {
                 throw appEx;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 throw new AppException("An error occured while initiating payment");
             }

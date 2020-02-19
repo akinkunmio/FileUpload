@@ -17,9 +17,6 @@ using FileUploadAndValidation.UploadServices;
 using FileUploadAndValidation.Utils;
 using FileUploadAndValidation.Repository;
 using MassTransit;
-using QueueServiceBus;
-using QueueServiceBus.BusProviders;
-using QueueServiceBus.MessageBus;
 
 namespace FileUploadApi
 {
@@ -39,17 +36,13 @@ namespace FileUploadApi
 
             services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
             services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
-            services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
-
-            services.AddSingleton<IBusProvider, RabbitMqBusProvider>();
-            services.AddSingleton<IMessageBus, MessageBus>();
-
 
             services.AddSingleton<IAppConfig, AppConfig>();
             services.AddHttpClient<IBillPaymentService, BillPaymentService>();
             services.AddScoped<IBillPaymentDbRepository, BillPaymentRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
+            services.AddTransient<IMassTransitQueue, MassTransitQueue>();
 
             //services.AddScoped<FirsWhtFileService>();
             //services.AddScoped<AutoPayFileService>();

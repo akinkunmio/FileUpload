@@ -41,6 +41,7 @@
     <PackageReference Include="FluentValidation.AspNetCore" Version="8.4.0" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="6.1.0" />
     <PackageReference Include="MimeMapping" Version="1.0.1.26" />
+    <PackageReference Include="RabbitMQ.Client" Version="5.1.2" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.0" />
     <PackageReference Include="TinyCsvParser" Version="2.5.2" />

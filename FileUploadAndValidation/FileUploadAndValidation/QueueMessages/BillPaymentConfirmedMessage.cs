@@ -4,7 +4,7 @@ using System.Text;
 
 namespace FileUploadAndValidation.QueueMessages
 {
-    class BillPaymentConfirmedMessage : IMessage
+    public class BillPaymentConfirmedMessage : IMessage
     {
         public BillPaymentConfirmedMessage(string fileName, string batchId, DateTime createdAt)
         {

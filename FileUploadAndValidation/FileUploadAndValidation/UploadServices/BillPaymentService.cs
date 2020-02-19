@@ -36,27 +36,27 @@ namespace FileUploadAndValidation.UploadServices
             ValidationResponse validateResponse;
             try
             {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
-                        $"&Url={fileProperty.Url}&BatchId={fileProperty.BatchId}");
-                
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer ", authToken);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
+                    $"&Url={fileProperty.Url}&BatchId={fileProperty.BatchId}");
 
-                    var response = await _httpClient.SendAsync(request);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer ", authToken);
 
-                    var responseResult = await response.Content.ReadAsStringAsync();
+                var response = await _httpClient.SendAsync(request);
 
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        validateResponse = JsonConvert.DeserializeObject<ValidationResponse>(responseResult);
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                    {
-                        throw new AppException("Unable to perform bill payment validation", (int)HttpStatusCode.BadRequest);
-                    }
-                    else
-                    {
-                        throw new AppException("An error occured while performing bill payment validation", (int)response.StatusCode);
-                    }
+                var responseResult = await response.Content.ReadAsStringAsync();
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    validateResponse = JsonConvert.DeserializeObject<ValidationResponse>(responseResult);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    throw new AppException("Unable to perform bill payment validation", (int)HttpStatusCode.BadRequest);
+                }
+                else
+                {
+                    throw new AppException("An error occured while performing bill payment validation", (int)response.StatusCode);
+                }
 
                 return validateResponse;
             }
@@ -109,24 +109,18 @@ namespace FileUploadAndValidation.UploadServices
                     var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
 
                     if (response.IsSuccessStatusCode)
-                    {
                         return;
-                    }
-                    else
-                    {
-                        throw new AppException("Error occured while initiating Bill Payment Initiation");
-                    }
                 }
                 catch (Exception)
                 {
                     throw new AppException("Unknown error occured while initiating Bill Payment Initiation");
                 }
             }
-            catch(AppException appEx)
+            catch (AppException appEx)
             {
                 throw appEx;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new AppException("Unknown error occured! Please retry. " + ex.Message);
             }
