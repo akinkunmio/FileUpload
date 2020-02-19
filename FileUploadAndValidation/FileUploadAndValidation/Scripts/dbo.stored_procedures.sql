@@ -51,34 +51,42 @@ AS
 	SELECT * FROM tbl_transactions_summary WHERE batch_id = @batch_id;
 GO
 
-CREATE PROCEDURE [dbo].[sp_get_bill_payments_by_transactions_summary_id]
-@transactions_summary_id bigint
+CREATE PROCEDURE [dbo].[sp_get_confirmed_bill_payments_by_transactions_summary_id]
+@transactions_summary_id bigint,
+@status NVARCHAR(50)
 AS
-	SELECT * FROM tbl_bill_payment_transactions_detail WHERE transactions_summary_id = @transactions_summary_id;
+	SELECT [row],[product_code],[item_code],[customer_id],[amount] 
+	FROM tbl_bill_payment_transactions_detail 
+	WHERE [transactions_summary_id] = @transactions_summary_id AND [row_status] = @status;
 GO
 
 CREATE PROCEDURE [dbo].[sp_get_bill_payments_status_by_transactions_summary_id]
 @transactions_summary_id bigint
 AS
-	SELECT [error],[row_status],[row_num] FROM tbl_bill_payment_transactions_detail WHERE transactions_summary_id = @transactions_summary_id;
+	SELECT [error],[row_status],[row_num] 
+	FROM tbl_bill_payment_transactions_detail 
+	WHERE transactions_summary_id = @transactions_summary_id;
 GO
 
 CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_id_by_batch_id]
 @transactions_summary_id bigint
 AS
-	SELECT [id] FROM tbl_transactions_summary WHERE transactions_summary_id = @transactions_summary_id;
+	SELECT [id] 
+	FROM tbl_transactions_summary 
+	WHERE transactions_summary_id = @transactions_summary_id;
 GO
 
 CREATE PROCEDURE [dbo].[sp_update_bill_payment_upload_summary]
-@Id Bigint,
 @batch_id  NVARCHAR (256),
 @num_of_valid_records INT,
 @status NVARCHAR (50),
 @modified_date NVARCHAR (50),
 @nas_tovalidate_file NVARCHAR(MAX)
 AS
-	UPDATE tbl_transactions_summary SET num_of_valid_records=@num_of_valid_records, transaction_status=@status, modified_date=@modified_date, nas_tovalidate_file=@nas_tovalidate_file 
-	WHERE batch_id=@batch_id select @Id=@@IDENTITY;
+	UPDATE tbl_transactions_summary 
+	SET num_of_valid_records=@num_of_valid_records, transaction_status=@status, modified_date=@modified_date, nas_tovalidate_file=@nas_tovalidate_file 
+	OUTPUT INSERTED.Id
+	WHERE batch_id=@batch_id;
 GO
 
 CREATE PROCEDURE [dbo].[sp_update_bill_payments]
@@ -107,7 +115,7 @@ CREATE PROCEDURE [dbo].[sp_insert_bill_payments]
 @product_code nvarchar(100),
 @item_code nvarchar(100),
 @customer_id nvarchar(100),
-@amount bigint,
+@amount float,
 @transactions_summary_id bigint,
 @row_num int,
 @row_status nvarchar(50),

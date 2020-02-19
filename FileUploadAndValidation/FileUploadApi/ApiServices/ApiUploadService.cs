@@ -87,12 +87,11 @@ namespace FileUploadApi.ApiServices
             if(uploadOptions == null)
                 throw new AppException("Upload options must be set!.");
 
-            //uploadOptions.ItemType = GenericConstants.BillPaymentIdPlusItem;
             var batchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
             uploadResult.BatchId = batchId;
 
-            uploadOptions.NasFileLocation = await _nasRepository.SaveRawFile(batchId, stream, uploadOptions.FileExtension);
+            uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(batchId, stream, uploadOptions.FileExtension);
             stream.Seek(0, SeekOrigin.Begin);
 
             switch (uploadOptions.FileExtension)
@@ -129,6 +128,18 @@ namespace FileUploadApi.ApiServices
             
         }
 
+        public async Task PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
+        {
+            ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
+            try
+            {
+                await _bulkBillPaymentService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 
 }

@@ -11,12 +11,12 @@ namespace FileUploadApi
 
         Task<BatchFileSummary> GetBatchUploadSummary(string batchId);
 
-        Task<IEnumerable<BillPayment>> GetBillPayments(long id);
-
         Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentRowStatuses(string batchId);
 
         Task UpdateValidationResponse(UpdateValidationResponseModel updateBillPayments);
 
         Task<long> GetBatchUploadSummaryId(string batchId);
+
+        Task<IEnumerable<ConfirmedBillPaymentDto>> GetConfirmedBillPayments(string batchId);
     }
 }

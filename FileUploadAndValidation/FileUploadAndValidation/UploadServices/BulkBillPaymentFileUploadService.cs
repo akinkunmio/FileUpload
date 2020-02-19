@@ -180,9 +180,9 @@ namespace FileUploadApi
                     columnContract = ContentTypeColumnContract.BillerPaymentId();
 
                 ValidateHeaderRow(headerRow, columnContract);
-                
 
-                var contentRows = uploadOptions.ValidateHeaders ? rows.Skip(1) : rows;
+
+                var contentRows = rows.Skip(1);
 
                 var validateRowsResult = await ValidateContent(contentRows, columnContract);
 
@@ -201,7 +201,7 @@ namespace FileUploadApi
                             ProductCode = r.Columns[0].Value.ToString(),
                             ItemCode = r.Columns[1].Value.ToString(),
                             CustomerId = r.Columns[2].Value.ToString(),
-                            Amount = Convert.ToInt32(r.Columns[3].Value),
+                            Amount = Convert.ToDouble(r.Columns[3].Value),
                             BatchId = uploadResult.BatchId,
                             CreatedDate = dateTimeNow.ToString()
                         });
@@ -260,7 +260,6 @@ namespace FileUploadApi
                         .Select(r => r);
                 }
 
-
                 await _dbRepository.InsertPaymentUpload(
                     new UploadSummaryDto
                     {
@@ -271,7 +270,7 @@ namespace FileUploadApi
                         CustomerFileName = uploadOptions.FileName,
                         ItemType = uploadOptions.ItemType,
                         ContentType = uploadOptions.ContentType,
-                        NasRawFile = uploadOptions.NasFileLocation,
+                        NasRawFile = uploadOptions.RawFileLocation,
                     }, billPayments.ToList());
 
                 var toValidatePayments = billPayments.Select(b =>
@@ -288,27 +287,22 @@ namespace FileUploadApi
                 
                 FileProperty fileProperty = await _nasRepository.SaveFileToValidate(uploadResult.BatchId, toValidatePayments);
 
-                ValidationResponse validationResponse = await _billPaymentService.ValidateBillRecords(fileProperty, uploadOptions.AuthToken);
+                var validationResponse = await _billPaymentService.ValidateBillRecords(fileProperty, uploadOptions.AuthToken);
 
-                if(validationResponse.Results
-                    .Where(v => v.Status.ToLower().Equals("valid")).Count() < 50 
-                    && validationResponse.Results.Any() && validationResponse.Results.Count > 0)
-                {
-                    await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel 
-                    { 
-                         BatchId = uploadResult.BatchId,
-                         NasToValidateFile = fileProperty.Url,
-                         ModifiedDate = DateTime.Now.ToString(),
-                         NumOfValidRecords = validationResponse.Results.Where(v => v.Status.ToLower().Equals("valid")).Count(),
-                         Status = GenericConstants.AwaitingInitiation,
-                         RowStatuses = validationResponse.Results
+                if (validationResponse.NumOfRecords < 50 && validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("json"))
+                    await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
+                    {
+                        BatchId = uploadResult.BatchId,
+                        NasToValidateFile = fileProperty.Url,
+                        ModifiedDate = DateTime.Now.ToString(),
+                        NumOfValidRecords = validationResponse.Results.Where(v => v.Status.ToLower().Equals("valid")).Count(),
+                        Status = GenericConstants.AwaitingInitiation,
+                        RowStatuses = validationResponse.Results
                     });
-                }
-                else
-                {
-                    // send file location to queue
+                else if (validationResponse.NumOfRecords > 50 && !validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("queue"))
                     await _bus.PublishAsync(new BillPaymentConfirmedMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
-                }
+                else
+                    throw new AppException("Invalid response from Bill Payment Validate endpoint", (int)HttpStatusCode.InternalServerError);
 
                 return uploadResult;
             }
@@ -320,8 +314,8 @@ namespace FileUploadApi
             }
             catch (Exception exception)
             {
-                uploadResult.ErrorMessage = exception.Message;
-                return uploadResult;
+               // uploadResult.ErrorMessage = exception.Message;
+                throw new AppException(exception.Message, (int)HttpStatusCode.BadRequest, uploadResult);
             }
         }
 
@@ -407,6 +401,39 @@ namespace FileUploadApi
             }
         }
 
+        public async Task PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
+        {
+            try
+            {
+                var confirmedBillPayments = await _dbRepository.GetConfirmedBillPayments(batchId);
+
+                if (confirmedBillPayments.Count() < 0 || !confirmedBillPayments.Any())
+                    throw new AppException($"Records awaiting payment initiation not found for batch Id: {batchId}", (int)HttpStatusCode.NotFound);
+
+                var nasDto = confirmedBillPayments
+                    .Select(e =>
+                        new NasBillPaymentDto
+                        {
+                            Amount = e.Amount,
+                            CustomerId = e.CustomerId,
+                            ItemCode = e.ItemCode,
+                            ProductCode = e.ProductCode,
+                            Row = e.Row
+                        });
+
+                var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, nasDto);
+
+                await _billPaymentService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
+            }
+            catch(AppException appEx)
+            {
+                throw appEx;
+            }
+            catch(Exception ex)
+            {
+                throw new AppException("An error occured while initiating payment");
+            }
+        }
     }
 
     public class ValidateRowModel

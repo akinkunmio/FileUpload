@@ -52,10 +52,8 @@ namespace FileUploadApi.Controllers
                     ContentType = "BillPayment",
                     FileName = file.FileName.Split('.')[0],
                     FileSize = file.Length,
-                    AuthToken = HttpContext.Request.Headers["Authorization"],
                     FileExtension = Path.GetExtension(file.FileName).Replace(".", string.Empty).ToLower(),
                     ItemType = itemType,
-                    ValidateHeaders = true
                 };
 
                 using (var contentStream = file.OpenReadStream())
@@ -117,10 +115,36 @@ namespace FileUploadApi.Controllers
             return Ok(batchFileSummaryDto);
         }
 
-        [HttpGet("uploadfile/{batchId}/authorize")]
-        public async Task<IActionResult> InitiateTransactionsApprovalAsync(string batchId)
+        [HttpPost("uploadfile/{batchId}/authorize")]
+        public async Task<IActionResult> InitiateTransactionsApprovalAsync(string batchId, [FromBody] InitiatePaymentRequest request)
         {
-            throw new NotImplementedException();
+            try
+            {
+                ArgumentGuard.NotNullOrWhiteSpace(request.UserName, nameof(request.UserName));
+                ArgumentGuard.NotDefault(request.UserId, nameof(request.UserId));
+                ArgumentGuard.NotDefault(request.BusinessId, nameof(request.BusinessId));
+                ArgumentGuard.NotDefault(request.ApprovalConfigId, nameof(request.ApprovalConfigId));
+
+                var initiatePaymentOptions = new InitiatePaymentOptions()
+                {
+                    AuthToken = HttpContext.Request.Headers["Authorization"],
+                    ApprovalConfigId = request.ApprovalConfigId,
+                    BusinessId = request.BusinessId,
+                    UserId = request.UserId,
+                    UserName = request.UserName
+                };
+             
+               await _uploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
+                return Ok();
+            }
+            catch (AppException ex)
+            {
+                return new ObjectResult(new { ex.Message }) { StatusCode = ex.StatusCode, Value = ex.Value };
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!.  |" + ex.Message });
+            }
         }
 
         [HttpGet("ping")]

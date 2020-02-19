@@ -6,9 +6,9 @@ namespace FileUploadAndValidation.Helpers
 {
     public static class GenericConstants
     {
-        public static string PendingValidation = "PendingValidation";
-        public static string AwaitingInitiation = "AwaitingInitiation";
-        public static string AwaitingApproval = "AwaitingApproval";
+        public const string PendingValidation = "PendingValidation";
+        public const string AwaitingInitiation = "AwaitingInitiation";
+        public const string AwaitingApproval = "AwaitingApproval";
         public const string BillPaymentIdPlusItem = "BillPaymentId+Item";
         public const string BillPaymentId = "BillPaymentId";
         public const string FirsWht = "firswht";

@@ -11,6 +11,7 @@ using static Dapper.DefaultTypeMap;
 using System.Data;
 using FilleUploadCore.Exceptions;
 using System.Net;
+using FileUploadAndValidation.Helpers;
 
 namespace FileUploadAndValidation.Repository
 {
@@ -80,7 +81,7 @@ namespace FileUploadAndValidation.Repository
             }
             catch (Exception)
             {
-                throw new AppException("An error occured while connecting to database!.", 500);
+                throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
             }
         }
 
@@ -90,15 +91,22 @@ namespace FileUploadAndValidation.Repository
             using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
                 MatchNamesWithUnderscores = true;
-                var batchFileSummary = await sqlConnection.QueryFirstOrDefaultAsync<BatchFileSummary>(
-                    sql: @"sp_get_batch_upload_summary_by_batch_id",
-                    param: new 
-                    { 
-                        batch_id = batchId
-                    }, 
-                    commandType: CommandType.StoredProcedure);
+                try
+                {
+                    var batchFileSummary = await sqlConnection.QueryFirstOrDefaultAsync<BatchFileSummary>(
+                        sql: @"sp_get_batch_upload_summary_by_batch_id",
+                        param: new 
+                        { 
+                            batch_id = batchId
+                        }, 
+                        commandType: CommandType.StoredProcedure);
 
-                return batchFileSummary;
+                    return batchFileSummary;
+                }
+                catch (Exception)
+                {
+                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                }
             }
         }
 
@@ -108,33 +116,48 @@ namespace FileUploadAndValidation.Repository
             {
                 MatchNamesWithUnderscores = true;
 
-                var batchSummaryId = await sqlConnection.QueryFirstOrDefaultAsync<long>(
-                    sql: @"sp_get_batch_upload_summary_id_by_batch_id",
-                    param: new
-                    {
-                        batch_id = batchId
-                    },
-                    commandType: CommandType.StoredProcedure);
+                try
+                {
+                    var batchSummaryId = await sqlConnection.QueryFirstOrDefaultAsync<long>(
+                        sql: @"sp_get_batch_upload_summary_id_by_batch_id",
+                        param: new
+                        {
+                            batch_id = batchId
+                        },
+                        commandType: CommandType.StoredProcedure);
 
-                return batchSummaryId;
+                    return batchSummaryId;
+                }
+                catch (Exception)
+                {
+                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                }
             }
         }
 
-        public async Task<IEnumerable<BillPayment>> GetBillPayments(long id)
+        public async Task<IEnumerable<ConfirmedBillPaymentDto>> GetConfirmedBillPayments(string batchId)
         {
                 using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
                 {
                     MatchNamesWithUnderscores = true;
+                    try
+                    {
+                        var summaryId = GetBatchUploadSummary(batchId);
+                        var result = await sqlConnection.QueryAsync<ConfirmedBillPaymentDto>(
+                            sql: @"sp_get_confirmed_bill_payments",
+                            param: new 
+                            {
+                                payment_summary_id = summaryId,
+                                status = GenericConstants.AwaitingInitiation
+                            }, 
+                            commandType: CommandType.StoredProcedure);
 
-                    var result = await sqlConnection.QueryAsync<BillPayment>(
-                        sql: @"sp_get_bill_payments",
-                        param: new 
-                        {
-                            transactions_summary_id = id
-                        }, 
-                        commandType: CommandType.StoredProcedure);
-
-                    return result;
+                        return result;
+                    }
+                    catch(Exception) 
+                    {
+                        throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    }
                 }
         }
 
@@ -144,16 +167,23 @@ namespace FileUploadAndValidation.Repository
             {
                 MatchNamesWithUnderscores = true;
 
-                var summaryId = await GetBatchUploadSummaryId(batchId);
-                var result = await sqlConnection.QueryAsync<BillPaymentRowStatus>(
-                    sql: @"sp_get_bill_payments_status_by_batch_id",
-                    param: new
-                    {
-                        transactions_summary_id = summaryId
-                    },
-                    commandType: CommandType.StoredProcedure);
+                try
+                {
+                    var summaryId = await GetBatchUploadSummaryId(batchId);
+                    var result = await sqlConnection.QueryAsync<BillPaymentRowStatus>(
+                        sql: @"sp_get_bill_payments_status_by_batch_id",
+                        param: new
+                        {
+                            transactions_summary_id = summaryId
+                        },
+                        commandType: CommandType.StoredProcedure);
 
-                return result;
+                    return result;
+                }
+                catch(Exception)
+                {
+                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                }
             }
         }
 
@@ -163,17 +193,19 @@ namespace FileUploadAndValidation.Repository
             using (var connection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
                 connection.Open();
+
                 try
                 {
                     var fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId);
+
                     if (fileSummary == null)
                         throw new AppException($"Upload with Batch Id {updateBillPayments.BatchId} not found!.");
+
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
+
                         try
                         {
-
-
                             var summaryId =  await connection.ExecuteScalarAsync(
                                 sql: "sp_update_bill_payment_upload_summary",
                                 param: new
@@ -204,21 +236,18 @@ namespace FileUploadAndValidation.Repository
                             }
                             sqlTransaction.Commit();
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
                             sqlTransaction.Rollback();
-                            throw;
+                            throw ex;
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    throw new AppException("An error occured while updating validation to DB", (int)HttpStatusCode.InternalServerError);
+                    throw new AppException("An error occured while querying the DB |"+ex.Message, (int)HttpStatusCode.InternalServerError);
                 }
             }
-            //if does not exist throw an error
-            //then 
-            //update batchfilesummary and all transactions
         }
     }
 }

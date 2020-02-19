@@ -6,7 +6,7 @@ namespace FileUploadAndValidation.Models
 {
     public class NasBillPaymentDto
     {
-        public int Amount { get; set; }
+        public double Amount { get; set; }
         public string CustomerId { get; set; }
         public int Row { get; set; }
         public string ItemCode { get; set; }
