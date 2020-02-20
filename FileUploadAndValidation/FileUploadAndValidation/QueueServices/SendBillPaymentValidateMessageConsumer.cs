@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.QueueServices
 {
-    public class SendBillPaymentValidateMessageConsumer : IConsumer<BillPaymentValidateMessage>
+    public class SendBillPaymentValidateMessageConsumer : IConsumer<ValidationResponseData>
     {
         private readonly IBillPaymentDbRepository _billPaymentDbRepository;
         private readonly INasRepository _nasRepository;
@@ -21,17 +21,25 @@ namespace FileUploadAndValidation.QueueServices
         {
             _billPaymentDbRepository = billPaymentDbRepository;
             _nasRepository = nasRepository;
-
         }
-        public async Task Consume(ConsumeContext<BillPaymentValidateMessage> context)
+
+        public async Task Consume(ConsumeContext<ValidationResponseData> context)
         {
             var queueMessage = context.Message;
-            var validationStatuses = await _nasRepository.ExtractValidationResult(queueMessage);
+            var batchId = queueMessage.ResultLocation.Split('\\').Last().Split('.').First();
 
+            var validationStatuses = await _nasRepository.ExtractValidationResult(new BillPaymentValidateMessage 
+                ( 
+                    batchId: batchId,
+                    resultLocation: queueMessage.ResultLocation, 
+                    createdAt: queueMessage.CreatedAt 
+                )
+            );
+            
             if (validationStatuses.Count() > 0)
                 await _billPaymentDbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
                 {
-                    BatchId = queueMessage.BatchId,
+                    BatchId = batchId,
                     ModifiedDate = DateTime.Now.ToString(),
                     NasToValidateFile = queueMessage.ResultLocation,
                     NumOfValidRecords = validationStatuses.Where(v => v.Status.ToLower().Equals("valid")).Count(),
