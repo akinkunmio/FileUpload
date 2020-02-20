@@ -6,11 +6,11 @@ ENV ASPNETCORE_ENVIRONMENT Production
 
 WORKDIR /FileUploadAndValidation/FileUploadApi
 
-COPY FileUploadApi/out .
+COPY FileUploadAndValidation/FileUploadApi/out .
 
 ENV ASPNETCORE_URLS http://*:5000
 
 EXPOSE 5000
 
-ENTRYPOINT ["dotnet", "FileUploadApi.dll"]
+ENTRYPOINT ["dotnet", "FileUploadAndValidation/FileUploadApi.dll"]
 
