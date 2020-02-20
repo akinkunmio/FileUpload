@@ -20,8 +20,6 @@ namespace FileUploadAndValidation.Utils
 
         public string BillPaymentTransactionServiceUrl => _configuration["AppConfig:BillPaymentTransactionServiceUrl"];
 
-        public string BillPaymentQueueUrl => _configuration["AppConfig:BillPaymentQueueUrl"];  
-
         public string QueuePassword => _configuration["AppConfig:QueuePassword"];
 
         public string QueueUsername => _configuration["AppConfig:QueueUsername"];
@@ -40,7 +38,6 @@ namespace FileUploadAndValidation.Utils
     {
         string NasFolderLocation { get; }
         string BillPaymentTransactionServiceUrl { get; }
-        string BillPaymentQueueUrl { get; }
         string BillPaymentQueueName { get; }
         string QueuePassword { get; }
         string QueueUsername { get; }

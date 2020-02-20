@@ -24,7 +24,7 @@ namespace FileUploadAndValidation.Repository
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
+                var fileLocation = _appConfig.NasFolderLocation + @"validate\";
                 var fileName = batchId + "_validate.json";
 
                 string json = JsonConvert.SerializeObject(billPayments);
@@ -37,7 +37,7 @@ namespace FileUploadAndValidation.Repository
                 { 
                     BatchId = batchId, 
                     DataStore = 1,
-                    Url = fileLocation + fileName
+                    Url = path
                 });
             }
             catch(Exception)
@@ -46,7 +46,33 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public Task<string> SaveRawFile(string batchId, Stream stream, string extension)
+        public Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
+        {
+            try
+            {
+                var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
+                var fileName = batchId + "_confirmed.json";
+
+                string json = JsonConvert.SerializeObject(billPayments);
+
+                var path = Path.Combine(fileLocation, fileName);
+
+                File.WriteAllText(path, json);
+
+                return Task.FromResult(new FileProperty
+                {
+                    BatchId = batchId,
+                    DataStore = 1,
+                    Url = fileLocation + fileName
+                });
+            }
+            catch (Exception)
+            {
+                throw new AppException($"An error occured while saving file with batch id : {batchId} to NAS for validation", 500);
+            }
+        }
+
+        public async Task<string> SaveRawFile(string batchId, Stream stream, string extension)
         {
             var fileLocation = _appConfig.NasFolderLocation + @"\raw\";
             var fileName = batchId + "_raw." + extension;
@@ -57,26 +83,26 @@ namespace FileUploadAndValidation.Repository
             {
                 using (FileStream outputFileStream = new FileStream(path, FileMode.Create, FileAccess.Write))
                 {
-                    stream.CopyTo(outputFileStream);
+                    await stream.CopyToAsync(outputFileStream);
                 }
-                return Task.FromResult(path);
             }
             catch (Exception ex)
             {
                 throw new AppException($"An error occured while saving raw file with batch id : {batchId} to NAS "+ ex.Message, 500);
             }
+
+            return path;
         }
 
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidateMessage queueMessage)
         {
             var result = new List<RowValidationStatus>();
-            var fileLocation = Path.Combine(_appConfig.NasFolderLocation, queueMessage.ResultLocation);
 
             try
             {
-                if (File.Exists(fileLocation))
+                if (File.Exists(queueMessage.ResultLocation))
                 {
-                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(System.IO.File.ReadAllText(fileLocation));
+                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(System.IO.File.ReadAllText(queueMessage.ResultLocation));
                 }
 
             }
@@ -88,10 +114,14 @@ namespace FileUploadAndValidation.Repository
 
             return await Task.FromResult(result?.AsEnumerable());
         }
+
+      
     }
     public interface INasRepository
     {
         Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments);
+
+        Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments);
 
         Task<string> SaveRawFile(string batchId, Stream stream, string extension);
 

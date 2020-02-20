@@ -40,7 +40,7 @@ namespace FilleUploadCore.UploadManagers
 
     public class UploadOptions
     {
-        public bool ValidateHeaders { get; set; }
+        public string AuthToken { get; set; }
 
         public string ContentType { get; set; }
 
@@ -50,12 +50,21 @@ namespace FilleUploadCore.UploadManagers
 
         public string ItemType { get; set; }
 
-        public string UserName { get; set; }
-
-        public string AuthToken { get; set; }
-
         public string FileExtension { get; set; }
 
-        public string  NasFileLocation { get; set; }
+        public string  RawFileLocation { get; set; }
+    }
+
+    public class InitiatePaymentOptions
+    {
+        public string AuthToken { get; set; }
+
+        public long UserId { get; set; }
+
+        public int ApprovalConfigId { get; set; }
+
+        public string UserName { get; set; }
+
+        public int BusinessId { get; set; }
     }
 }

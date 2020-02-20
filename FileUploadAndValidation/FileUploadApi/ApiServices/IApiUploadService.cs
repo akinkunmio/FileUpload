@@ -15,5 +15,7 @@ namespace FileUploadApi.ApiServices
         Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId);
 
         Task<BatchFileSummaryDto> GetFileSummary(string batchId);
+
+        Task PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
     }
 }

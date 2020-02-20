@@ -2,6 +2,7 @@
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation.Utils;
 using FilleUploadCore.Exceptions;
+using FilleUploadCore.UploadManagers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -35,41 +36,88 @@ namespace FileUploadAndValidation.UploadServices
             ValidationResponse validateResponse;
             try
             {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
-                        $"&Url={fileProperty.Url}&BatchId={fileProperty.BatchId}");
-                
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
+                    $"&Url={fileProperty.Url}&BatchId={fileProperty.BatchId}");
 
-                    var response = await _httpClient.SendAsync(request);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer ", authToken);
 
-                    var responseResult = await response.Content.ReadAsStringAsync();
+                var response = await _httpClient.SendAsync(request);
 
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        validateResponse = JsonConvert.DeserializeObject<ValidationResponse>(responseResult);
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                    {
-                        throw new AppException("Unable to perform bill payment validation", (int)HttpStatusCode.BadRequest);
-                    }
-                    else
-                    {
-                        throw new AppException("An error occured while performing bill payment validation", (int)response.StatusCode);
-                    }
+                var responseResult = await response.Content.ReadAsStringAsync();
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    validateResponse = JsonConvert.DeserializeObject<ValidationResponse>(responseResult);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    throw new AppException("Unable to perform bill payment validation", (int)HttpStatusCode.BadRequest);
+                }
+                else
+                {
+                    throw new AppException("An error occured while performing bill payment validation", (int)response.StatusCode);
+                }
 
                 return validateResponse;
             }
             catch (Exception)
             {
-                //throw new AppException("Error occured while performing bill payment validation");
-                return new ValidationResponse 
-                {   
-                     NumOfRecords = 5,
-                     Results = new List<RowValidationStatus>(),
-                     ResultsMode = "json"
-                };
+                throw new AppException("Error occured while performing bill payment validation", (int)HttpStatusCode.InternalServerError);
+                //return new ValidationResponse
+                //{
+                //    NumOfRecords = 51,
+                //    Results = new List<RowValidationStatus>(),
+                //    ResultsMode = "queue"
+                //};
             }
 
+        }
+
+
+        public async Task ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
+        {
+            try
+            {
+                var req = JsonConvert.SerializeObject(new
+                {
+                    BusinessId = initiatePaymentOptions.BusinessId,
+                    UserId = initiatePaymentOptions.UserId,
+                    ApprovalConfigId = initiatePaymentOptions.ApprovalConfigId,
+                    UserName = initiatePaymentOptions.UserName
+                });
+
+                var request = new HttpRequestMessage(HttpMethod.Post, "/payments/bills/initiate-payment?dataStore=1" +
+                    $"&Url={fileProperty.Url}&BatchId={fileProperty.BatchId}")
+                {
+                    Content = new StringContent(req, Encoding.UTF8, "application/json")
+                };
+
+                request.Headers.Authorization = new AuthenticationHeaderValue(initiatePaymentOptions.AuthToken);
+
+                try
+                {
+                    var response = await _httpClient.SendAsync(request);
+
+                    var responseResult = await response.Content.ReadAsStringAsync();
+
+                    var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
+
+                    if (response.IsSuccessStatusCode)
+                        return;
+                }
+                catch (Exception)
+                {
+                    throw new AppException("Unknown error occured while initiating Bill Payment Initiation");
+                }
+            }
+            catch (AppException appEx)
+            {
+                throw appEx;
+            }
+            catch (Exception ex)
+            {
+                throw new AppException("Unknown error occured! Please retry. " + ex.Message);
+            }
         }
 
     }
@@ -77,5 +125,7 @@ namespace FileUploadAndValidation.UploadServices
     public interface IBillPaymentService
     {
         Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken);
+
+        Task ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
     }
 }

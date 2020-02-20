@@ -12,7 +12,7 @@ namespace FileUploadAndValidation.Models
 
         public string CustomerId { get; set; }
 
-        public int Amount { get; set; }
+        public double Amount { get; set; }
 
         public string BatchId { get; set; }
 

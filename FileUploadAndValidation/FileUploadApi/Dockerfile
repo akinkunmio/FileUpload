@@ -11,12 +11,12 @@ COPY ["FileUploadApi/FileUploadApi.csproj", "FileUploadApi/"]
 RUN dotnet restore "FileUploadApi/FileUploadApi.csproj"
 COPY . .
 WORKDIR "/src/FileUploadApi"
-RUN dotnet build "FileUploadApi.csproj" -c Release -o /app/build
+RUN dotnet build "FileUploadApi.csproj" -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish "FileUploadApi.csproj" -c Release -o /app/publish
+RUN dotnet publish "FileUploadApi.csproj" -c Release -o /app
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=publish /app .
 ENTRYPOINT ["dotnet", "FileUploadApi.dll"]
