@@ -17,6 +17,9 @@ using FileUploadAndValidation.UploadServices;
 using FileUploadAndValidation.Utils;
 using FileUploadAndValidation.Repository;
 using MassTransit;
+using MassTransit.ExtensionsDependencyInjectionIntegration;
+using FileUploadAndValidation.QueueServices;
+using Microsoft.Extensions.Hosting;
 
 namespace FileUploadApi
 {
@@ -42,7 +45,6 @@ namespace FileUploadApi
             services.AddScoped<IBillPaymentDbRepository, BillPaymentRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
-            services.AddTransient<IMassTransitQueue, MassTransitQueue>();
 
             //services.AddScoped<FirsWhtFileService>();
             //services.AddScoped<AutoPayFileService>();
@@ -96,10 +98,36 @@ namespace FileUploadApi
                 config.OperationFilter<FormFileSwaggerFilter>();
             });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2).AddViewComponentsAsServices();
+            
+            services.AddScoped<SendBillPaymentValidateMessageConsumer>();
+            services.AddMassTransit(c =>
+            {
+                c.AddConsumer<SendBillPaymentValidateMessageConsumer>();
+            });
+
+            services.AddSingleton(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+            {
+                var host = cfg.Host(new Uri($"{Configuration["AppSettings:BillPaymentQueueUrl"]}"), h =>
+                {
+                    h.Username(Configuration["AppSettings:QueueUserName"]);
+                    h.Password(Configuration["AppSettings:QueuePassword"]);
+                });
+
+                cfg.ReceiveEndpoint(host, "qb-billpayments-latest", e =>
+                {
+                    e.PrefetchCount = 16;
+
+                    e.LoadFrom(provider);
+                    EndpointConvention.Map<SendBillPaymentValidateMessageConsumer>(e.InputAddress);
+                });
+            }));
+
+            services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
+            services.AddSingleton<IHostedService, BusService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {

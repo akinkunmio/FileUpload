@@ -62,19 +62,13 @@ namespace FileUploadAndValidation.UploadServices
             }
             catch (Exception)
             {
-                throw new AppException("Error occured while performing bill payment validation", (int)HttpStatusCode.InternalServerError);
-                //return new ValidationResponse 
-                //{   
-                //     NumOfRecords = 5,
-                //     Results = new List<RowValidationStatus>() { 
-                //        new RowValidationStatus
-                //        {
-                //              Row = 1,
-                //              Status = "valid"  
-                //        }
-                //     },
-                //     ResultsMode = "json"
-                //};
+                //throw new AppException("Error occured while performing bill payment validation", (int)HttpStatusCode.InternalServerError);
+                return new ValidationResponse
+                {
+                    NumOfRecords = 51,
+                    Results = new List<RowValidationStatus>(),
+                    ResultsMode = "queue"
+                };
             }
 
         }

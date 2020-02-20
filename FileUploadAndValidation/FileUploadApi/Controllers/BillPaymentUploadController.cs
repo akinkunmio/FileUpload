@@ -74,7 +74,7 @@ namespace FileUploadApi.Controllers
         }
 
         [HttpGet("uploadfile/{batchId}/results")]
-        public async Task<IActionResult> GetFileUploadResult([FromQuery]string batchId)
+        public async Task<IActionResult> GetFileUploadResult(string batchId)
         {
             // checks bill payment transactions table for rows that have scheduleId
             //and returns status,transaction details,

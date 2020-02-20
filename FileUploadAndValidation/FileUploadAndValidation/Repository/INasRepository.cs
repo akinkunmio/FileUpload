@@ -24,7 +24,7 @@ namespace FileUploadAndValidation.Repository
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
+                var fileLocation = _appConfig.NasFolderLocation + @"validate\";
                 var fileName = batchId + "_validate.json";
 
                 string json = JsonConvert.SerializeObject(billPayments);
@@ -37,7 +37,7 @@ namespace FileUploadAndValidation.Repository
                 { 
                     BatchId = batchId, 
                     DataStore = 1,
-                    Url = fileLocation + fileName
+                    Url = path
                 });
             }
             catch(Exception)
@@ -97,13 +97,12 @@ namespace FileUploadAndValidation.Repository
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidateMessage queueMessage)
         {
             var result = new List<RowValidationStatus>();
-            var fileLocation = Path.Combine(_appConfig.NasFolderLocation, queueMessage.ResultLocation);
 
             try
             {
-                if (File.Exists(fileLocation))
+                if (File.Exists(queueMessage.ResultLocation))
                 {
-                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(System.IO.File.ReadAllText(fileLocation));
+                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(System.IO.File.ReadAllText(queueMessage.ResultLocation));
                 }
 
             }
