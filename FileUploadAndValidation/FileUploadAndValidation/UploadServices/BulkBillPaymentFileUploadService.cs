@@ -298,7 +298,7 @@ namespace FileUploadApi
                         Status = GenericConstants.AwaitingInitiation,
                         RowStatuses = validationResponse.Results
                     });
-                else if (validationResponse.NumOfRecords > 50 && !validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("queue"))
+                else if (validationResponse.NumOfRecords > GenericConstants.RECORDS_SMALL_SIZE && !validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("queue"))
                     await _bus.Publish(new BillPaymentValidateMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
                 else
                     throw new AppException("Invalid response from Bill Payment Validate endpoint", (int)HttpStatusCode.InternalServerError);
