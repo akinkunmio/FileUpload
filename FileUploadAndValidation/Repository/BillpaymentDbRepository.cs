@@ -128,7 +128,7 @@ namespace FileUploadAndValidation.Repository
 
                     return batchSummaryId;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
@@ -161,7 +161,7 @@ namespace FileUploadAndValidation.Repository
                 }
         }
 
-        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentRowStatuses(string batchId)
+        public async Task<IEnumerable<BillPaymentRowStatusDto>> GetBillPaymentRowStatuses(string batchId)
         {
             using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
@@ -170,8 +170,8 @@ namespace FileUploadAndValidation.Repository
                 try
                 {
                     var summaryId = await GetBatchUploadSummaryId(batchId);
-                    var result = await sqlConnection.QueryAsync<BillPaymentRowStatus>(
-                        sql: @"sp_get_bill_payments_status_by_batch_id",
+                    var result = await sqlConnection.QueryAsync<BillPaymentRowStatusDto>(
+                        sql: @"sp_get_bill_payments_status_by_transactions_summary_id",
                         param: new
                         {
                             transactions_summary_id = summaryId

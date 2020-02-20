@@ -90,7 +90,7 @@ namespace FileUploadApi.Controllers
                 return BadRequest("Unknown error occured. Please retry!. " + ex.Message);
             }
 
-            return Ok(billPayments);
+            return Ok(new { batchId, billPayments });
         }
 
         [HttpGet("uploadfile/{batchId}")]

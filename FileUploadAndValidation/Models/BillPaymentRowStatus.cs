@@ -12,4 +12,13 @@ namespace FileUploadAndValidation.Models
 
         public string Status { get; set; }
     }
+
+    public class BillPaymentRowStatusDto
+    {
+        public string Error { get; set; }
+
+        public string RowStatus { get; set; }
+
+        public int RowNum { get; set; }
+    }
 }

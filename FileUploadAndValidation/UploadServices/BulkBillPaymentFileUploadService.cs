@@ -325,8 +325,15 @@ namespace FileUploadApi
 
             try
             {
-                billPaymentStatuses = await _dbRepository
+                var billPaymentStatusesDto = await _dbRepository
                     .GetBillPaymentRowStatuses(batchId);
+
+                billPaymentStatuses = billPaymentStatusesDto.Select(s => new BillPaymentRowStatus
+                 {
+                      Error = s.Error,
+                      Row = s.RowNum,
+                      Status = s.RowStatus
+                 });
 
                 if (billPaymentStatuses.Count() < 0)
                     throw new AppException($"Upload with Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);

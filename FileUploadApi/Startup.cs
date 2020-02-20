@@ -107,13 +107,13 @@ namespace FileUploadApi
 
             services.AddSingleton(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
-                var host = cfg.Host(new Uri(@"{Configuration['AppSettings:RabbitMqUrl']}"), h =>
+                var host = cfg.Host(new Uri(Configuration["AppConfig:RabbitMqUrl"]), h =>
                 {
-                    h.Username(Configuration["AppSettings:QueueUserName"]);
-                    h.Password(Configuration["AppSettings:QueuePassword"]);
+                    h.Username(Configuration["AppConfig:QueueUserName"]);
+                    h.Password(Configuration["AppConfig:QueuePassword"]);
                 });
 
-                cfg.ReceiveEndpoint(host, "qb-billpayments-latest", e =>
+                cfg.ReceiveEndpoint(host, Configuration["AppConfig:BillPaymentQueueName"], e =>
                 {
                     e.PrefetchCount = 16;
 
