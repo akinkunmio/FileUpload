@@ -107,7 +107,7 @@ namespace FileUploadApi
 
             services.AddSingleton(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
-                var host = cfg.Host(new Uri($"{Configuration["AppSettings:BillPaymentQueueUrl"]}"), h =>
+                var host = cfg.Host(new Uri($"{Configuration["AppSettings:RabbitMqUrl"]}"), h =>
                 {
                     h.Username(Configuration["AppSettings:QueueUserName"]);
                     h.Password(Configuration["AppSettings:QueuePassword"]);
