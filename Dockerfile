@@ -4,13 +4,14 @@ MAINTAINER Akinkunmi_Okunola <akinkunmi.okunola@interswitchgroup.com>
 
 ENV ASPNETCORE_ENVIRONMENT Production
 
-WORKDIR /FileUploadAndValidation/FileUploadApi
+WORKDIR /src/FileUploadApi
 
-COPY FileUploadAndValidation/FileUploadApi/out .
+COPY ["FileUploadApi/FileUploadApi.csproj", "FileUploadApi/"]
 
 ENV ASPNETCORE_URLS http://*:5000
 
 EXPOSE 5000
 
-ENTRYPOINT ["dotnet", "FileUploadAndValidation/FileUploadApi.dll"]
+ENTRYPOINT ["dotnet", "FileUploadApi.dll"]
+
 
