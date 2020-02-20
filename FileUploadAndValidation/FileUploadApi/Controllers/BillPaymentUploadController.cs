@@ -76,8 +76,6 @@ namespace FileUploadApi.Controllers
         [HttpGet("uploadfile/{batchId}/results")]
         public async Task<IActionResult> GetFileUploadResult(string batchId)
         {
-            // checks bill payment transactions table for rows that have scheduleId
-            //and returns status,transaction details,
             IEnumerable<BillPaymentRowStatus> billPayments;
             try
             {
@@ -135,7 +133,6 @@ namespace FileUploadApi.Controllers
                 };
              
                await _uploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
-                return Ok();
             }
             catch (AppException ex)
             {
@@ -145,6 +142,8 @@ namespace FileUploadApi.Controllers
             {
                 return BadRequest(new { errorMessage = "Unknown error occured. Please retry!.  |" + ex.Message });
             }
+
+            return Ok();
         }
 
         [HttpGet("ping")]

@@ -103,7 +103,7 @@ namespace FileUploadAndValidation.UploadServices
                     var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
 
                     if (response.IsSuccessStatusCode)
-                        return;
+                      return;
                 }
                 catch (Exception)
                 {
