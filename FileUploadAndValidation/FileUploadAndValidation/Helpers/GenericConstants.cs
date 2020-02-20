@@ -15,6 +15,7 @@ namespace FileUploadAndValidation.Helpers
         public const string Autopay = "autopay";
         public const string Sms = "sms";
         public const string BillPayment = "billpayment";
-        public const string ValidateBillerTransactions = "/qbtrans/api/v1/payments/bills/validate"; 
+        public const string ValidateBillerTransactions = "/qbtrans/api/v1/payments/bills/validate";
+        public const int RECORDS_SMALL_SIZE = 50;
     }
 }

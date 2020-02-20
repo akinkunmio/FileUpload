@@ -288,7 +288,7 @@ namespace FileUploadApi
 
                 var validationResponse = await _billPaymentService.ValidateBillRecords(fileProperty, uploadOptions.AuthToken);
 
-                if (validationResponse.NumOfRecords <= 50 && validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("json"))
+                if (validationResponse.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("json"))
                     await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
                     {
                         BatchId = uploadResult.BatchId,
