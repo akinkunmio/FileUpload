@@ -4,7 +4,7 @@ MAINTAINER Akinkunmi_Okunola <akinkunmi.okunola@interswitchgroup.com>
 
 ENV ASPNETCORE_ENVIRONMENT Production
 
-WORKDIR /FileUploadApi
+WORKDIR /FileUploadAndValidation/FileUploadApi
 
 COPY FileUploadApi/out .
 
