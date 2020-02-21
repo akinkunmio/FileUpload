@@ -6,9 +6,7 @@ ENV ASPNETCORE_ENVIRONMENT Production
 
 WORKDIR /FileUploadApi
 
-RUN ls
-
-OPY FileUploadApi/out .
+COPY FileUploadApi/out .
 
 ENV ASPNETCORE_URLS http://*:5000
 
