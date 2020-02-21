@@ -4,9 +4,11 @@ MAINTAINER Akinkunmi_Okunola <akinkunmi.okunola@interswitchgroup.com>
 
 ENV ASPNETCORE_ENVIRONMENT Production
 
-WORKDIR /src/FileUploadApi
+WORKDIR /FileUploadApi
 
-COPY ["FileUploadApi/FileUploadApi.csproj", "FileUploadApi/"]
+RUN ls
+
+OPY FileUploadApi/out .
 
 ENV ASPNETCORE_URLS http://*:5000
 
