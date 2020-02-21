@@ -318,7 +318,7 @@ namespace FileUploadApi
             }
         }
 
-        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentResults(string batchId)
+        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentResults(string batchId, PaginationFilter pagination)
         {
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
@@ -326,7 +326,7 @@ namespace FileUploadApi
             try
             {
                 var billPaymentStatusesDto = await _dbRepository
-                    .GetBillPaymentRowStatuses(batchId);
+                    .GetBillPaymentRowStatuses(batchId, pagination);
 
                 billPaymentStatuses = billPaymentStatusesDto.Select(s => new BillPaymentRowStatus
                  {

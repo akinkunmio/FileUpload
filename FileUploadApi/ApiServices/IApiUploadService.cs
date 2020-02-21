@@ -12,7 +12,7 @@ namespace FileUploadApi.ApiServices
     {
         Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream);
 
-        Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId);
+        Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination);
 
         Task<BatchFileSummaryDto> GetFileSummary(string batchId);
 

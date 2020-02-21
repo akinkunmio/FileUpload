@@ -16,7 +16,7 @@ namespace FileUploadApi.Services
 
         Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult);
 
-        Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentResults(string batchId);
+        Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentResults(string batchId, PaginationFilter pagination);
 
         Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId);
 

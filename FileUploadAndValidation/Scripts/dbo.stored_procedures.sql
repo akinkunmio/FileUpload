@@ -74,11 +74,19 @@ AS
 GO
 
 CREATE PROCEDURE [dbo].[sp_get_bill_payments_status_by_transactions_summary_id]
-@transactions_summary_id bigint
+@transactions_summary_id bigint,
+@page_size int,
+@page_number int
 AS
+	
 	SELECT [error],[row_status],[row_num] 
-	FROM tbl_bill_payment_transactions_detail 
-	WHERE transactions_summary_id = @transactions_summary_id;
+	FROM    ( SELECT   *, ROW_NUMBER() over (order by Id desc) AS RowNum
+          FROM      tbl_bill_payment_transactions_detail
+          WHERE     transactions_summary_id = @transactions_summary_id
+        ) AS RowConstrainedResult
+	WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
+    AND RowNum < @page_number * @page_size + 1
+	ORDER BY RowNum
 GO
 
 CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_id_by_batch_id]

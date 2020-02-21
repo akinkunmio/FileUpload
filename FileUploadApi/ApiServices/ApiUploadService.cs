@@ -64,13 +64,13 @@ namespace FileUploadApi.ApiServices
             return batchFileSummaryDto;
         }
 
-        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId)
+        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
         {
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses;
 
             try
             {
-                billPaymentStatuses = await _bulkBillPaymentService.GetBillPaymentResults(batchId);
+                billPaymentStatuses = await _bulkBillPaymentService.GetBillPaymentResults(batchId,pagination);
             }
             catch (Exception)
             {

@@ -161,7 +161,7 @@ namespace FileUploadAndValidation.Repository
                 }
         }
 
-        public async Task<IEnumerable<BillPaymentRowStatusDto>> GetBillPaymentRowStatuses(string batchId)
+        public async Task<IEnumerable<BillPaymentRowStatusDto>> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination)
         {
             using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
@@ -174,13 +174,15 @@ namespace FileUploadAndValidation.Repository
                         sql: @"sp_get_bill_payments_status_by_transactions_summary_id",
                         param: new
                         {
-                            transactions_summary_id = summaryId
+                            transactions_summary_id = summaryId,
+                            page_size = pagination.PageSize,
+                            page_number = pagination.PageNumber
                         },
                         commandType: CommandType.StoredProcedure);
 
                     return result;
                 }
-                catch(Exception)
+                catch(Exception ex)
                 {
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }

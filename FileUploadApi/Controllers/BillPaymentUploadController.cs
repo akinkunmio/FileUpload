@@ -74,12 +74,25 @@ namespace FileUploadApi.Controllers
         }
 
         [HttpGet("uploadfile/{batchId}/results")]
-        public async Task<IActionResult> GetFileUploadResult(string batchId)
+        public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
-            IEnumerable<BillPaymentRowStatus> billPayments;
+            var paginationFilter = 
+                new PaginationFilter 
+                { 
+                    PageNumber = pagination.PageNumber,
+                    PageSize = pagination.PageSize 
+                };
+
+            var response = new PagedResponse<BillPaymentRowStatus>()
+            {
+                PageSize = paginationFilter.PageSize,
+                PageNumber = paginationFilter.PageNumber,
+            };
+
             try
             {
-                billPayments = await _uploadService.GetBillPaymentsStatus(batchId);
+                response.Data = await _uploadService.GetBillPaymentsStatus(batchId, paginationFilter);
+
             }
             catch(AppException appEx)
             {
@@ -90,7 +103,7 @@ namespace FileUploadApi.Controllers
                 return BadRequest("Unknown error occured. Please retry!. " + ex.Message);
             }
 
-            return Ok(new { batchId, billPayments });
+            return Ok(new { batchId, response });
         }
 
         [HttpGet("uploadfile/{batchId}")]
