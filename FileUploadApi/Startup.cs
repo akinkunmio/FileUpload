@@ -97,6 +97,7 @@ namespace FileUploadApi
 
                 config.OperationFilter<FormFileSwaggerFilter>();
             });
+            services.AddCors();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2).AddViewComponentsAsServices();
             
             services.AddScoped<SendBillPaymentValidateMessageConsumer>();
@@ -141,6 +142,10 @@ namespace FileUploadApi
 
             app.UseHealthChecks(path: "/health");
             app.UseHttpsRedirection();
+            app.UseCors(options => options
+               .AllowAnyOrigin()
+               .AllowAnyHeader()
+               .AllowAnyMethod());
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUI(c => {
