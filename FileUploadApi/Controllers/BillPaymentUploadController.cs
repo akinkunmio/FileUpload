@@ -16,6 +16,7 @@ using FilleUploadCore.Helpers;
 using FilleUploadCore.UploadManagers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace FileUploadApi.Controllers
 {
@@ -24,11 +25,13 @@ namespace FileUploadApi.Controllers
     public class BillPaymentUploadController : ControllerBase
     {
         private readonly IApiUploadService _uploadService;
+        private readonly ILogger<BillPaymentUploadController> _logger;
       
 
-        public BillPaymentUploadController(IApiUploadService uploadService)
+        public BillPaymentUploadController(IApiUploadService uploadService, ILogger<BillPaymentUploadController> logger)
         {
             _uploadService = uploadService;
+            _logger = logger;
         }
        
         [HttpPost("uploadfile/{itemType}")]
@@ -40,16 +43,10 @@ namespace FileUploadApi.Controllers
             
             try
             {
-                if (string.IsNullOrEmpty(itemType))
-                    throw new AppException("Item type cannot be empty");
-
-                if (!itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) 
-                    && !itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
-                    throw new AppException("Invalid Item Type specified");
-           
                 var uploadOptions = new UploadOptions
                 {
-                    ContentType = "BillPayment",
+                    AuthToken = HttpContext.Request.Headers["Authorization"],
+                    ContentType = GenericConstants.BillPayment,
                     FileName = file.FileName.Split('.')[0],
                     FileSize = file.Length,
                     FileExtension = Path.GetExtension(file.FileName).Replace(".", string.Empty).ToLower(),
@@ -61,13 +58,22 @@ namespace FileUploadApi.Controllers
                     uploadResult = await _uploadService.UploadFileAsync(uploadOptions, contentStream);
                 }
             }
-            catch(AppException appEx)
+            catch(AppException ex)
             {
-                return new ObjectResult(new { appEx.Message }) { StatusCode = appEx.StatusCode, Value = appEx.Value };
+                _logger.LogError("Could not successfully conclude the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult(new { ex.Message });
+                uploadResult.ErrorMessage = ex.Message;
+
+                result.StatusCode = ex.StatusCode; result.Value = uploadResult;
+
+                return result;
             }
             catch(Exception ex)
             {
-                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!.  |"+ex.Message });
+                _logger.LogError("An Unexpected Error occured during Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!. |"+ex.Message });
             }
             
             return Ok(uploadResult);
@@ -92,15 +98,23 @@ namespace FileUploadApi.Controllers
             try
             {
                 response.Data = await _uploadService.GetBillPaymentsStatus(batchId, paginationFilter);
-
             }
-            catch(AppException appEx)
+            catch(AppException ex)
             {
-                return new ObjectResult(new { errorMessage = appEx.Message }) { StatusCode = appEx.StatusCode };
+                _logger.LogError("Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult(new { ex.Message });
+
+                result.StatusCode = ex.StatusCode; 
+                result.Value = ex.Value;
+
+                return result;
             }
             catch (Exception ex)
             {
-                return BadRequest("Unknown error occured. Please retry!. " + ex.Message);
+                _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                return BadRequest("Unknown error occured. Please retry!. |" + ex.Message);
             }
 
             return Ok(new { batchId, response });
@@ -114,12 +128,21 @@ namespace FileUploadApi.Controllers
             {
                 batchFileSummaryDto = await _uploadService.GetFileSummary(batchId);
             }
-            catch (AppException appEx)
+            catch (AppException ex)
             {
-                return new ObjectResult(new { errorMessage = appEx.Message }) { StatusCode = appEx.StatusCode };
+                _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult(new { ex.Message });
+
+                result.StatusCode = ex.StatusCode; 
+                result.Value = ex.Value;
+
+                return result;
             }
             catch (Exception ex)
             {
+                _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
                 return BadRequest("Unknown error occured. Please retry!. " + ex.Message);
             }
 
@@ -149,23 +172,24 @@ namespace FileUploadApi.Controllers
             }
             catch (AppException ex)
             {
-                return new ObjectResult(new { ex.Message }) { StatusCode = ex.StatusCode, Value = ex.Value };
+                _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult(new { ex.Message });
+
+                result.StatusCode = ex.StatusCode; 
+                result.Value = ex.Value;
+
+                return result;
             }
             catch(Exception ex)
             {
+                _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
                 return BadRequest(new { errorMessage = "Unknown error occured. Please retry!.  |" + ex.Message });
             }
 
-            return Ok();
-        }
-
-        [HttpGet("ping")]
-        public IActionResult Get()
-        {
-            return Ok(new string[] { "hello world", "this is upload service"});
+            return Ok(new { Status = "PaymentInitiated" });
         }
 
     }
-
-   
 }

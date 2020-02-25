@@ -51,11 +51,17 @@ namespace FileUploadApi.ApiServices
 
         public async Task<BatchFileSummaryDto> GetFileSummary(string batchId)
         {
+            ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
+
             BatchFileSummaryDto batchFileSummaryDto;
 
             try
             {
                 batchFileSummaryDto = await _bulkBillPaymentService.GetBatchUploadSummary(batchId);
+            }
+            catch (AppException)
+            {
+                throw;
             }
             catch (Exception)
             {
@@ -66,11 +72,19 @@ namespace FileUploadApi.ApiServices
 
         public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
         {
+            ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
+            ArgumentGuard.NotZero(pagination.PageNumber, nameof(pagination.PageNumber));
+            ArgumentGuard.NotZero(pagination.PageSize, nameof(pagination.PageSize));
+
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses;
 
             try
             {
-                billPaymentStatuses = await _bulkBillPaymentService.GetBillPaymentResults(batchId,pagination);
+                billPaymentStatuses = await _bulkBillPaymentService.GetBillPaymentResults(batchId, pagination);
+            }
+            catch (AppException)
+            {
+                throw;
             }
             catch (Exception)
             {
@@ -81,6 +95,19 @@ namespace FileUploadApi.ApiServices
 
         public async Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream)
         {
+        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.AuthToken, nameof(uploadOptions.AuthToken));
+        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
+        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileExtension, nameof(uploadOptions.FileExtension));
+        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileName, nameof(uploadOptions.FileName));
+        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.RawFileLocation, nameof(uploadOptions.RawFileLocation));
+        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
+        //    ArgumentGuard.NotZero(stream.Length, nameof(stream.Length));
+
+
+            if (!uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
+                && !uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
+                throw new AppException("Invalid Item Type specified");
+
             IEnumerable<Row> rows = new List<Row>();
             var uploadResult = new UploadResult();
 
@@ -89,11 +116,9 @@ namespace FileUploadApi.ApiServices
 
             var batchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
-            uploadResult.BatchId = batchId;
-
             uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(batchId, stream, uploadOptions.FileExtension);
             stream.Seek(0, SeekOrigin.Begin);
-
+            
             switch (uploadOptions.FileExtension)
             {
                 case "txt":
@@ -115,25 +140,37 @@ namespace FileUploadApi.ApiServices
             switch (uploadOptions.ContentType.ToLower())
             {
                 case "firs_wht":
-                    return await _firsWhtService.Upload(uploadOptions, rows, uploadResult);
+                    return await _firsWhtService.Upload(uploadOptions, rows, batchId);
                 case "autopay":
-                    return await _autoPayService.Upload(uploadOptions, rows, uploadResult);
+                    return await _autoPayService.Upload(uploadOptions, rows, batchId);
                 case "sms":
-                    return await _bulkSmsService.Upload(uploadOptions, rows, uploadResult);
+                    return await _bulkSmsService.Upload(uploadOptions, rows, batchId);
                 case "billpayment":
-                    return await _bulkBillPaymentService.Upload(uploadOptions, rows, uploadResult);
+                    uploadResult = await _bulkBillPaymentService.Upload(uploadOptions, rows, batchId);
+                    break;
                 default:
                     throw new AppException("Content type not supported!.");
             }
-            
+
+            return uploadResult;
         }
 
         public async Task PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
+            ArgumentGuard.NotNullOrWhiteSpace(initiatePaymentOptions.AuthToken, nameof(initiatePaymentOptions.AuthToken));
+            ArgumentGuard.NotNull(initiatePaymentOptions.BusinessId, nameof(initiatePaymentOptions.BusinessId));
+            ArgumentGuard.NotNull(initiatePaymentOptions.ApprovalConfigId, nameof(initiatePaymentOptions.ApprovalConfigId));
+            ArgumentGuard.NotNull(initiatePaymentOptions.UserId, nameof(initiatePaymentOptions.UserId));
+            ArgumentGuard.NotNullOrWhiteSpace(initiatePaymentOptions.UserName, nameof(initiatePaymentOptions.UserName));
+
             try
             {
                 await _bulkBillPaymentService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
+            }
+            catch(AppException)
+            {
+                throw;
             }
             catch (Exception)
             {

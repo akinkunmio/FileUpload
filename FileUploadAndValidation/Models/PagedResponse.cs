@@ -22,10 +22,6 @@ namespace FileUploadAndValidation.Models
         public int? PageSize { get; set; }
 
         public int? PageNumber { get; set; }
-
-        public string PreviousPage { get; set; }
-
-        public string NextPage { get; set; }
     }
 
     public class PaginationFilter

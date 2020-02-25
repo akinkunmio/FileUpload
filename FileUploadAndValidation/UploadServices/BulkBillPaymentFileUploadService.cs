@@ -151,7 +151,7 @@ namespace FileUploadApi
             }
         }
 
-        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult)
+        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, string batchId)
         {
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
@@ -160,13 +160,14 @@ namespace FileUploadApi
             var headerRow = new Row();
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPayment> nonDistinct = new List<BillPayment>();
+            var uploadResult = new UploadResult();
+            uploadResult.BatchId = batchId;
             uploadResult.RowsCount = rows.Count();
 
             try
             {
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.");
-
                 
                 headerRow = rows.First();
 
@@ -179,7 +180,6 @@ namespace FileUploadApi
                     columnContract = ContentTypeColumnContract.BillerPaymentId();
 
                 ValidateHeaderRow(headerRow, columnContract);
-
 
                 var contentRows = rows.Skip(1);
 
@@ -211,7 +211,7 @@ namespace FileUploadApi
                         .Equals(GenericConstants.BillPaymentId.ToLower()))
                     {
                         nonDistinct = billPayments
-                            .GroupBy(b => new { b.ProductCode, b.CustomerId })
+                            ?.GroupBy(b => new { b.ProductCode, b.CustomerId })
                             .Where(g => g.Count() > 1)
                             .SelectMany(r => r);
 
@@ -235,7 +235,7 @@ namespace FileUploadApi
                         .Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
                     {
                         nonDistinct = billPayments
-                            .GroupBy(b => new { b.ItemCode, b.CustomerId })
+                            ?.GroupBy(b => new { b.ItemCode, b.CustomerId })
                             .Where(g => g.Count() > 1)
                             .SelectMany(r => r);
 
@@ -313,8 +313,8 @@ namespace FileUploadApi
             }
             catch (Exception exception)
             {
-               // uploadResult.ErrorMessage = exception.Message;
-                throw new AppException(exception.Message, (int)HttpStatusCode.BadRequest, uploadResult);
+                uploadResult.ErrorMessage = exception.Message;
+                throw new AppException(exception.Message, (int)HttpStatusCode.InternalServerError, uploadResult);
             }
         }
 
@@ -429,9 +429,11 @@ namespace FileUploadApi
 
                 var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, nasDto);
 
-                await _billPaymentService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
+                var result = await _billPaymentService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
+
+                await _dbRepository.UpdateBillPaymentInitiation(batchId);
             }
-            catch(AppException appEx)
+            catch (AppException appEx)
             {
                 throw appEx;
             }

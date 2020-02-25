@@ -49,5 +49,13 @@ namespace FilleUploadCore.Helpers
             }
         }
 
+        public static void NotZero(long argument, string argumentName)
+        {
+            if (argument == 0)
+            {
+                throw new AppException($"'{argumentName}' cannot have zero value or default");
+            }
+        }
+
     }
 }

@@ -20,6 +20,8 @@ using MassTransit;
 using MassTransit.ExtensionsDependencyInjectionIntegration;
 using FileUploadAndValidation.QueueServices;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace FileUploadApi
 {
@@ -41,7 +43,7 @@ namespace FileUploadApi
             services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
 
             services.AddSingleton<IAppConfig, AppConfig>();
-            services.AddHttpClient<IBillPaymentService, BillPaymentService>();
+            services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
             services.AddScoped<IBillPaymentDbRepository, BillPaymentRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
@@ -128,7 +130,7 @@ namespace FileUploadApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -140,12 +142,18 @@ namespace FileUploadApi
                 app.UseHsts();
             }
 
+            loggerFactory.AddSerilog();
+
             app.UseHealthChecks(path: "/health");
             app.UseHttpsRedirection();
+
             app.UseCors(options => options
                .AllowAnyOrigin()
                .AllowAnyHeader()
-               .AllowAnyMethod());
+               .AllowAnyMethod()
+               .AllowCredentials()
+               );
+
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUI(c => {

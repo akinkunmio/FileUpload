@@ -3,6 +3,7 @@ using FileUploadAndValidation.Models;
 using FileUploadAndValidation.Utils;
 using FilleUploadCore.Exceptions;
 using FilleUploadCore.UploadManagers;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,14 +15,15 @@ using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.UploadServices
 {
-    public class BillPaymentService : IBillPaymentService
+    public class BillPaymentHttpService : IBillPaymentService
     {
         private readonly HttpClient _httpClient;
         private readonly IAppConfig _appConfig;
-
-        public BillPaymentService(HttpClient httpClient, IAppConfig appConfig)
+        private readonly ILogger<BillPaymentHttpService> _logger;
+        public BillPaymentHttpService(HttpClient httpClient, IAppConfig appConfig, ILogger<BillPaymentHttpService> logger)
         {
             _appConfig = appConfig;
+            _logger = logger;
             _httpClient = httpClient;
 
             _httpClient = httpClient;
@@ -60,8 +62,9 @@ namespace FileUploadAndValidation.UploadServices
 
                 return validateResponse;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
                 throw new AppException("Error occured while performing bill payment validation", (int)HttpStatusCode.InternalServerError);
                 //return new ValidationResponse
                 //{
@@ -74,7 +77,7 @@ namespace FileUploadAndValidation.UploadServices
         }
 
 
-        public async Task ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
+        public async Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
         {
             try
             {
@@ -103,16 +106,18 @@ namespace FileUploadAndValidation.UploadServices
                     var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
 
                     if (response.IsSuccessStatusCode)
-                      return;
-                }
+                        return new ConfirmedBillResponse { PaymentInitiated = true };
+                    else
+                        return new ConfirmedBillResponse { PaymentInitiated = false };
+;                }
                 catch (Exception)
                 {
                     throw new AppException("Unknown error occured while initiating Bill Payment Initiation");
                 }
             }
-            catch (AppException appEx)
+            catch (AppException ex)
             {
-                throw appEx;
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -126,6 +131,11 @@ namespace FileUploadAndValidation.UploadServices
     {
         Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken);
 
-        Task ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
+        Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
+    }
+
+    public class ConfirmedBillResponse
+    {
+        public bool PaymentInitiated { get; set; }
     }
 }

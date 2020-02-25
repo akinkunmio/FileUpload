@@ -59,12 +59,12 @@ namespace FilleUploadCore.UploadManagers
     {
         public string AuthToken { get; set; }
 
-        public long UserId { get; set; }
+        public long? UserId { get; set; }
 
-        public int ApprovalConfigId { get; set; }
+        public int? ApprovalConfigId { get; set; }
 
         public string UserName { get; set; }
 
-        public int BusinessId { get; set; }
+        public int? BusinessId { get; set; }
     }
 }

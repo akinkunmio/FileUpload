@@ -2,6 +2,7 @@
 using CsvHelper.Configuration;
 using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,6 +15,12 @@ namespace FileUploadAndValidation.FileReaderImpl
 {
     public class TxtFileReader : IFileReader
     {
+        private readonly ILogger<TxtFileReader> _logger;
+        public TxtFileReader(ILogger<TxtFileReader> logger)
+        {
+            _logger = logger;
+        }
+
         public IEnumerable<Row> Read(Stream stream)
         {
             var rowList = new List<Row>();
@@ -70,6 +77,8 @@ namespace FileUploadAndValidation.FileReaderImpl
             }
             catch (Exception ex)
             {
+                _logger.LogError("Could not successfully Extract Txt file : {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
                 throw new AppException("An error occured while extracting content of file!." + ex.Message, (int)HttpStatusCode.InternalServerError);
             }
 

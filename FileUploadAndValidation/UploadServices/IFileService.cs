@@ -14,7 +14,7 @@ namespace FileUploadApi.Services
     {
         Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts);
 
-        Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult);
+        Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, string batchId);
 
         Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentResults(string batchId, PaginationFilter pagination);
 
