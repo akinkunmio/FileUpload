@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FileUploadAndValidation.QueueMessages;
 using FileUploadAndValidation;
+using FileUploadAndValidation.UploadServices;
 
 namespace FileUploadApi.Services
 {
@@ -22,7 +23,7 @@ namespace FileUploadApi.Services
 
         Task UpdateStatusFromQueue(BillPaymentValidateMessage queueMessage);
 
-        Task PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
+        Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
     }
    
 }

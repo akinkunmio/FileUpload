@@ -147,17 +147,21 @@ namespace FileUploadAndValidation.Repository
                 MatchNamesWithUnderscores = true;
                 try
                 {
+                    var summary = await GetBatchUploadSummary(batchId);
+
+                    if (!summary.TransactionStatus.ToLower().Equals(GenericConstants.AwaitingInitiation.ToLower()))
+                        throw new AppException($"Upload Batch Id: '{batchId}' is not in awaiting initiation status!.");
+                    
                     var summaryId = await GetBatchUploadSummaryId(batchId);
 
                     if (summaryId == 0)
                         throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.");
 
                     var result = await sqlConnection.QueryAsync<ConfirmedBillPaymentDto>(
-                        sql: @"sp_get_confirmed_bill_payments",
+                        sql: @"sp_get_confirmed_bill_payments_by_transactions_summary_id",
                         param: new
                         {
-                            payment_summary_id = summaryId,
-                            status = GenericConstants.AwaitingInitiation
+                            transactions_summary_id = summaryId,
                         },
                         commandType: CommandType.StoredProcedure);
 
@@ -167,7 +171,7 @@ namespace FileUploadAndValidation.Repository
                 {
                     throw ex;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
@@ -227,7 +231,6 @@ namespace FileUploadAndValidation.Repository
 
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
-
                         try
                         {
                             var summaryId = await connection.ExecuteScalarAsync(
@@ -267,9 +270,13 @@ namespace FileUploadAndValidation.Repository
                         }
                     }
                 }
-                catch (Exception ex)
+                catch(AppException ex)
                 {
-                    throw new AppException("An error occured while querying the DB |" + ex.Message, (int)HttpStatusCode.InternalServerError);
+                    throw ex;
+                }    
+                catch (Exception)
+                {
+                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
             }
         }

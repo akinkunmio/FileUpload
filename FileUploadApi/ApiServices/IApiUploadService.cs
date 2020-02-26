@@ -1,4 +1,5 @@
 ﻿using FileUploadAndValidation.Models;
+using FileUploadAndValidation.UploadServices;
 using FileUploadApi.Controllers;
 using FileUploadApi.Models;
 using FilleUploadCore.UploadManagers;
@@ -16,6 +17,6 @@ namespace FileUploadApi.ApiServices
 
         Task<BatchFileSummaryDto> GetFileSummary(string batchId);
 
-        Task PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
+        Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
     }
 }

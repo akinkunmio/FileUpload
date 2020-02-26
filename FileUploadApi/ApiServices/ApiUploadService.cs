@@ -55,18 +55,8 @@ namespace FileUploadApi.ApiServices
 
             BatchFileSummaryDto batchFileSummaryDto;
 
-            try
-            {
-                batchFileSummaryDto = await _bulkBillPaymentService.GetBatchUploadSummary(batchId);
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            batchFileSummaryDto = await _bulkBillPaymentService.GetBatchUploadSummary(batchId);
+           
             return batchFileSummaryDto;
         }
 
@@ -154,7 +144,7 @@ namespace FileUploadApi.ApiServices
             return uploadResult;
         }
 
-        public async Task PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
+        public async Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
             ArgumentGuard.NotNullOrWhiteSpace(initiatePaymentOptions.AuthToken, nameof(initiatePaymentOptions.AuthToken));
@@ -163,18 +153,7 @@ namespace FileUploadApi.ApiServices
             ArgumentGuard.NotNull(initiatePaymentOptions.UserId, nameof(initiatePaymentOptions.UserId));
             ArgumentGuard.NotNullOrWhiteSpace(initiatePaymentOptions.UserName, nameof(initiatePaymentOptions.UserName));
 
-            try
-            {
-                await _bulkBillPaymentService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
-            }
-            catch(AppException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+             return await _bulkBillPaymentService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
         }
     }
 

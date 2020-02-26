@@ -61,7 +61,11 @@ BEGIN
 END
 GO
 
-
+IF (OBJECT_ID('sp_get_confirmed_bill_payments_by_transactions_summary_id') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_get_confirmed_bill_payments_by_transactions_summary_id
+END
+GO
 
 
 CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_by_batch_id]
@@ -72,12 +76,11 @@ GO
 
 
 CREATE PROCEDURE [dbo].[sp_get_confirmed_bill_payments_by_transactions_summary_id]
-@transactions_summary_id bigint,
-@status NVARCHAR(50)
+@transactions_summary_id bigint
 AS
-	SELECT [row],[product_code],[item_code],[customer_id],[amount] 
+	SELECT [row_num],[product_code],[item_code],[customer_id],[amount] 
 	FROM tbl_bill_payment_transactions_detail 
-	WHERE [transactions_summary_id] = @transactions_summary_id AND [row_status] = @status;
+	WHERE [transactions_summary_id] = @transactions_summary_id;
 GO
 
 CREATE PROCEDURE [dbo].[sp_get_bill_payments_status_by_transactions_summary_id]

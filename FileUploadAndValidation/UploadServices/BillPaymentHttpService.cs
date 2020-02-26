@@ -119,9 +119,9 @@ namespace FileUploadAndValidation.UploadServices
             {
                 throw ex;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new AppException("Unknown error occured! Please retry. " + ex.Message);
+                throw new AppException("Unknown error occured! Please retry.");
             }
         }
 

@@ -2,7 +2,7 @@
 {
     public class ConfirmedBillPaymentDto
     {
-        public int Row { get; set; }
+        public int RowNum { get; set; }
 
         public string ProductCode { get; set; }
 

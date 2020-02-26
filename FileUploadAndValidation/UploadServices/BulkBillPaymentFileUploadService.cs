@@ -415,8 +415,9 @@ namespace FileUploadApi
             }
         }
 
-        public async Task PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
+        public async Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
         {
+            ConfirmedBillResponse result;
             try
             {
                 var confirmedBillPayments = await _dbRepository.GetConfirmedBillPayments(batchId);
@@ -432,12 +433,12 @@ namespace FileUploadApi
                             CustomerId = e.CustomerId,
                             ItemCode = e.ItemCode,
                             ProductCode = e.ProductCode,
-                            Row = e.Row
+                            Row = e.RowNum
                         });
 
                 var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, nasDto);
 
-                var result = await _billPaymentService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
+                result = await _billPaymentService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
 
                 await _dbRepository.UpdateBillPaymentInitiation(batchId);
             }
@@ -449,6 +450,8 @@ namespace FileUploadApi
             {
                 throw new AppException("An error occured while initiating payment");
             }
+
+            return result;
         }
     }
 

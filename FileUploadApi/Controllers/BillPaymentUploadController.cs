@@ -145,12 +145,11 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                
-                response.Error = ex.Message;
+                response.Error = "Unknown error occured. Please retry!.";
                 var result = new ObjectResult(response);
 
                 result.StatusCode = (int)HttpStatusCode.BadRequest;
                 return result;
-               // return BadRequest("Unknown error occured. Please retry!. ");
             }
 
             return Ok(response);
@@ -159,13 +158,9 @@ namespace FileUploadApi.Controllers
         [HttpPost("uploadfile/{batchId}/authorize")]
         public async Task<IActionResult> InitiateTransactionsApprovalAsync(string batchId, [FromBody] InitiatePaymentRequest request)
         {
+            var response = new ResponseModel();
             try
             {
-                ArgumentGuard.NotNullOrWhiteSpace(request.UserName, nameof(request.UserName));
-                ArgumentGuard.NotDefault(request.UserId, nameof(request.UserId));
-                ArgumentGuard.NotDefault(request.BusinessId, nameof(request.BusinessId));
-                ArgumentGuard.NotDefault(request.ApprovalConfigId, nameof(request.ApprovalConfigId));
-
                 var initiatePaymentOptions = new InitiatePaymentOptions()
                 {
                     AuthToken = HttpContext.Request.Headers["Authorization"],
@@ -174,28 +169,33 @@ namespace FileUploadApi.Controllers
                     UserId = request.UserId,
                     UserName = request.UserName
                 };
-             
-               await _uploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
+
+                response.Data = await _uploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
             }
             catch (AppException ex)
             {
                 _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
                 var result = new ObjectResult(new { ex.Message });
+                response.Error = ex.Message;
 
                 result.StatusCode = ex.StatusCode; 
-                result.Value = ex.Value;
+                result.Value = response;
 
                 return result;
             }
             catch(Exception ex)
             {
                 _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                
+                response.Error = "Unknown error occured. Please retry!.";
+                var result = new ObjectResult(response);
 
-                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!.  |" + ex.Message });
+                result.StatusCode = (int)HttpStatusCode.BadRequest;
+                return result;
             }
 
-            return Ok(new { Status = "PaymentInitiated" });
+            return Ok(response);
         }
 
     }
