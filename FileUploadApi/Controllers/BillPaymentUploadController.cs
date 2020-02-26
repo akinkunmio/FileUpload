@@ -102,11 +102,12 @@ namespace FileUploadApi.Controllers
             catch(AppException ex)
             {
                 _logger.LogError("Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
-
+                response.Error = ex.Message;
                 var result = new ObjectResult(new { ex.Message });
 
                 result.StatusCode = ex.StatusCode; 
-                result.Value = ex.Value;
+
+                result.Value = response;
 
                 return result;
             }
@@ -123,30 +124,36 @@ namespace FileUploadApi.Controllers
         [HttpGet("uploadfile/{batchId}")]
         public async Task<IActionResult> GetUploadFileSummary(string batchId)
         {
-            BatchFileSummaryDto batchFileSummaryDto;
+            var response = new ResponseModel();
+            
             try
             {
-                batchFileSummaryDto = await _uploadService.GetFileSummary(batchId);
+                response.Data = await _uploadService.GetFileSummary(batchId);
             }
             catch (AppException ex)
             {
                 _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { ex.Message });
+                response.Error = ex.Message;
+                var result = new ObjectResult(response);
 
                 result.StatusCode = ex.StatusCode; 
-                result.Value = ex.Value;
 
                 return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+               
+                response.Error = ex.Message;
+                var result = new ObjectResult(response);
 
-                return BadRequest("Unknown error occured. Please retry!. " + ex.Message);
+                result.StatusCode = (int)HttpStatusCode.BadRequest;
+                return result;
+               // return BadRequest("Unknown error occured. Please retry!. ");
             }
 
-            return Ok(batchFileSummaryDto);
+            return Ok(response);
         }
 
         [HttpPost("uploadfile/{batchId}/authorize")]

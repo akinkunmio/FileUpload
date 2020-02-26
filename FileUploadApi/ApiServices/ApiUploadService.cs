@@ -73,8 +73,8 @@ namespace FileUploadApi.ApiServices
         public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
-            ArgumentGuard.NotZero(pagination.PageNumber, nameof(pagination.PageNumber));
-            ArgumentGuard.NotZero(pagination.PageSize, nameof(pagination.PageSize));
+            ArgumentGuard.NotDefault(pagination.PageNumber, nameof(pagination.PageNumber));
+            ArgumentGuard.NotDefault(pagination.PageSize, nameof(pagination.PageSize));
 
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses;
 
@@ -95,14 +95,13 @@ namespace FileUploadApi.ApiServices
 
         public async Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream)
         {
-        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.AuthToken, nameof(uploadOptions.AuthToken));
-        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
-        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileExtension, nameof(uploadOptions.FileExtension));
-        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileName, nameof(uploadOptions.FileName));
-        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.RawFileLocation, nameof(uploadOptions.RawFileLocation));
-        //    ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
-        //    ArgumentGuard.NotZero(stream.Length, nameof(stream.Length));
-
+            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.AuthToken, nameof(uploadOptions.AuthToken));
+            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
+            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileExtension, nameof(uploadOptions.FileExtension));
+            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileName, nameof(uploadOptions.FileName));
+            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.RawFileLocation, nameof(uploadOptions.RawFileLocation));
+            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
+            ArgumentGuard.NotDefault(stream.Length, nameof(stream.Length));
 
             if (!uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
                 && !uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))

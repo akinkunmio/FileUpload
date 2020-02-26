@@ -8,7 +8,7 @@ namespace FileUploadAndValidation.Models
     {
         public string BatchId { get; set; }
 
-        public string Status { get; set; }
+        public string TransactionStatus { get; set; }
 
         public string ItemType { get; set; }
 

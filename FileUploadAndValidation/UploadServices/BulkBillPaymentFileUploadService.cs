@@ -336,7 +336,7 @@ namespace FileUploadApi
                  });
 
                 if (billPaymentStatuses.Count() < 0)
-                    throw new AppException($"Upload with Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);
+                    throw new AppException($"Upload Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);
             }
             catch (AppException appEx)
             {
@@ -356,6 +356,10 @@ namespace FileUploadApi
             try
             {
                 batchFileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
+                
+                if (batchFileSummary == null)
+                    throw new AppException($"Upload with Batch Id: '{batchId}' not found!.");
+
                 batchFileSummaryDto = new BatchFileSummaryDto
                 {
                     BatchId = batchFileSummary.BatchId,
@@ -363,7 +367,7 @@ namespace FileUploadApi
                     ItemType = batchFileSummary.ItemType,
                     NumOfAllRecords = batchFileSummary.NumOfValidRecords,
                     NumOfValidRecords = batchFileSummary.NumOfValidRecords,
-                    Status = batchFileSummary.Status,
+                    Status = batchFileSummary.TransactionStatus,
                     UploadDate = batchFileSummary.UploadDate
                 };
             }
@@ -371,9 +375,9 @@ namespace FileUploadApi
             {
                 throw appEx;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
 
             return batchFileSummaryDto;
@@ -387,7 +391,7 @@ namespace FileUploadApi
             {
                 validationStatuses = await _nasRepository.ExtractValidationResult(queueMessage);
 
-                if (validationStatuses.Count() > 0)
+                if (validationStatuses.Count() > 0 || !validationStatuses.Any())
                     await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
                     {
                         BatchId = queueMessage.BatchId,
@@ -397,9 +401,13 @@ namespace FileUploadApi
                         Status = GenericConstants.AwaitingInitiation,
                         RowStatuses = validationStatuses.ToList()
                     });
-                else
-                    throw new AppException($"File to be validated with batch Id:{queueMessage.BatchId} has no content on NAS!");
+                
+                throw new AppException($"File to be validated with batch Id:'{queueMessage.BatchId}' has no content on NAS!");
 
+            }
+            catch(AppException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {

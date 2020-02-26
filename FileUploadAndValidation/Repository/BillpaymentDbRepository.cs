@@ -135,7 +135,6 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
             }
@@ -148,7 +147,11 @@ namespace FileUploadAndValidation.Repository
                 MatchNamesWithUnderscores = true;
                 try
                 {
-                    var summaryId = GetBatchUploadSummary(batchId);
+                    var summaryId = await GetBatchUploadSummaryId(batchId);
+
+                    if (summaryId == 0)
+                        throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.");
+
                     var result = await sqlConnection.QueryAsync<ConfirmedBillPaymentDto>(
                         sql: @"sp_get_confirmed_bill_payments",
                         param: new
@@ -159,6 +162,10 @@ namespace FileUploadAndValidation.Repository
                         commandType: CommandType.StoredProcedure);
 
                     return result;
+                }
+                catch (AppException ex)
+                {
+                    throw ex;
                 }
                 catch (Exception)
                 {
@@ -178,7 +185,7 @@ namespace FileUploadAndValidation.Repository
                     var summaryId = await GetBatchUploadSummaryId(batchId);
 
                     if (summaryId == 0)
-                        throw new AppException($"Upload with Batch Id: {batchId} not found!.");
+                        throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.");
 
                     var result = await sqlConnection.QueryAsync<BillPaymentRowStatusDto>(
                         sql: @"sp_get_bill_payments_status_by_transactions_summary_id",
@@ -192,9 +199,13 @@ namespace FileUploadAndValidation.Repository
 
                     return result;
                 }
+                catch(AppException ex)
+                {
+                    throw ex;
+                }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Update Bill Payment Initiation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
             }
@@ -212,7 +223,7 @@ namespace FileUploadAndValidation.Repository
                     var fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId);
 
                     if (fileSummary == null)
-                        throw new AppException($"Upload with Batch Id {updateBillPayments.BatchId} not found!.");
+                        throw new AppException($"Upload Batch Id '{updateBillPayments.BatchId}' not found!.");
 
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
