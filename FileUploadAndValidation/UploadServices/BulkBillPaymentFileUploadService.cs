@@ -257,6 +257,8 @@ namespace FileUploadApi
                     billPayments = billPayments
                         .Where(b => !nonDistinct.Any(n => n.RowNumber == b.RowNumber))
                         .Select(r => r);
+
+                    uploadResult.ValidRows = billPayments.Select(r => r.RowNumber).ToList();
                 }
 
                 await _dbRepository.InsertPaymentUpload(
