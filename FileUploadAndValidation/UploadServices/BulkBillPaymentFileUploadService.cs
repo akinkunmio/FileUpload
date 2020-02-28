@@ -367,7 +367,7 @@ namespace FileUploadApi
                     BatchId = batchFileSummary.BatchId,
                     ContentType = batchFileSummary.ContentType,
                     ItemType = batchFileSummary.ItemType,
-                    NumOfAllRecords = batchFileSummary.NumOfValidRecords,
+                    NumOfAllRecords = batchFileSummary.NumOfRecords,
                     NumOfValidRecords = batchFileSummary.NumOfValidRecords,
                     Status = batchFileSummary.TransactionStatus,
                     UploadDate = batchFileSummary.UploadDate

@@ -100,9 +100,6 @@ namespace FileUploadApi.ApiServices
             IEnumerable<Row> rows = new List<Row>();
             var uploadResult = new UploadResult();
 
-            if(uploadOptions == null)
-                throw new AppException("Upload options must be set!.");
-
             var batchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
             uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(batchId, stream, uploadOptions.FileExtension);
