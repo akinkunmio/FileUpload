@@ -89,7 +89,7 @@ namespace FileUploadApi.ApiServices
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileExtension, nameof(uploadOptions.FileExtension));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileName, nameof(uploadOptions.FileName));
-            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.RawFileLocation, nameof(uploadOptions.RawFileLocation));
+            //ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.RawFileLocation, nameof(uploadOptions.RawFileLocation));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
             ArgumentGuard.NotDefault(stream.Length, nameof(stream.Length));
 

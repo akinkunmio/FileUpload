@@ -102,7 +102,7 @@ GO
 CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_id_by_batch_id]
 @batch_id NVARCHAR (100)
 AS
-	SELECT transactions_summary_id 
+	SELECT Id 
 	FROM tbl_transactions_summary 
 	WHERE batch_id = @batch_id;
 GO
