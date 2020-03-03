@@ -29,7 +29,7 @@ namespace FileUploadAndValidation.Repository
 
                 string json = JsonConvert.SerializeObject(billPayments);
 
-                var path = Path.Combine(fileLocation, fileName);
+                var path = fileLocation + fileName;
 
                 File.WriteAllText(path, json);
                 
@@ -55,7 +55,7 @@ namespace FileUploadAndValidation.Repository
 
                 string json = JsonConvert.SerializeObject(billPayments);
 
-                var path = Path.Combine(fileLocation, fileName);
+                var path = fileLocation + fileName;
 
                 File.WriteAllText(path, json);
 
@@ -77,7 +77,7 @@ namespace FileUploadAndValidation.Repository
             var fileLocation = _appConfig.NasFolderLocation + @"\raw\";
             var fileName = batchId + "_raw." + extension;
 
-            string path = Path.Combine(fileLocation, fileName);
+            string path = fileLocation + fileName;
 
             try
             {
