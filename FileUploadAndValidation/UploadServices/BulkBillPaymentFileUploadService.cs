@@ -288,7 +288,7 @@ namespace FileUploadApi
                 
                 FileProperty fileProperty = await _nasRepository.SaveFileToValidate(uploadResult.BatchId, toValidatePayments);
 
-                var validationResponse = await _billPaymentService.ValidateBillRecords(fileProperty, uploadOptions.AuthToken);
+                var validationResponse = await _billPaymentService.ValidateBillRecords(fileProperty, uploadOptions.AuthToken, toValidatePayments.Count() > 50);
 
                 if (validationResponse.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("json"))
                     await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel

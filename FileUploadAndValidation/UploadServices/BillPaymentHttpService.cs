@@ -33,13 +33,17 @@ namespace FileUploadAndValidation.UploadServices
                 .Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public async Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken)
+        public async Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
         {
             ValidationResponse validateResponse;
+            HttpRequestMessage request;
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
-                    $"&Url={fileProperty.Url}&BatchId={fileProperty.BatchId}");
+
+                request = 
+                    greaterThanFifty
+                    ? CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, authToken, fileProperty.BatchId)
+                    : CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, authToken);
 
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer ", authToken);
 
@@ -53,7 +57,7 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    throw new AppException("Unable to perform bill payment validation", (int)HttpStatusCode.BadRequest);
+                    throw new AppException("Unable to perform bill payment validation"+ response.Content.ReadAsStringAsync(), (int)HttpStatusCode.BadRequest);
                 }
                 else
                 {
@@ -76,6 +80,14 @@ namespace FileUploadAndValidation.UploadServices
 
         }
 
+        private HttpRequestMessage CheckGreaterFiftyRecords(bool check, string url, string auth, string batchId = null)
+        {
+            if(check)
+               return new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
+                    $"&Url={url}&BatchId={batchId}");
+            return new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
+                    $"&Url={url}");
+        }
 
         public async Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
         {
@@ -129,7 +141,7 @@ namespace FileUploadAndValidation.UploadServices
 
     public interface IBillPaymentService
     {
-        Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken);
+        Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty);
 
         Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
     }

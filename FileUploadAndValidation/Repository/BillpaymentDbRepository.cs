@@ -171,7 +171,7 @@ namespace FileUploadAndValidation.Repository
                 {
                     throw ex;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
