@@ -42,11 +42,12 @@ namespace FileUploadAndValidation.UploadServices
 
                 request = 
                     greaterThanFifty
-                    ? CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, authToken, fileProperty.BatchId)
-                    : CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, authToken);
+                    ? CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, fileProperty.BatchId)
+                    : CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url);
 
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer ", authToken);
-
+               // request.Headers.Authorization = new AuthenticationHeaderValue("Bearer ", authToken);
+                _httpClient.DefaultRequestHeaders.Authorization =
+                   new AuthenticationHeaderValue("Bearer", authToken.Replace("Bearer ", ""));
                 var response = await _httpClient.SendAsync(request);
 
                 var responseResult = await response.Content.ReadAsStringAsync();
@@ -57,11 +58,11 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    throw new AppException("Unable to perform bill payment validation "+ response.Content.ReadAsStringAsync(), (int)HttpStatusCode.BadRequest);
+                    throw new AppException("Unable to perform bill payment validation ", (int)HttpStatusCode.BadRequest);
                 }
                 else
                 {
-                    throw new AppException("An error occured while performing bill payment validation "+ response.Content.ReadAsStringAsync(), (int)response.StatusCode);
+                    throw new AppException("An error occured while performing bill payment validation "+ response.StatusCode, (int)response.StatusCode);
                 }
 
                 return validateResponse;
@@ -80,7 +81,7 @@ namespace FileUploadAndValidation.UploadServices
 
         }
 
-        private HttpRequestMessage CheckGreaterFiftyRecords(bool check, string url, string auth, string batchId = null)
+        private HttpRequestMessage CheckGreaterFiftyRecords(bool check, string url, string batchId = null)
         {
             if(check)
                return new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +

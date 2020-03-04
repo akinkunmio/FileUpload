@@ -24,7 +24,7 @@ namespace FileUploadAndValidation.Repository
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation + @"validate\";
+                var fileLocation = _appConfig.NasFolderLocation ;
                 var fileName = batchId + "_validate.json";
 
                 string json = JsonConvert.SerializeObject(billPayments);
@@ -37,7 +37,7 @@ namespace FileUploadAndValidation.Repository
                 { 
                     BatchId = batchId, 
                     DataStore = 1,
-                    Url = path
+                    Url = fileName
                 });
             }
             catch(Exception)
@@ -50,7 +50,7 @@ namespace FileUploadAndValidation.Repository
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
+                var fileLocation = _appConfig.NasFolderLocation;
                 var fileName = batchId + "_confirmed.json";
 
                 string json = JsonConvert.SerializeObject(billPayments);
@@ -63,7 +63,7 @@ namespace FileUploadAndValidation.Repository
                 {
                     BatchId = batchId,
                     DataStore = 1,
-                    Url = fileLocation + fileName
+                    Url = fileName
                 });
             }
             catch (Exception)
@@ -74,7 +74,7 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<string> SaveRawFile(string batchId, Stream stream, string extension)
         {
-            var fileLocation = _appConfig.NasFolderLocation + @"\";
+            var fileLocation = _appConfig.NasFolderLocation ;
             var fileName = batchId + "_raw." + extension;
 
             string path = fileLocation + fileName;
@@ -91,7 +91,7 @@ namespace FileUploadAndValidation.Repository
                 throw new AppException($"An error occured while saving raw file with batch id : {batchId} to NAS "+ ex.Message, 500);
             }
 
-            return path;
+            return fileName;
         }
 
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidateMessage queueMessage)
