@@ -57,11 +57,11 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    throw new AppException("Unable to perform bill payment validation"+ response.Content.ReadAsStringAsync(), (int)HttpStatusCode.BadRequest);
+                    throw new AppException("Unable to perform bill payment validation "+ response.Content.ReadAsStringAsync(), (int)HttpStatusCode.BadRequest);
                 }
                 else
                 {
-                    throw new AppException("An error occured while performing bill payment validation", (int)response.StatusCode);
+                    throw new AppException("An error occured while performing bill payment validation "+ response.Content.ReadAsStringAsync(), (int)response.StatusCode);
                 }
 
                 return validateResponse;

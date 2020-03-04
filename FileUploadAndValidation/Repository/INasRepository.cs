@@ -74,7 +74,7 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<string> SaveRawFile(string batchId, Stream stream, string extension)
         {
-            var fileLocation = _appConfig.NasFolderLocation + @"\raw\";
+            var fileLocation = _appConfig.NasFolderLocation + @"\";
             var fileName = batchId + "_raw." + extension;
 
             string path = fileLocation + fileName;
