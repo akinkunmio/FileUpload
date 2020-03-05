@@ -148,10 +148,11 @@ CREATE PROCEDURE [dbo].[sp_insert_bill_payment_transaction_summary]
 @item_type nvarchar(50),
 @num_of_records int,
 @upload_date nvarchar(50),
-@content_type nvarchar(256)
+@content_type nvarchar(256),
+@nas_raw_file nvarchar(max)
 AS
-	INSERT INTO tbl_transactions_summary(batch_id,transaction_status,item_type,num_of_records,upload_date,content_type) 
-	VALUES(@batch_id,@status,@item_type,@num_of_records,@upload_date,@content_type) 
+	INSERT INTO tbl_transactions_summary(batch_id,transaction_status,item_type,num_of_records,upload_date,content_type,nas_raw_file ) 
+	VALUES(@batch_id,@status,@item_type,@num_of_records,@upload_date,@content_type,@nas_raw_file) 
 	SELECT SCOPE_IDENTITY();
 GO
 

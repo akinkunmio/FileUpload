@@ -31,12 +31,13 @@ namespace FileUploadAndValidation.UploadServices
             _httpClient.DefaultRequestHeaders
                 .Accept
                 .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.Timeout = new TimeSpan(0, 0, 1, 0, 0);
         }
 
         public async Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
         {
             ValidationResponse validateResponse;
-            HttpRequestMessage request;
+            var request = new HttpRequestMessage();
             try
             {
 
@@ -45,9 +46,10 @@ namespace FileUploadAndValidation.UploadServices
                     ? CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, fileProperty.BatchId)
                     : CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url);
 
-               // request.Headers.Authorization = new AuthenticationHeaderValue("Bearer ", authToken);
+                //request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken.Replace("Bearer ", ""));
                 _httpClient.DefaultRequestHeaders.Authorization =
                    new AuthenticationHeaderValue("Bearer", authToken.Replace("Bearer ", ""));
+
                 var response = await _httpClient.SendAsync(request);
 
                 var responseResult = await response.Content.ReadAsStringAsync();
@@ -59,6 +61,10 @@ namespace FileUploadAndValidation.UploadServices
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
                     throw new AppException("Unable to perform bill payment validation ", (int)HttpStatusCode.BadRequest);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    throw new AppException("File to validate not found", (int)HttpStatusCode.NotFound);
                 }
                 else
                 {
@@ -83,11 +89,13 @@ namespace FileUploadAndValidation.UploadServices
 
         private HttpRequestMessage CheckGreaterFiftyRecords(bool check, string url, string batchId = null)
         {
-            if(check)
-               return new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
-                    $"&Url={url}&BatchId={batchId}");
-            return new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
+            HttpRequestMessage request = check 
+                ? new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
+                    $"&Url={url}&BatchId={batchId}")
+                : new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
                     $"&Url={url}");
+
+            return request;
         }
 
         public async Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
@@ -108,7 +116,7 @@ namespace FileUploadAndValidation.UploadServices
                     Content = new StringContent(req, Encoding.UTF8, "application/json")
                 };
 
-                request.Headers.Authorization = new AuthenticationHeaderValue(initiatePaymentOptions.AuthToken);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", initiatePaymentOptions.AuthToken.Replace("Bearer ", ""));
 
                 try
                 {

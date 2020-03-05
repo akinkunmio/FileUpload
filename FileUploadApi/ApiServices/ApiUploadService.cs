@@ -29,15 +29,12 @@ namespace FileUploadApi.ApiServices
         private readonly IFileService _autoPayService;
         private readonly IFileService _bulkBillPaymentService;
         private readonly IFileService _bulkSmsService;
-        private readonly IBillPaymentDbRepository _dbRepository;
         private readonly INasRepository _nasRepository;
 
         public ApiUploadService(Func<FileReaderTypeEnum, IFileReader> fileReader,
             Func<FileServiceTypeEnum, IFileService> fileService, 
-            IBillPaymentDbRepository dbRepository,
             INasRepository nasRepository)
         {
-            _dbRepository = dbRepository;
             _txtFileReader = fileReader(FileReaderTypeEnum.TXT);
             _csvFileReader = fileReader(FileReaderTypeEnum.CSV);
             _xlsxFileReader = fileReader(FileReaderTypeEnum.XLSX);
@@ -89,7 +86,6 @@ namespace FileUploadApi.ApiServices
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileExtension, nameof(uploadOptions.FileExtension));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileName, nameof(uploadOptions.FileName));
-            //ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.RawFileLocation, nameof(uploadOptions.RawFileLocation));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
             ArgumentGuard.NotDefault(stream.Length, nameof(stream.Length));
 
@@ -104,7 +100,7 @@ namespace FileUploadApi.ApiServices
 
             uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(batchId, stream, uploadOptions.FileExtension);
             stream.Seek(0, SeekOrigin.Begin);
-            
+
             switch (uploadOptions.FileExtension)
             {
                 case "txt":

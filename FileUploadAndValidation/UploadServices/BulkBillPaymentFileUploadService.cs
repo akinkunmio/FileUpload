@@ -32,7 +32,8 @@ namespace FileUploadApi
         private readonly IBus _bus;
 
         public BulkBillPaymentFileService(IBillPaymentDbRepository dbRepository, 
-            INasRepository nasRepository, IBillPaymentService billPaymentService,
+            INasRepository nasRepository,
+            IBillPaymentService billPaymentService,
             IBus bus)
         {
             _dbRepository = dbRepository;
@@ -43,10 +44,10 @@ namespace FileUploadApi
 
         public async Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
         {
-            Console.WriteLine("Validating rows...");
+           // Console.WriteLine("Validating rows...");
 
             List<int> validRows = new List<int>();
-            var validateRowModel = new ValidateRowModel();
+            ValidateRowModel validateRowModel;
             var failures = new List<Failure>();
 
             foreach (var row in contentRows)
@@ -160,9 +161,10 @@ namespace FileUploadApi
             var headerRow = new Row();
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPayment> nonDistinct = new List<BillPayment>();
-            var uploadResult = new UploadResult();
-            uploadResult.BatchId = batchId;
-            uploadResult.RowsCount = rows.Count();
+            var uploadResult = new UploadResult
+            {
+                BatchId = batchId
+            };
 
             try
             {
@@ -187,6 +189,7 @@ namespace FileUploadApi
 
                 uploadResult.Failures = validateRowsResult.Failures;
                 uploadResult.ValidRows = validateRowsResult.ValidRows;
+                uploadResult.RowsCount = uploadResult.ValidRows.Count();
 
                 var dateTimeNow = DateTime.Now;
 

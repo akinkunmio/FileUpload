@@ -62,10 +62,12 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("Could not successfully conclude the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { ex.Message });
+                var result = new ObjectResult(new { ex.Message })
+                {
+                    StatusCode = ex.StatusCode,
+                    Value = uploadResult
+                };
                 uploadResult.ErrorMessage = ex.Message;
-
-                result.StatusCode = ex.StatusCode; result.Value = uploadResult;
 
                 return result;
             }
@@ -103,11 +105,12 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
                 response.Error = ex.Message;
-                var result = new ObjectResult(new { ex.Message });
+                var result = new ObjectResult(new { ex.Message })
+                {
+                    StatusCode = ex.StatusCode,
 
-                result.StatusCode = ex.StatusCode; 
-
-                result.Value = response;
+                    Value = response
+                };
 
                 return result;
             }
@@ -135,9 +138,10 @@ namespace FileUploadApi.Controllers
                 _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
 
                 response.Error = ex.Message;
-                var result = new ObjectResult(response);
-
-                result.StatusCode = ex.StatusCode; 
+                var result = new ObjectResult(response)
+                {
+                    StatusCode = ex.StatusCode
+                };
 
                 return result;
             }
@@ -176,22 +180,24 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { ex.Message });
                 response.Error = ex.Message;
-
-                result.StatusCode = ex.StatusCode; 
-                result.Value = response;
+                var result = new ObjectResult(new { ex.Message })
+                {
+                    StatusCode = ex.StatusCode,
+                    Value = response
+                };
 
                 return result;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 
                 response.Error = "Unknown error occured. Please retry!.";
-                var result = new ObjectResult(response);
-
-                result.StatusCode = (int)HttpStatusCode.BadRequest;
+                var result = new ObjectResult(response)
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest
+                };
                 return result;
             }
 

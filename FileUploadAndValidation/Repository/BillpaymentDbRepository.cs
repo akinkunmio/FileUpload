@@ -48,7 +48,8 @@ namespace FileUploadAndValidation.Repository
                                    item_type = fileDetail.ItemType,
                                    num_of_records = fileDetail.NumOfAllRecords,
                                    upload_date = fileDetail.UploadDate,
-                                   content_type = fileDetail.ContentType
+                                   content_type = fileDetail.ContentType,
+                                   nas_raw_file = fileDetail.NasRawFile
                                },
                                transaction: sqlTransaction,
                                commandType: System.Data.CommandType.StoredProcedure);
@@ -155,7 +156,7 @@ namespace FileUploadAndValidation.Repository
                     var summaryId = await GetBatchUploadSummaryId(batchId);
 
                     if (summaryId == 0)
-                        throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.");
+                        throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
 
                     var result = await sqlConnection.QueryAsync<ConfirmedBillPaymentDto>(
                         sql: @"sp_get_confirmed_bill_payments_by_transactions_summary_id",
@@ -189,7 +190,7 @@ namespace FileUploadAndValidation.Repository
                     var summaryId = await GetBatchUploadSummaryId(batchId);
 
                     if (summaryId == 0)
-                        throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.");
+                        throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
 
                     var result = await sqlConnection.QueryAsync<BillPaymentRowStatusDto>(
                         sql: @"sp_get_bill_payments_status_by_transactions_summary_id",
@@ -227,7 +228,7 @@ namespace FileUploadAndValidation.Repository
                     var fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId);
 
                     if (fileSummary == null)
-                        throw new AppException($"Upload Batch Id '{updateBillPayments.BatchId}' not found!.");
+                        throw new AppException($"Upload Batch Id '{updateBillPayments.BatchId}' not found!.", (int)HttpStatusCode.NotFound);
 
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
@@ -292,7 +293,7 @@ namespace FileUploadAndValidation.Repository
                     var fileSummary = await GetBatchUploadSummary(batchId);
 
                     if (fileSummary == null)
-                        throw new AppException($"Upload with Batch Id: {batchId} not found!.");
+                        throw new AppException($"Upload with Batch Id: {batchId} not found!.", (int)HttpStatusCode.NotFound);
 
                     await connection.ExecuteAsync(
                         sql: "sp_update_bill_payment_summary_status",
