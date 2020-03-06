@@ -189,7 +189,6 @@ namespace FileUploadApi
 
                 uploadResult.Failures = validateRowsResult.Failures;
                 uploadResult.ValidRows = validateRowsResult.ValidRows;
-                uploadResult.RowsCount = uploadResult.ValidRows.Count();
 
                 var dateTimeNow = DateTime.Now;
 
@@ -262,6 +261,8 @@ namespace FileUploadApi
                         .Select(r => r);
 
                     uploadResult.ValidRows = billPayments.Select(r => r.RowNumber).ToList();
+                    uploadResult.RowsCount = uploadResult.ValidRows.Count();
+
                 }
 
                 await _dbRepository.InsertPaymentUpload(
@@ -323,17 +324,20 @@ namespace FileUploadApi
             }
         }
 
-        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentResults(string batchId, PaginationFilter pagination)
+        public async Task<BillPaymentRowStatusObject> GetBillPaymentResults(string batchId, PaginationFilter pagination)
         {
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
+            int totalRowCount;
 
             try
             {
-                var billPaymentStatusesDto = await _dbRepository
+                var billPaymentStatusesObj = await _dbRepository
                     .GetBillPaymentRowStatuses(batchId, pagination);
 
-                billPaymentStatuses = billPaymentStatusesDto.Select(s => new BillPaymentRowStatus
+                totalRowCount = billPaymentStatusesObj.TotalRowsCount;
+
+                billPaymentStatuses = billPaymentStatusesObj.RowStatusDtos.Select(s => new BillPaymentRowStatus
                  {
                       Error = s.Error,
                       Row = s.RowNum,
@@ -342,6 +346,8 @@ namespace FileUploadApi
 
                 if (billPaymentStatuses.Count() < 0)
                     throw new AppException($"Upload Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);
+
+
             }
             catch (AppException appEx)
             {
@@ -351,7 +357,8 @@ namespace FileUploadApi
             {
                 throw new AppException($"An error occured while fetching results for {batchId}!.");
             }
-            return billPaymentStatuses;
+
+            return new BillPaymentRowStatusObject { RowStatuses = billPaymentStatuses, TotalRowsCount = totalRowCount };
         }
 
         public async Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId)

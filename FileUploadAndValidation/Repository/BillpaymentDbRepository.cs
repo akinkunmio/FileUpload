@@ -179,7 +179,7 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<IEnumerable<BillPaymentRowStatusDto>> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination)
+        public async Task<BillPaymentRowStatusDtoObject> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination)
         {
             using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
@@ -189,8 +189,12 @@ namespace FileUploadAndValidation.Repository
                 {
                     var summaryId = await GetBatchUploadSummaryId(batchId);
 
+
                     if (summaryId == 0)
                         throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
+                   
+                    var summary = await GetBatchUploadSummary(batchId);
+                    var totalRowsCount = summary.NumOfRecords;
 
                     var result = await sqlConnection.QueryAsync<BillPaymentRowStatusDto>(
                         sql: @"sp_get_bill_payments_status_by_transactions_summary_id",
@@ -202,7 +206,8 @@ namespace FileUploadAndValidation.Repository
                         },
                         commandType: CommandType.StoredProcedure);
 
-                    return result;
+
+                    return new BillPaymentRowStatusDtoObject { RowStatusDtos = result, TotalRowsCount = totalRowsCount };
                 }
                 catch(AppException ex)
                 {

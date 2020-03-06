@@ -99,7 +99,9 @@ namespace FileUploadApi.Controllers
 
             try
             {
-                response.Data = await _uploadService.GetBillPaymentsStatus(batchId, paginationFilter);
+                var result =  await _uploadService.GetBillPaymentsStatus(batchId, paginationFilter);
+                response.Data = result.RowStatuses;
+                response.TotalCount = result.TotalRowsCount;
             }
             catch(AppException ex)
             {

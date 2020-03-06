@@ -21,4 +21,19 @@ namespace FileUploadAndValidation.Models
 
         public int RowNum { get; set; }
     }
+
+    public class BillPaymentRowStatusDtoObject
+    {
+        public IEnumerable<BillPaymentRowStatusDto> RowStatusDtos { get; set; }
+
+        public int TotalRowsCount { get; set; }
+    }
+
+    public class BillPaymentRowStatusObject
+    {
+        public IEnumerable<BillPaymentRowStatus> RowStatuses { get; set; }
+
+        public int TotalRowsCount { get; set; }
+    }
+
 }
