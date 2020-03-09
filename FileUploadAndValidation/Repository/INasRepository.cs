@@ -20,11 +20,11 @@ namespace FileUploadAndValidation.Repository
             _appConfig = appConfig;
         }
 
-        public Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
+        public async Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation ;
+                var fileLocation = _appConfig.NasFolderLocation;
                 var fileName = batchId + "_validate.json";
 
                 string json = JsonConvert.SerializeObject(billPayments);
@@ -33,7 +33,7 @@ namespace FileUploadAndValidation.Repository
 
                 File.WriteAllText(path, json);
                 
-                return Task.FromResult(new FileProperty 
+                return await Task.FromResult(new FileProperty 
                 { 
                     BatchId = batchId, 
                     DataStore = 1,
@@ -46,7 +46,7 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
+        public async Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
         {
             try
             {
@@ -57,9 +57,9 @@ namespace FileUploadAndValidation.Repository
 
                 var path = fileLocation + fileName;
 
-                File.WriteAllText(path, json);
+                await File.WriteAllTextAsync(path, json);
 
-                return Task.FromResult(new FileProperty
+                return await Task.FromResult(new FileProperty
                 {
                     BatchId = batchId,
                     DataStore = 1,
@@ -102,7 +102,7 @@ namespace FileUploadAndValidation.Repository
             {
                 if (File.Exists(queueMessage.ResultLocation))
                 {
-                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(System.IO.File.ReadAllText(queueMessage.ResultLocation));
+                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(await System.IO.File.ReadAllTextAsync(queueMessage.ResultLocation));
                 }
 
             }
