@@ -90,9 +90,9 @@ namespace FileUploadAndValidation.UploadServices
         private HttpRequestMessage CheckGreaterFiftyRecords(bool check, string url, string batchId = null)
         {
             var request = check 
-                ? new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
+                ? new HttpRequestMessage(HttpMethod.Get, $"/qbtrans/api/v1/payments/bills/validate?dataStore=1" +
                     $"&Url={url}&BatchId={batchId}")
-                : new HttpRequestMessage(HttpMethod.Get, $"/payments/bills/validate?dataStore=1" +
+                : new HttpRequestMessage(HttpMethod.Get, $"/qbtrans/api/v1/payments/bills/validate?dataStore=1" +
                     $"&Url={url}");
 
             return request;
