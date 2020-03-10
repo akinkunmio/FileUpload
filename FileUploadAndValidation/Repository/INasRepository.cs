@@ -24,7 +24,7 @@ namespace FileUploadAndValidation.Repository
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation;
+                var fileLocation = @"../data/validate/";
                 var fileName = batchId + "_validate.json";
 
                 string json = JsonConvert.SerializeObject(billPayments);
@@ -37,7 +37,7 @@ namespace FileUploadAndValidation.Repository
                 { 
                     BatchId = batchId, 
                     DataStore = 1,
-                    Url = fileName
+                    Url = $"validate/{fileName}"
                 });
             }
             catch(Exception)
@@ -50,7 +50,7 @@ namespace FileUploadAndValidation.Repository
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation;
+                var fileLocation = @"../data/confirmed/";
                 var fileName = batchId + "_confirmed.json";
 
                 string json = JsonConvert.SerializeObject(billPayments);
@@ -63,7 +63,7 @@ namespace FileUploadAndValidation.Repository
                 {
                     BatchId = batchId,
                     DataStore = 1,
-                    Url = fileName
+                    Url = $"confirmed/{fileName}"
                 });
             }
             catch (Exception)
@@ -74,10 +74,10 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<string> SaveRawFile(string batchId, Stream stream, string extension)
         {
-            var fileLocation = _appConfig.NasFolderLocation ;
+            var fileLocation = @"../data/raw/";
             var fileName = batchId + "_raw." + extension;
 
-            string path = fileLocation + fileName;
+            string path = Path.Combine(fileLocation + fileName);
 
             try
             {
@@ -91,18 +91,19 @@ namespace FileUploadAndValidation.Repository
                 throw new AppException($"An error occured while saving raw file with batch id : {batchId} to NAS "+ ex.Message, 500);
             }
 
-            return fileName;
+            return $"raw/{fileName}";
         }
 
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidateMessage queueMessage)
         {
             var result = new List<RowValidationStatus>();
-
+            var location = @"../data/";
+            var path = Path.Combine(location, queueMessage.ResultLocation);
             try
             {
                 if (File.Exists(queueMessage.ResultLocation))
                 {
-                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(await System.IO.File.ReadAllTextAsync(queueMessage.ResultLocation));
+                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(await System.IO.File.ReadAllTextAsync(path));
                 }
 
             }

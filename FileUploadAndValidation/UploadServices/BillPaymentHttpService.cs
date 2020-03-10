@@ -12,6 +12,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace FileUploadAndValidation.UploadServices
 {
@@ -40,7 +41,6 @@ namespace FileUploadAndValidation.UploadServices
             var request = new HttpRequestMessage();
             try
             {
-
                 request = 
                     greaterThanFifty
                     ? CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, fileProperty.BatchId)
@@ -90,10 +90,10 @@ namespace FileUploadAndValidation.UploadServices
         private HttpRequestMessage CheckGreaterFiftyRecords(bool check, string url, string batchId = null)
         {
             var request = check 
-                ? new HttpRequestMessage(HttpMethod.Get, $"/qbtrans/api/v1/payments/bills/validate?dataStore=1" +
-                    $"&Url={url}&BatchId={batchId}")
-                : new HttpRequestMessage(HttpMethod.Get, $"/qbtrans/api/v1/payments/bills/validate?dataStore=1" +
-                    $"&Url={url}");
+                ? new HttpRequestMessage(HttpMethod.Get, HttpUtility.UrlEncode($"/qbtrans/api/v1/payments/bills/validate?dataStore=1" +
+                    $"&Url={url}&BatchId={batchId}"))
+                : new HttpRequestMessage(HttpMethod.Get, HttpUtility.UrlEncode($"/qbtrans/api/v1/payments/bills/validate?dataStore=1" +
+                    $"&Url={url}"));
 
             return request;
         }
