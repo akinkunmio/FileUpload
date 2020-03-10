@@ -370,7 +370,7 @@ namespace FileUploadApi
                 batchFileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
                 
                 if (batchFileSummary == null)
-                    throw new AppException($"Upload with Batch Id: '{batchId}' not found!.");
+                    throw new AppException($"Upload with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
 
                 batchFileSummaryDto = new BatchFileSummaryDto
                 {
