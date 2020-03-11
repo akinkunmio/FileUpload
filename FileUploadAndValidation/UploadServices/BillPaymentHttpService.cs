@@ -72,7 +72,7 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else
                 {
-                    throw new AppException("An error occured while performing bill payment validation "+ response.StatusCode, (int)response.StatusCode);
+                    throw new AppException("An error occured while performing bill payment validation", (int)response.StatusCode);
                 }
 
                 return validateResponse;
@@ -136,13 +136,25 @@ namespace FileUploadAndValidation.UploadServices
                     var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
 
                     if (response.IsSuccessStatusCode)
+                    {
                         return new ConfirmedBillResponse { PaymentInitiated = true };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        throw new AppException("Made a bad request made to initiate bill payment process", (int)HttpStatusCode.BadRequest, new ConfirmedBillResponse { PaymentInitiated = false });
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        throw new AppException("Unauthorized to initiate bill payment process", (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
+                    }
                     else
-                        return new ConfirmedBillResponse { PaymentInitiated = false };
+                    {
+                        throw new AppException("An error occured while initiating bill payment process", (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
+                    }
 ;                }
                 catch (Exception)
                 {
-                    throw new AppException("Unknown error occured while initiating Bill Payment Initiation");
+                    throw new AppException("Unknown error occured while initiating Bill Payment Initiation", (int)HttpStatusCode.Unauthorized);
                 }
             }
             catch (AppException ex)
