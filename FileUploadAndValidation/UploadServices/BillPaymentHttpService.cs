@@ -62,6 +62,10 @@ namespace FileUploadAndValidation.UploadServices
                 {
                     throw new AppException("Unable to perform bill payment validation ", (int)HttpStatusCode.BadRequest);
                 }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    throw new AppException("Unable to perform bill payment validation ", (int)HttpStatusCode.Unauthorized);
+                }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     throw new AppException("File to validate not found", (int)HttpStatusCode.NotFound);

@@ -69,11 +69,11 @@ namespace FileUploadApi
             var validationErrors = new List<ValidationError>();
             var failure = new Failure();
 
-            var errorMessage = "";
             var isValid = true;
 
             for (var i = 0; i < columnContracts.Length; i++)
             {
+                var errorMessage = "";
                 ColumnContract contract = columnContracts[i];
                 Column column = row.Columns[i];
                 
