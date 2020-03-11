@@ -282,11 +282,11 @@ namespace FileUploadApi
                 {
                     return new NasBillPaymentDto
                     {
-                        Amount = b.Amount,
-                        CustomerId = b.CustomerId,
-                        Row = b.RowNumber,
-                        ItemCode = b.ItemCode,
-                        ProductCode = b.ProductCode,
+                        amount = b.Amount,
+                        customer_id = b.CustomerId,
+                        row = b.RowNumber,
+                        item_code = b.ItemCode,
+                        product_code = b.ProductCode,
                     };
                 });
                 
@@ -441,11 +441,11 @@ namespace FileUploadApi
                     .Select(e =>
                         new NasBillPaymentDto
                         {
-                            Amount = e.Amount,
-                            CustomerId = e.CustomerId,
-                            ItemCode = e.ItemCode,
-                            ProductCode = e.ProductCode,
-                            Row = e.RowNum
+                            amount = e.Amount,
+                            customer_id = e.CustomerId,
+                            item_code = e.ItemCode,
+                            product_code = e.ProductCode,
+                            row = e.RowNum
                         });
 
                 var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, nasDto);

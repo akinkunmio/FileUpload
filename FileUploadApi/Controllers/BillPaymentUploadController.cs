@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FileUploadApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("/qbupload/api/v1/[controller]")]
     [ApiController]
     public class BillPaymentUploadController : ControllerBase
     {
