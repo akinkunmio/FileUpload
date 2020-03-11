@@ -94,11 +94,11 @@ namespace FileUploadApi.ApiServices
                 throw new AppException("Invalid Item Type specified");
 
             IEnumerable<Row> rows = new List<Row>();
-            var uploadResult = new UploadResult();
+            UploadResult uploadResult = new UploadResult();
 
-            var batchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
+            uploadResult.BatchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
-            uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(batchId, stream, uploadOptions.FileExtension);
+            uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(uploadResult.BatchId, stream, uploadOptions.FileExtension);
             stream.Seek(0, SeekOrigin.Begin);
 
             switch (uploadOptions.FileExtension)
@@ -122,13 +122,13 @@ namespace FileUploadApi.ApiServices
             switch (uploadOptions.ContentType.ToLower())
             {
                 case "firs_wht":
-                    return await _firsWhtService.Upload(uploadOptions, rows, batchId);
+                    return await _firsWhtService.Upload(uploadOptions, rows, uploadResult);
                 case "autopay":
-                    return await _autoPayService.Upload(uploadOptions, rows, batchId);
+                    return await _autoPayService.Upload(uploadOptions, rows, uploadResult);
                 case "sms":
-                    return await _bulkSmsService.Upload(uploadOptions, rows, batchId);
+                    return await _bulkSmsService.Upload(uploadOptions, rows, uploadResult);
                 case "billpayment":
-                    uploadResult = await _bulkBillPaymentService.Upload(uploadOptions, rows, batchId);
+                    uploadResult = await _bulkBillPaymentService.Upload(uploadOptions, rows, uploadResult);
                     break;
                 default:
                     throw new AppException("Content type not supported!.");

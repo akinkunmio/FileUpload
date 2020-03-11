@@ -152,7 +152,7 @@ namespace FileUploadApi
             }
         }
 
-        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, string batchId)
+        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
@@ -161,11 +161,7 @@ namespace FileUploadApi
             var headerRow = new Row();
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPayment> nonDistinct = new List<BillPayment>();
-            var uploadResult = new UploadResult
-            {
-                BatchId = batchId
-            };
-
+           
             try
             {
                 if (!rows.Any())
@@ -305,7 +301,11 @@ namespace FileUploadApi
                         RowStatuses = validationResponse.Data.Results
                     });
                 else if (validationResponse.Data.NumOfRecords > GenericConstants.RECORDS_SMALL_SIZE && !validationResponse.Data.Results.Any() && validationResponse.Data.ResultMode.ToLower().Equals("queue"))
-                    await _bus.Publish(new BillPaymentValidateMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
+                    try
+                    {
+                        await _bus.Publish(new BillPaymentValidateMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
+                    }
+                    catch (Exception) { }
                 else
                     throw new AppException("Invalid response from Bill Payment Validate endpoint", (int)HttpStatusCode.InternalServerError);
 
