@@ -77,6 +77,11 @@ namespace FileUploadAndValidation.UploadServices
 
                 return validateResponse;
             }
+            catch(AppException ex)
+            {
+                _logger.LogError(ex.Message);
+                throw ex;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
