@@ -30,7 +30,7 @@ namespace FileUploadAndValidation.QueueServices
 
             var validationStatuses = await _nasRepository.ExtractValidationResult(new BillPaymentValidateMessage 
                 ( 
-                    batchId: batchId,
+                    batchId: queueMessage.RequestId,
                     resultLocation: queueMessage.ResultLocation, 
                     createdAt: queueMessage.CreatedAt 
                 )

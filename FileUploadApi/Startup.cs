@@ -39,8 +39,8 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
-            services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
+            //services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
+            //services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
 
             services.AddSingleton<IAppConfig, AppConfig>();
             services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
@@ -118,10 +118,10 @@ namespace FileUploadApi
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2).AddViewComponentsAsServices();
             
             services.AddScoped<SendBillPaymentValidateMessageConsumer>();
-            services.AddMassTransit(c =>
-            {
-                c.AddConsumer<SendBillPaymentValidateMessageConsumer>();
-            });
+            //services.AddMassTransit(c =>
+            //{
+            //    c.AddConsumer<SendBillPaymentValidateMessageConsumer>();
+            //});
 
             services.AddSingleton(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
             {

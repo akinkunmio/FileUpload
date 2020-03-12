@@ -300,14 +300,14 @@ namespace FileUploadApi
                         Status = GenericConstants.AwaitingInitiation,
                         RowStatuses = validationResponse.Data.Results
                     });
-                else if (validationResponse.Data.NumOfRecords > GenericConstants.RECORDS_SMALL_SIZE && !validationResponse.Data.Results.Any() && validationResponse.Data.ResultMode.ToLower().Equals("queue"))
-                    try
-                    {
-                        await _bus.Publish(new BillPaymentValidateMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
-                    }
-                    catch (Exception) { }
-                else
-                    throw new AppException("Invalid response from Bill Payment Validate endpoint", (int)HttpStatusCode.InternalServerError);
+               // else if (validationResponse.Data.NumOfRecords > GenericConstants.RECORDS_SMALL_SIZE && !validationResponse.Data.Results.Any() && validationResponse.Data.ResultMode.ToLower().Equals("queue"))
+                    //try
+                    //{
+                    //    await _bus.Publish(new BillPaymentValidateMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
+                    //}
+                    //catch (Exception) { }
+                //else
+                //    throw new AppException("Invalid response from Bill Payment Validate endpoint", (int)HttpStatusCode.InternalServerError);
 
                 return uploadResult;
             }
