@@ -134,7 +134,7 @@ namespace FileUploadApi
                 cfg.ReceiveEndpoint(host, Configuration["AppConfig:BillPaymentQueueName"], e =>
                 {
                     e.PrefetchCount = 16;
-                    e.BindDeadLetterQueue("AppConfig:BillPaymentQueueName" + "_skipped");
+                    e.BindDeadLetterQueue(Configuration["AppConfig:BillPaymentQueueName"] + "_skipped");
 
                     e.LoadFrom(provider);
                     EndpointConvention.Map<SendBillPaymentValidateMessageConsumer>(e.InputAddress);
