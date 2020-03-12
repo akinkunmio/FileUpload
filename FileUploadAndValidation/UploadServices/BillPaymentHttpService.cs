@@ -145,16 +145,20 @@ namespace FileUploadAndValidation.UploadServices
                     }
                     else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
-                        throw new AppException("Unauthorized to initiate bill payment process", (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
+                        throw new AppException("Unauthorized to initiate bill payment process",  (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
                     }
                     else
                     {
                         throw new AppException("An error occured while initiating bill payment process", (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
                     }
-;                }
+                }
+                catch (AppException ex)
+                {
+                    throw ex;
+                }
                 catch (Exception)
                 {
-                    throw new AppException("Unknown error occured while initiating Bill Payment Initiation", (int)HttpStatusCode.Unauthorized);
+                    throw new AppException("Unknown error occured while initiating Bill Payment Initiation", (int)HttpStatusCode.InternalServerError);
                 }
             }
             catch (AppException ex)
