@@ -46,7 +46,6 @@ namespace FileUploadAndValidation.UploadServices
                     ? CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, fileProperty.BatchId)
                     : CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url);
 
-                //request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken.Replace("Bearer ", ""));
                 _httpClient.DefaultRequestHeaders.Authorization =
                    new AuthenticationHeaderValue("Bearer", authToken.Replace("Bearer ", ""));
 
@@ -85,13 +84,7 @@ namespace FileUploadAndValidation.UploadServices
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                throw new AppException("Error occured while performing bill payment validation", (int)HttpStatusCode.InternalServerError);
-                //return new ValidationResponse
-                //{
-                //    NumOfRecords = 51,
-                //    Results = new List<RowValidationStatus>(),
-                //    ResultsMode = "queue"
-                //};
+                throw new AppException("Error occured while performing bill payment validation"+ex.Message, (int)HttpStatusCode.InternalServerError);
             }
 
         }
@@ -119,56 +112,47 @@ namespace FileUploadAndValidation.UploadServices
                     UserName = initiatePaymentOptions.UserName
                 });
 
-                var request = new HttpRequestMessage(HttpMethod.Post, "/payments/bills/initiate-payment?dataStore=1" +
-                    $"&Url={fileProperty.Url}&BatchId={fileProperty.BatchId}")
+                var request = new HttpRequestMessage(HttpMethod.Post, $"/qbtrans/api/v1/payments/bills/initiate-payment?dataStore=1&Url={fileProperty.Url}")
                 {
                     Content = new StringContent(req, Encoding.UTF8, "application/json")
                 };
 
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", initiatePaymentOptions.AuthToken.Replace("Bearer ", ""));
 
-                try
+
+                var response = await _httpClient.SendAsync(request);
+                var responseResult = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
                 {
-                    var response = await _httpClient.SendAsync(request);
-
-                    var responseResult = await response.Content.ReadAsStringAsync();
-
-                    var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        return new ConfirmedBillResponse { PaymentInitiated = true };
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                    {
-                        throw new AppException("Made a bad request made to initiate bill payment process", (int)HttpStatusCode.BadRequest, new ConfirmedBillResponse { PaymentInitiated = false });
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        throw new AppException("Unauthorized to initiate bill payment process",  (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
-                    }
-                    else
-                    {
-                        throw new AppException("An error occured while initiating bill payment process", (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
-                    }
+                    var approvalResult = JsonConvert.DeserializeObject<SuccessInitiatePaymentResponse>(responseResult);
+                    return new ConfirmedBillResponse { PaymentInitiated = true };
                 }
-                catch (AppException ex)
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    throw ex;
+                    var approvalResult = JsonConvert.DeserializeObject<FailedInitiatePaymentResponse>(responseResult);
+                    throw new AppException(approvalResult.ResponseCode, (int)HttpStatusCode.BadRequest, new ConfirmedBillResponse { PaymentInitiated = false });
                 }
-                catch (Exception)
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new AppException("Unknown error occured while initiating Bill Payment Initiation", (int)HttpStatusCode.InternalServerError);
+                    var approvalResult = JsonConvert.DeserializeObject<FailedInitiatePaymentResponse>(responseResult);
+                    throw new AppException(approvalResult.ResponseCode, (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
+                }
+                else
+                {
+                    var approvalResult = JsonConvert.DeserializeObject<FailedInitiatePaymentResponse>(responseResult);
+                    throw new AppException(approvalResult.ResponseCode, (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
                 }
             }
             catch (AppException ex)
             {
                 throw ex;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new AppException("Unknown error occured! Please retry.");
+                throw new AppException("Unknown error occured while initiating Bill Payment Initiation"+ex.Message, (int)HttpStatusCode.InternalServerError);
             }
+
         }
 
     }

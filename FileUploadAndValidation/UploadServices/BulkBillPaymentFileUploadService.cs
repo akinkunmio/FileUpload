@@ -449,7 +449,6 @@ namespace FileUploadApi
                         });
 
                 var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, nasDto);
-
                 result = await _billPaymentService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
 
                 await _dbRepository.UpdateBillPaymentInitiation(batchId);

@@ -131,10 +131,11 @@ namespace FileUploadApi
                     h.Password(Configuration["AppConfig:QueuePassword"]);
                 });
 
+                
                 cfg.ReceiveEndpoint(host, Configuration["AppConfig:BillPaymentQueueName"], e =>
                 {
                     e.PrefetchCount = 16;
-                    e.BindDeadLetterQueue(Configuration["AppConfig:BillPaymentQueueName"] + "_skipped");
+                   //e.BindDeadLetterQueue(Configuration["AppConfig:BillPaymentQueueName"] + "_skipped");
 
                     e.LoadFrom(provider);
                     EndpointConvention.Map<SendBillPaymentValidateMessageConsumer>(e.InputAddress);

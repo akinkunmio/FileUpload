@@ -82,7 +82,6 @@ namespace FileUploadApi.ApiServices
 
         public async Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream)
         {
-            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.AuthToken, nameof(uploadOptions.AuthToken));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileExtension, nameof(uploadOptions.FileExtension));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileName, nameof(uploadOptions.FileName));
@@ -140,7 +139,6 @@ namespace FileUploadApi.ApiServices
         public async Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
-            ArgumentGuard.NotNullOrWhiteSpace(initiatePaymentOptions.AuthToken, nameof(initiatePaymentOptions.AuthToken));
             ArgumentGuard.NotNull(initiatePaymentOptions.BusinessId, nameof(initiatePaymentOptions.BusinessId));
             ArgumentGuard.NotNull(initiatePaymentOptions.ApprovalConfigId, nameof(initiatePaymentOptions.ApprovalConfigId));
             ArgumentGuard.NotNull(initiatePaymentOptions.UserId, nameof(initiatePaymentOptions.UserId));

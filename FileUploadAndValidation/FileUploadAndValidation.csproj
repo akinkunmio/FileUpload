@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <Compile Remove="Program.cs" />
+    <Compile Remove="QueueMessages\IMessage.cs" />
     <Compile Remove="UploadServices\AutoPayFileService.cs" />
     <Compile Remove="UploadServices\BulkSmsFileUploadService.cs" />
     <Compile Remove="UploadServices\FirsWhtFileUploadService.cs" />
