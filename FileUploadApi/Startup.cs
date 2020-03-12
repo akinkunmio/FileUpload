@@ -118,10 +118,10 @@ namespace FileUploadApi
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2).AddViewComponentsAsServices();
             
             services.AddScoped<SendBillPaymentValidateMessageConsumer>();
-            //services.AddMassTransit(c =>
-            //{
-            //    c.AddConsumer<SendBillPaymentValidateMessageConsumer>();
-            //});
+            services.AddMassTransit(c =>
+            {
+                c.AddConsumer<SendBillPaymentValidateMessageConsumer>();
+            });
 
             services.AddSingleton(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
@@ -134,6 +134,7 @@ namespace FileUploadApi
                 cfg.ReceiveEndpoint(host, Configuration["AppConfig:BillPaymentQueueName"], e =>
                 {
                     e.PrefetchCount = 16;
+                    e.BindDeadLetterQueue("AppConfig:BillPaymentQueueName" + "_skipped");
 
                     e.LoadFrom(provider);
                     EndpointConvention.Map<SendBillPaymentValidateMessageConsumer>(e.InputAddress);
