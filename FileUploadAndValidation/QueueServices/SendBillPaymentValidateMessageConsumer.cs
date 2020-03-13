@@ -31,7 +31,7 @@ namespace FileUploadAndValidation.QueueServices
         public async Task Consume(ConsumeContext<ValidationResponseData> context)
         {
             var queueMessage = context.Message;
-            var batchId = queueMessage.ResultLocation.Split('\\').Last().Split('.').First();
+            //var batchId = queueMessage.ResultLocation.Split('\\').Last().Split('.').First();
             
             try
             {
@@ -42,19 +42,24 @@ namespace FileUploadAndValidation.QueueServices
                         createdAt: queueMessage.CreatedAt 
                     )
                 );
-            
+
+                _logger.LogInformation("Log information {queueMessage.RequestId} | {queueMessage.ResultLocation} | {queueMessage.CreatedAt}", queueMessage.RequestId, queueMessage.ResultLocation, queueMessage.CreatedAt);
+                
                 if (validationStatuses.Count() > 0)
                     await _billPaymentDbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
                     {
-                        BatchId = batchId,
+                        BatchId = queueMessage.RequestId,
                         ModifiedDate = DateTime.Now.ToString(),
                         NasToValidateFile = queueMessage.ResultLocation,
                         NumOfValidRecords = validationStatuses.Where(v => v.Status.ToLower().Equals("valid")).Count(),
                         Status = GenericConstants.AwaitingInitiation,
                         RowStatuses = validationStatuses.ToList()
                     });
+
+                _logger.LogInformation("Log information {validationStatuses}", validationStatuses);
+
             }
-            catch(AppException ex)
+            catch (AppException ex)
             {
                 _logger.LogError("Error occured while inserting payment items in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
             }
