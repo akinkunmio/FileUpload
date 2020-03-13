@@ -6,6 +6,7 @@ using FileUploadApi;
 using FilleUploadCore.Exceptions;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Qb.BillPaymentTransaction.Shared.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +32,6 @@ namespace FileUploadAndValidation.QueueServices
         public async Task Consume(ConsumeContext<ValidationResponseData> context)
         {
             var queueMessage = context.Message;
-            //var batchId = queueMessage.ResultLocation.Split('\\').Last().Split('.').First();
             
             try
             {
