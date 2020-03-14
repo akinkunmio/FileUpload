@@ -101,7 +101,7 @@ namespace FileUploadAndValidation.Repository
             var path = Path.Combine(location, queueMessage.ResultLocation);
             try
             {
-                if (File.Exists(queueMessage.ResultLocation))
+                if (File.Exists(path))
                 {
                     result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(await System.IO.File.ReadAllTextAsync(path));
                 }
@@ -109,7 +109,6 @@ namespace FileUploadAndValidation.Repository
             }
             catch (Exception)
             {
-                //log error to db 
                 throw new AppException($"An error occured while extracting File Validation Result with BatchId : {queueMessage.BatchId} to NAS for validation", 500);
             }
 
