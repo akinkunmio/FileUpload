@@ -131,17 +131,17 @@ namespace FileUploadAndValidation.UploadServices
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
                     var approvalResult = JsonConvert.DeserializeObject<FailedInitiatePaymentResponse>(responseResult);
-                    throw new AppException(approvalResult.ResponseCode, (int)HttpStatusCode.BadRequest, new ConfirmedBillResponse { PaymentInitiated = false });
+                    throw new AppException(approvalResult.ResponseDescription, (int)HttpStatusCode.BadRequest, new ConfirmedBillResponse { PaymentInitiated = false });
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     var approvalResult = JsonConvert.DeserializeObject<FailedInitiatePaymentResponse>(responseResult);
-                    throw new AppException(approvalResult.ResponseCode, (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
+                    throw new AppException(approvalResult.ResponseDescription, (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
                 }
                 else
                 {
                     var approvalResult = JsonConvert.DeserializeObject<FailedInitiatePaymentResponse>(responseResult);
-                    throw new AppException(approvalResult.ResponseCode, (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
+                    throw new AppException(approvalResult.ResponseDescription, (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
                 }
             }
             catch (AppException ex)
