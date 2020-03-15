@@ -9,15 +9,17 @@ using System.Threading.Tasks;
 using FilleUploadCore.Exceptions;
 using System.Linq;
 using FileUploadAndValidation.QueueMessages;
+using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace FileUploadAndValidation.Repository
 {
     public class NasRepository : INasRepository
     {
-        private readonly IAppConfig _appConfig;
-        public NasRepository(IAppConfig appConfig)
+        private readonly ILogger<NasRepository> _logger;
+        public NasRepository(ILogger<NasRepository> logger)
         {
-            _appConfig = appConfig;
+            _logger = logger;
         }
 
         public async Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
@@ -99,20 +101,24 @@ namespace FileUploadAndValidation.Repository
             var result = new List<RowValidationStatus>();
             var location = @"../data/";
             var path = Path.Combine(location, queueMessage.ResultLocation);
+         
             try
             {
                 if (File.Exists(path))
                 {
-                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(await System.IO.File.ReadAllTextAsync(path));
+                    var extractedContent = await System.IO.File.ReadAllTextAsync(path, Encoding.Unicode);
+                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(extractedContent);
                 }
-
+                else
+                    throw new AppException($"Validation file not found at {path}", (int)HttpStatusCode.NotFound);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new AppException($"An error occured while extracting File Validation Result with BatchId : {queueMessage.BatchId} to NAS for validation", 500);
+                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                throw new AppException($"An error occured while extracting File Validation Result with BatchId : {queueMessage.BatchId} to NAS for validation", (int)HttpStatusCode.InternalServerError);
             }
 
-            return await Task.FromResult(result?.AsEnumerable());
+            return result?.AsEnumerable();
         }
 
       

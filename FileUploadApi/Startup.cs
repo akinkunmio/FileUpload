@@ -16,11 +16,11 @@ using FileUploadApi.ApiServices;
 using FileUploadAndValidation.UploadServices;
 using FileUploadAndValidation.Utils;
 using FileUploadAndValidation.Repository;
-using MassTransit;
 using FileUploadAndValidation.QueueServices;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using MassTransit;
 using GreenPipes;
 
 namespace FileUploadApi
@@ -132,14 +132,14 @@ namespace FileUploadApi
                 });
 
                 
-                cfg.ReceiveEndpoint(Configuration["AppConfig:BillPaymentQueueName"], e =>
+                cfg.ReceiveEndpoint(host, Configuration["AppConfig:BillPaymentQueueName"], e =>
                 {
-                    e.UseConcurrencyLimit(1);
+                    e.PrefetchCount = 16;
+
                     e.UseMessageRetry(r => r.Interval(2, 100));
+
                     e.ConfigureConsumer<SendBillPaymentValidateMessageConsumer>(provider);
 
-                    //e.LoadFrom(provider);
-                    //EndpointConvention.Map<SendBillPaymentValidateMessageConsumer>(e.InputAddress);
                 });
             }));
 
