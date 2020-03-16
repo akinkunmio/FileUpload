@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FileUploadAndValidation.QueueMessages
+namespace Qb.BillPaymentTransaction.Shared.Contracts
 {
     public class ValidationResponseData
     {

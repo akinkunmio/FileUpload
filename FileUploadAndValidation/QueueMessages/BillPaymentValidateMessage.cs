@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.QueueMessages
 {
-    public class BillPaymentValidateMessage : IMessage
+    public class BillPaymentValidateMessage
     {
         public BillPaymentValidateMessage(string batchId, string resultLocation, DateTime createdAt)
         {

@@ -9,35 +9,37 @@ using System.Threading.Tasks;
 using FilleUploadCore.Exceptions;
 using System.Linq;
 using FileUploadAndValidation.QueueMessages;
+using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace FileUploadAndValidation.Repository
 {
     public class NasRepository : INasRepository
     {
-        private readonly IAppConfig _appConfig;
-        public NasRepository(IAppConfig appConfig)
+        private readonly ILogger<NasRepository> _logger;
+        public NasRepository(ILogger<NasRepository> logger)
         {
-            _appConfig = appConfig;
+            _logger = logger;
         }
 
-        public Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
+        public async Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation + @"validate\";
+                var fileLocation = @"../data/validate/";
                 var fileName = batchId + "_validate.json";
 
                 string json = JsonConvert.SerializeObject(billPayments);
 
-                var path = Path.Combine(fileLocation, fileName);
+                var path = fileLocation + fileName;
 
                 File.WriteAllText(path, json);
                 
-                return Task.FromResult(new FileProperty 
+                return await Task.FromResult(new FileProperty 
                 { 
                     BatchId = batchId, 
                     DataStore = 1,
-                    Url = path
+                    Url = $"validate/{fileName}"
                 });
             }
             catch(Exception)
@@ -46,24 +48,24 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
+        public async Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
+                var fileLocation = @"../data/confirmed/";
                 var fileName = batchId + "_confirmed.json";
 
                 string json = JsonConvert.SerializeObject(billPayments);
 
-                var path = Path.Combine(fileLocation, fileName);
+                var path = fileLocation + fileName;
 
-                File.WriteAllText(path, json);
+                await File.WriteAllTextAsync(path, json);
 
-                return Task.FromResult(new FileProperty
+                return await Task.FromResult(new FileProperty
                 {
                     BatchId = batchId,
                     DataStore = 1,
-                    Url = fileLocation + fileName
+                    Url = $"confirmed/{fileName}"
                 });
             }
             catch (Exception)
@@ -74,10 +76,10 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<string> SaveRawFile(string batchId, Stream stream, string extension)
         {
-            var fileLocation = _appConfig.NasFolderLocation + @"\raw\";
+            var fileLocation = @"../data/raw/";
             var fileName = batchId + "_raw." + extension;
 
-            string path = Path.Combine(fileLocation, fileName);
+            string path = Path.Combine(fileLocation + fileName);
 
             try
             {
@@ -91,28 +93,32 @@ namespace FileUploadAndValidation.Repository
                 throw new AppException($"An error occured while saving raw file with batch id : {batchId} to NAS "+ ex.Message, 500);
             }
 
-            return path;
+            return $"raw/{fileName}";
         }
 
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidateMessage queueMessage)
         {
             var result = new List<RowValidationStatus>();
-
+            var location = @"../data/";
+            var path = Path.Combine(location, queueMessage.ResultLocation);
+         
             try
             {
-                if (File.Exists(queueMessage.ResultLocation))
+                if (File.Exists(path))
                 {
-                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(System.IO.File.ReadAllText(queueMessage.ResultLocation));
+                    var extractedContent = await System.IO.File.ReadAllTextAsync(path, Encoding.Unicode);
+                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(extractedContent);
                 }
-
+                else
+                    throw new AppException($"Validation file not found at {path}", (int)HttpStatusCode.NotFound);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //log error to db 
-                throw new AppException($"An error occured while extracting File Validation Result with BatchId : {queueMessage.BatchId} to NAS for validation", 500);
+                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                throw new AppException($"An error occured while extracting File Validation Result with BatchId : {queueMessage.BatchId} to NAS for validation", (int)HttpStatusCode.InternalServerError);
             }
 
-            return await Task.FromResult(result?.AsEnumerable());
+            return result?.AsEnumerable();
         }
 
       

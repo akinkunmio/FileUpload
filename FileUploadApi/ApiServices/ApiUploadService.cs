@@ -29,15 +29,12 @@ namespace FileUploadApi.ApiServices
         private readonly IFileService _autoPayService;
         private readonly IFileService _bulkBillPaymentService;
         private readonly IFileService _bulkSmsService;
-        private readonly IBillPaymentDbRepository _dbRepository;
         private readonly INasRepository _nasRepository;
 
         public ApiUploadService(Func<FileReaderTypeEnum, IFileReader> fileReader,
             Func<FileServiceTypeEnum, IFileService> fileService, 
-            IBillPaymentDbRepository dbRepository,
             INasRepository nasRepository)
         {
-            _dbRepository = dbRepository;
             _txtFileReader = fileReader(FileReaderTypeEnum.TXT);
             _csvFileReader = fileReader(FileReaderTypeEnum.CSV);
             _xlsxFileReader = fileReader(FileReaderTypeEnum.XLSX);
@@ -60,13 +57,13 @@ namespace FileUploadApi.ApiServices
             return batchFileSummaryDto;
         }
 
-        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
+        public async Task<BillPaymentRowStatusObject> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
             ArgumentGuard.NotDefault(pagination.PageNumber, nameof(pagination.PageNumber));
             ArgumentGuard.NotDefault(pagination.PageSize, nameof(pagination.PageSize));
 
-            IEnumerable<BillPaymentRowStatus> billPaymentStatuses;
+            BillPaymentRowStatusObject billPaymentStatuses;
 
             try
             {
@@ -85,11 +82,9 @@ namespace FileUploadApi.ApiServices
 
         public async Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream)
         {
-            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.AuthToken, nameof(uploadOptions.AuthToken));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileExtension, nameof(uploadOptions.FileExtension));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileName, nameof(uploadOptions.FileName));
-            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.RawFileLocation, nameof(uploadOptions.RawFileLocation));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
             ArgumentGuard.NotDefault(stream.Length, nameof(stream.Length));
 
@@ -98,16 +93,13 @@ namespace FileUploadApi.ApiServices
                 throw new AppException("Invalid Item Type specified");
 
             IEnumerable<Row> rows = new List<Row>();
-            var uploadResult = new UploadResult();
+            UploadResult uploadResult = new UploadResult();
 
-            if(uploadOptions == null)
-                throw new AppException("Upload options must be set!.");
+            uploadResult.BatchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
-            var batchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
-
-            uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(batchId, stream, uploadOptions.FileExtension);
+            uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(uploadResult.BatchId, stream, uploadOptions.FileExtension);
             stream.Seek(0, SeekOrigin.Begin);
-            
+
             switch (uploadOptions.FileExtension)
             {
                 case "txt":
@@ -129,13 +121,13 @@ namespace FileUploadApi.ApiServices
             switch (uploadOptions.ContentType.ToLower())
             {
                 case "firs_wht":
-                    return await _firsWhtService.Upload(uploadOptions, rows, batchId);
+                    return await _firsWhtService.Upload(uploadOptions, rows, uploadResult);
                 case "autopay":
-                    return await _autoPayService.Upload(uploadOptions, rows, batchId);
+                    return await _autoPayService.Upload(uploadOptions, rows, uploadResult);
                 case "sms":
-                    return await _bulkSmsService.Upload(uploadOptions, rows, batchId);
+                    return await _bulkSmsService.Upload(uploadOptions, rows, uploadResult);
                 case "billpayment":
-                    uploadResult = await _bulkBillPaymentService.Upload(uploadOptions, rows, batchId);
+                    uploadResult = await _bulkBillPaymentService.Upload(uploadOptions, rows, uploadResult);
                     break;
                 default:
                     throw new AppException("Content type not supported!.");
@@ -147,7 +139,6 @@ namespace FileUploadApi.ApiServices
         public async Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
-            ArgumentGuard.NotNullOrWhiteSpace(initiatePaymentOptions.AuthToken, nameof(initiatePaymentOptions.AuthToken));
             ArgumentGuard.NotNull(initiatePaymentOptions.BusinessId, nameof(initiatePaymentOptions.BusinessId));
             ArgumentGuard.NotNull(initiatePaymentOptions.ApprovalConfigId, nameof(initiatePaymentOptions.ApprovalConfigId));
             ArgumentGuard.NotNull(initiatePaymentOptions.UserId, nameof(initiatePaymentOptions.UserId));

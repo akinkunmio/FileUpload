@@ -23,6 +23,8 @@ namespace FileUploadAndValidation.Models
 
         public int? PageNumber { get; set; }
 
+        public int TotalCount { get; set; }
+
         public string Error { get; set; }
     }
 

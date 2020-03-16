@@ -6,8 +6,15 @@ namespace FileUploadAndValidation.Models
 {
     public class ValidationResponse
     {
+        public string ResponseCode { get; set; }
+        public string ResponseDescription { get; set; }
+        public ValidationData Data { get; set; }
+    }
+
+    public class ValidationData
+    {
         public int NumOfRecords { get; set; }
-        public string ResultsMode { get; set; }
+        public string ResultMode { get; set; }
         public List<RowValidationStatus> Results { get; set; }
     }
 

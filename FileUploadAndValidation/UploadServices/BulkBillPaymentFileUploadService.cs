@@ -32,7 +32,8 @@ namespace FileUploadApi
         private readonly IBus _bus;
 
         public BulkBillPaymentFileService(IBillPaymentDbRepository dbRepository, 
-            INasRepository nasRepository, IBillPaymentService billPaymentService,
+            INasRepository nasRepository,
+            IBillPaymentService billPaymentService,
             IBus bus)
         {
             _dbRepository = dbRepository;
@@ -43,10 +44,10 @@ namespace FileUploadApi
 
         public async Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
         {
-            Console.WriteLine("Validating rows...");
+           // Console.WriteLine("Validating rows...");
 
             List<int> validRows = new List<int>();
-            var validateRowModel = new ValidateRowModel();
+            ValidateRowModel validateRowModel;
             var failures = new List<Failure>();
 
             foreach (var row in contentRows)
@@ -68,11 +69,11 @@ namespace FileUploadApi
             var validationErrors = new List<ValidationError>();
             var failure = new Failure();
 
-            var errorMessage = "";
             var isValid = true;
 
             for (var i = 0; i < columnContracts.Length; i++)
             {
+                var errorMessage = "";
                 ColumnContract contract = columnContracts[i];
                 Column column = row.Columns[i];
                 
@@ -151,7 +152,7 @@ namespace FileUploadApi
             }
         }
 
-        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, string batchId)
+        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
@@ -160,10 +161,7 @@ namespace FileUploadApi
             var headerRow = new Row();
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPayment> nonDistinct = new List<BillPayment>();
-            var uploadResult = new UploadResult();
-            uploadResult.BatchId = batchId;
-            uploadResult.RowsCount = rows.Count();
-
+           
             try
             {
                 if (!rows.Any())
@@ -257,6 +255,10 @@ namespace FileUploadApi
                     billPayments = billPayments
                         .Where(b => !nonDistinct.Any(n => n.RowNumber == b.RowNumber))
                         .Select(r => r);
+
+                    uploadResult.ValidRows = billPayments.Select(r => r.RowNumber).ToList();
+                    uploadResult.RowsCount = uploadResult.ValidRows.Count();
+
                 }
 
                 await _dbRepository.InsertPaymentUpload(
@@ -276,32 +278,36 @@ namespace FileUploadApi
                 {
                     return new NasBillPaymentDto
                     {
-                        Amount = b.Amount,
-                        CustomerId = b.CustomerId,
-                        Row = b.RowNumber,
-                        ItemCode = b.ItemCode,
-                        ProductCode = b.ProductCode,
+                        amount = b.Amount,
+                        customer_id = b.CustomerId,
+                        row = b.RowNumber,
+                        item_code = b.ItemCode,
+                        product_code = b.ProductCode,
                     };
                 });
                 
                 FileProperty fileProperty = await _nasRepository.SaveFileToValidate(uploadResult.BatchId, toValidatePayments);
 
-                var validationResponse = await _billPaymentService.ValidateBillRecords(fileProperty, uploadOptions.AuthToken);
+                var validationResponse = await _billPaymentService.ValidateBillRecords(fileProperty, uploadOptions.AuthToken, toValidatePayments.Count() > 50);
 
-                if (validationResponse.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("json"))
+                if (validationResponse.Data.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.Data.Results.Any() && validationResponse.Data.ResultMode.ToLower().Equals("json"))
                     await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
                     {
                         BatchId = uploadResult.BatchId,
                         NasToValidateFile = fileProperty.Url,
                         ModifiedDate = DateTime.Now.ToString(),
-                        NumOfValidRecords = validationResponse.Results.Where(v => v.Status.ToLower().Equals("valid")).Count(),
+                        NumOfValidRecords = validationResponse.Data.Results.Where(v => v.Status.ToLower().Equals("valid")).Count(),
                         Status = GenericConstants.AwaitingInitiation,
-                        RowStatuses = validationResponse.Results
+                        RowStatuses = validationResponse.Data.Results
                     });
-                else if (validationResponse.NumOfRecords > GenericConstants.RECORDS_SMALL_SIZE && !validationResponse.Results.Any() && validationResponse.ResultsMode.ToLower().Equals("queue"))
-                    await _bus.Publish(new BillPaymentValidateMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
-                else
-                    throw new AppException("Invalid response from Bill Payment Validate endpoint", (int)HttpStatusCode.InternalServerError);
+               // else if (validationResponse.Data.NumOfRecords > GenericConstants.RECORDS_SMALL_SIZE && !validationResponse.Data.Results.Any() && validationResponse.Data.ResultMode.ToLower().Equals("queue"))
+                    //try
+                    //{
+                    //    await _bus.Publish(new BillPaymentValidateMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
+                    //}
+                    //catch (Exception) { }
+                //else
+                //    throw new AppException("Invalid response from Bill Payment Validate endpoint", (int)HttpStatusCode.InternalServerError);
 
                 return uploadResult;
             }
@@ -318,17 +324,20 @@ namespace FileUploadApi
             }
         }
 
-        public async Task<IEnumerable<BillPaymentRowStatus>> GetBillPaymentResults(string batchId, PaginationFilter pagination)
+        public async Task<BillPaymentRowStatusObject> GetBillPaymentResults(string batchId, PaginationFilter pagination)
         {
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
+            int totalRowCount;
 
             try
             {
-                var billPaymentStatusesDto = await _dbRepository
+                var billPaymentStatusesObj = await _dbRepository
                     .GetBillPaymentRowStatuses(batchId, pagination);
 
-                billPaymentStatuses = billPaymentStatusesDto.Select(s => new BillPaymentRowStatus
+                totalRowCount = billPaymentStatusesObj.TotalRowsCount;
+
+                billPaymentStatuses = billPaymentStatusesObj.RowStatusDtos.Select(s => new BillPaymentRowStatus
                  {
                       Error = s.Error,
                       Row = s.RowNum,
@@ -337,6 +346,8 @@ namespace FileUploadApi
 
                 if (billPaymentStatuses.Count() < 0)
                     throw new AppException($"Upload Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);
+
+
             }
             catch (AppException appEx)
             {
@@ -346,7 +357,8 @@ namespace FileUploadApi
             {
                 throw new AppException($"An error occured while fetching results for {batchId}!.");
             }
-            return billPaymentStatuses;
+
+            return new BillPaymentRowStatusObject { RowStatuses = billPaymentStatuses, TotalRowsCount = totalRowCount };
         }
 
         public async Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId)
@@ -358,14 +370,14 @@ namespace FileUploadApi
                 batchFileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
                 
                 if (batchFileSummary == null)
-                    throw new AppException($"Upload with Batch Id: '{batchId}' not found!.");
+                    throw new AppException($"Upload with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
 
                 batchFileSummaryDto = new BatchFileSummaryDto
                 {
                     BatchId = batchFileSummary.BatchId,
                     ContentType = batchFileSummary.ContentType,
                     ItemType = batchFileSummary.ItemType,
-                    NumOfAllRecords = batchFileSummary.NumOfValidRecords,
+                    NumOfAllRecords = batchFileSummary.NumOfRecords,
                     NumOfValidRecords = batchFileSummary.NumOfValidRecords,
                     Status = batchFileSummary.TransactionStatus,
                     UploadDate = batchFileSummary.UploadDate
@@ -429,15 +441,14 @@ namespace FileUploadApi
                     .Select(e =>
                         new NasBillPaymentDto
                         {
-                            Amount = e.Amount,
-                            CustomerId = e.CustomerId,
-                            ItemCode = e.ItemCode,
-                            ProductCode = e.ProductCode,
-                            Row = e.RowNum
+                            amount = e.Amount,
+                            customer_id = e.CustomerId,
+                            item_code = e.ItemCode,
+                            product_code = e.ProductCode,
+                            row = e.RowNum
                         });
 
                 var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, nasDto);
-
                 result = await _billPaymentService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
 
                 await _dbRepository.UpdateBillPaymentInitiation(batchId);

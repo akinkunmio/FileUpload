@@ -16,12 +16,12 @@ using FileUploadApi.ApiServices;
 using FileUploadAndValidation.UploadServices;
 using FileUploadAndValidation.Utils;
 using FileUploadAndValidation.Repository;
-using MassTransit;
-using MassTransit.ExtensionsDependencyInjectionIntegration;
 using FileUploadAndValidation.QueueServices;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using MassTransit;
+using GreenPipes;
 
 namespace FileUploadApi
 {
@@ -39,8 +39,8 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
-            services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
+            //services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
+            //services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
 
             services.AddSingleton<IAppConfig, AppConfig>();
             services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
@@ -97,8 +97,23 @@ namespace FileUploadApi
             {
                 config.SwaggerDoc("v1", new Info { Title = "My API", Version = "V1" });
 
+                var security = new Dictionary<string, IEnumerable<string>>
+                {
+                    {"Bearer", new string[] { }},
+                };
+
+                config.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = "header",
+                    Type = "apiKey"
+                });
+                config.AddSecurityRequirement(security);
+
                 config.OperationFilter<FormFileSwaggerFilter>();
             });
+           
             services.AddCors();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2).AddViewComponentsAsServices();
             
@@ -116,12 +131,15 @@ namespace FileUploadApi
                     h.Password(Configuration["AppConfig:QueuePassword"]);
                 });
 
+                
                 cfg.ReceiveEndpoint(host, Configuration["AppConfig:BillPaymentQueueName"], e =>
                 {
                     e.PrefetchCount = 16;
 
-                    e.LoadFrom(provider);
-                    EndpointConvention.Map<SendBillPaymentValidateMessageConsumer>(e.InputAddress);
+                    e.UseMessageRetry(r => r.Interval(2, 100));
+
+                    e.ConfigureConsumer<SendBillPaymentValidateMessageConsumer>(provider);
+
                 });
             }));
 

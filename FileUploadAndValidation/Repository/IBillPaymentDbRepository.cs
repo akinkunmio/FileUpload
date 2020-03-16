@@ -11,7 +11,7 @@ namespace FileUploadApi
 
         Task<BatchFileSummary> GetBatchUploadSummary(string batchId);
 
-        Task<IEnumerable<BillPaymentRowStatusDto>> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination);
+        Task<BillPaymentRowStatusDtoObject> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination);
 
         Task UpdateValidationResponse(UpdateValidationResponseModel updateBillPayments);
 
