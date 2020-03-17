@@ -65,6 +65,6 @@ namespace FilleUploadCore.UploadManagers
 
         public string UserName { get; set; }
 
-        public long? BusinessId { get; set; }
+        public int? BusinessId { get; set; }
     }
 }
