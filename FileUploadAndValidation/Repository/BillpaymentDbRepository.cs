@@ -106,7 +106,11 @@ namespace FileUploadAndValidation.Repository
                         },
                         commandType: CommandType.StoredProcedure);
 
-                    return batchFileSummary;
+                    return batchFileSummary ?? throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
+                }
+                catch(AppException ex)
+                {
+                    throw ex;
                 }
                 catch (Exception ex)
                 {
@@ -124,7 +128,7 @@ namespace FileUploadAndValidation.Repository
 
                 try
                 {
-                    var batchSummaryId = await sqlConnection.QueryFirstOrDefaultAsync<long>(
+                    var batchSummaryId = await sqlConnection.QueryFirstOrDefaultAsync<long?>(
                         sql: @"sp_get_batch_upload_summary_id_by_batch_id",
                         param: new
                         {
@@ -132,7 +136,11 @@ namespace FileUploadAndValidation.Repository
                         },
                         commandType: CommandType.StoredProcedure);
 
-                    return batchSummaryId;
+                    return batchSummaryId ?? throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
+                }
+                catch(AppException ex)
+                {
+                    throw ex;
                 }
                 catch (Exception)
                 {
@@ -166,7 +174,7 @@ namespace FileUploadAndValidation.Repository
                         },
                         commandType: CommandType.StoredProcedure);
 
-                    return result;
+                    return result ?? throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
                 }
                 catch (AppException ex)
                 {
@@ -189,7 +197,6 @@ namespace FileUploadAndValidation.Repository
                 {
                     var summaryId = await GetBatchUploadSummaryId(batchId);
 
-
                     if (summaryId == 0)
                         throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
                    
@@ -205,7 +212,6 @@ namespace FileUploadAndValidation.Repository
                             page_number = pagination.PageNumber
                         },
                         commandType: CommandType.StoredProcedure);
-
 
                     return new BillPaymentRowStatusDtoObject { RowStatusDtos = result, TotalRowsCount = totalRowsCount };
                 }

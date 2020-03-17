@@ -167,6 +167,9 @@ namespace FileUploadApi.Controllers
             var response = new ResponseModel();
             try
             {
+                if (HttpContext.Request.Headers["Authorization"].ToString() == null)
+                    throw new AppException("'Auth Token' cannot be null or empty", (int)HttpStatusCode.Unauthorized);
+
                 var initiatePaymentOptions = new InitiatePaymentOptions()
                 {
                     AuthToken = HttpContext.Request.Headers["Authorization"],
@@ -176,11 +179,14 @@ namespace FileUploadApi.Controllers
                     UserName = request.UserName
                 };
 
-                response.Data = await _uploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
+
+                var data = await _uploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
+                response.Data = data;
+
             }
             catch (AppException ex)
             {
-                _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
+               // _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
                 response.Error = ex.Message;
                 var result = new ObjectResult(new { ex.Message })

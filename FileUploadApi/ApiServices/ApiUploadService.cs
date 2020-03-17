@@ -138,13 +138,24 @@ namespace FileUploadApi.ApiServices
 
         public async Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
         {
-            ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
-            ArgumentGuard.NotNull(initiatePaymentOptions.BusinessId, nameof(initiatePaymentOptions.BusinessId));
-            ArgumentGuard.NotNull(initiatePaymentOptions.ApprovalConfigId, nameof(initiatePaymentOptions.ApprovalConfigId));
-            ArgumentGuard.NotNull(initiatePaymentOptions.UserId, nameof(initiatePaymentOptions.UserId));
-            ArgumentGuard.NotNullOrWhiteSpace(initiatePaymentOptions.UserName, nameof(initiatePaymentOptions.UserName));
+            try
+            {
+                ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
+                ArgumentGuard.NotNull(initiatePaymentOptions.BusinessId, nameof(initiatePaymentOptions.BusinessId));
+                ArgumentGuard.NotNull(initiatePaymentOptions.ApprovalConfigId, nameof(initiatePaymentOptions.ApprovalConfigId));
+                ArgumentGuard.NotNull(initiatePaymentOptions.UserId, nameof(initiatePaymentOptions.UserId));
+                ArgumentGuard.NotNullOrWhiteSpace(initiatePaymentOptions.UserName, nameof(initiatePaymentOptions.UserName));
 
-             return await _bulkBillPaymentService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
+                return await _bulkBillPaymentService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
+            }
+            catch(AppException ex)
+            {
+                throw ex;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 

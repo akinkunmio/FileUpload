@@ -95,7 +95,7 @@ namespace FileUploadApi
             services.AddHealthChecks();
             services.AddSwaggerGen(config =>
             {
-                config.SwaggerDoc("v1", new Info { Title = "My API", Version = "V1" });
+                config.SwaggerDoc("v1", new Info { Title = "QTB Upload Service API", Version = "V1" });
 
                 var security = new Dictionary<string, IEnumerable<string>>
                 {
