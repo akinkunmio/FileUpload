@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using FileUploadAndValidation.FileReaderImpl;
-using FileUploadAndValidation.Helpers;
+﻿using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
 using FileUploadApi.ApiServices;
 using FileUploadApi.Models;
-using FileUploadApi.Services;
 using FilleUploadCore.Exceptions;
-using FilleUploadCore.FileReaders;
-using FilleUploadCore.Helpers;
 using FilleUploadCore.UploadManagers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace FileUploadApi.Controllers
 {
