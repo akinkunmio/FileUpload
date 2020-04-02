@@ -157,6 +157,41 @@ namespace FileUploadApi.ApiServices
                 throw ex;
             }
         }
+
+        public async Task<string> GetFileTemplateContentAsync(string extension, MemoryStream outputStream)
+        {
+            string templateFileName;
+
+            try
+            {
+                switch (extension)
+                {
+                    case "txt":
+                        templateFileName = GenericConstants.BillPaymentTxtTemplate + ".txt";
+                        break;
+                    case "csv":
+                        templateFileName = GenericConstants.BillPaymentCsvTemplate + ".csv";
+                        break;
+                    case "xlsx":
+                        templateFileName = GenericConstants.BillPaymentXlsxTemplate + ".xlsx";
+                        break;
+                    case "xls":
+                        templateFileName = GenericConstants.BillPaymentXlsTemplate + ".xls";
+                        break;
+                    default:
+                        throw new AppException("File extension not supported!.");
+                }
+                return await _nasRepository.GetTemplateFileContentAsync(templateFileName, outputStream);
+            }
+            catch(AppException ex)
+            {
+                throw ex;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 
 }

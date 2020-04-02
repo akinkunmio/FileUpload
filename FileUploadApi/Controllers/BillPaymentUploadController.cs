@@ -12,6 +12,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using MimeMapping;
 
 namespace FileUploadApi.Controllers
 {
@@ -207,5 +209,42 @@ namespace FileUploadApi.Controllers
             return Ok(response);
         }
 
+        [HttpGet("template/{extension}/download")]
+        public async Task<IActionResult> GetTemplate(string extension)
+        {
+            try
+            {
+                var outputStream = new MemoryStream();
+
+                var filePath = await _uploadService.GetFileTemplateContentAsync(extension, outputStream);
+
+                var contentType = MimeUtility.GetMimeMapping(filePath);
+
+                outputStream.Seek(0, SeekOrigin.Begin);
+
+                return File(outputStream, contentType, GenericConstants.BillPaymentTemplate+"."+extension);
+            }
+            catch(AppException ex)
+            {
+                _logger.LogError("An Error occured during the Template Download File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult(ex.Message)
+                {
+                    StatusCode = ex.StatusCode
+                };
+
+                return result;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("An Error occured during the Template Download File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult("Unknown error occured. Please retry!.")
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest
+                };
+                return result;
+            }
+        }
     }
 }

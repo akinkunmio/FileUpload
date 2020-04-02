@@ -18,5 +18,7 @@ namespace FileUploadApi.ApiServices
         Task<BatchFileSummaryDto> GetFileSummary(string batchId);
 
         Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
+        
+        Task<string> GetFileTemplateContentAsync(string extension, MemoryStream outputStream);
     }
 }
