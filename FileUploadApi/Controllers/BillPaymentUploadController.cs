@@ -37,7 +37,8 @@ namespace FileUploadApi.Controllers
             var uploadResult = new UploadResult();
 
             var file = Request.Form.Files.First();
-            
+            var userId = Request.Form["userId"].ToString();
+
             try
             {
                 var uploadOptions = new UploadOptions
@@ -48,6 +49,7 @@ namespace FileUploadApi.Controllers
                     FileSize = file.Length,
                     FileExtension = Path.GetExtension(file.FileName).Replace(".", string.Empty).ToLower(),
                     ItemType = itemType,
+                    UserId = Convert.ToInt64(userId)
                 };
 
                 using (var contentStream = file.OpenReadStream())

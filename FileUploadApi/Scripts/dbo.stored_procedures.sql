@@ -54,6 +54,12 @@ BEGIN
 END
 GO
 
+IF (OBJECT_ID('sp_update_successful_upload') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_update_successful_upload
+END
+GO
+
 IF OBJECT_ID('tbl_bill_payment_transactions_detail','U') IS NULL 
 begin
 CREATE TABLE [dbo].[tbl_bill_payment_transactions_detail](
@@ -105,6 +111,13 @@ CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_by_batch_id]
 AS
 	SELECT * FROM tbl_transactions_summary WHERE batch_id = @batch_id;
 GO
+
+CREATE PROCEDURE [dbo].[sp_get_batch_upload_summaries_by_user_id]
+@userid bigint
+AS
+	SELECT * FROM tbl_transactions_summary WHERE userid = @user_id;
+GO
+
 
 CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_id_by_batch_id]
 @batch_id NVARCHAR (100)
@@ -212,4 +225,15 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and  row_num=@row_num;
 GO
+
+CREATE PROCEDURE [dbo].[sp_update_successful_upload]
+@batch_id  NVARCHAR (256),
+@user_id bigint
+AS
+	UPDATE tbl_transactions_summary 
+	SET upload_successful='true', userid=@user_id
+	WHERE batch_id=@batch_id;
+GO
+
+
 

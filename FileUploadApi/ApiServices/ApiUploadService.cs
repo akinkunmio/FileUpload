@@ -92,6 +92,9 @@ namespace FileUploadApi.ApiServices
                 && !uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
                 throw new AppException("Invalid Item Type specified");
 
+            if (uploadOptions.UserId == null)
+                throw new AppException("User Id cannot be null");
+
             IEnumerable<Row> rows = new List<Row>();
             UploadResult uploadResult = new UploadResult();
 

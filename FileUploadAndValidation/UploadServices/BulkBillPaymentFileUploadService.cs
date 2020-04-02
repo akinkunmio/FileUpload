@@ -46,7 +46,7 @@ namespace FileUploadApi
         {
            // Console.WriteLine("Validating rows...");
 
-            List<int> validRows = new List<int>();
+            List<RowDetail> validRows = new List<RowDetail>();
             ValidateRowModel validateRowModel;
             var failures = new List<Failure>();
 
@@ -55,9 +55,16 @@ namespace FileUploadApi
                 validateRowModel = await ValidateRow(row, columnContracts);
 
                 if (validateRowModel.IsValid)
-                    validRows.Add(row.Index);
+                    validRows.Add( new RowDetail 
+                    {  
+                        RowNumber = row.Index, 
+                        ProductCode = row.Columns[0].Value, 
+                        ItemCode = row.Columns[1].Value, 
+                        CustomerId = row.Columns[2].Value, 
+                        Amount = row.Columns[3].Value 
+                    });
 
-                if (validateRowModel.Failure.ColumnValidationErrors != null && validateRowModel.Failure.RowNumber != null)
+                if (validateRowModel.Failure.ColumnValidationErrors.Count > 0 && validateRowModel.Failure.ColumnValidationErrors.Any())
                     failures.Add(validateRowModel.Failure);
             }
 
@@ -68,6 +75,14 @@ namespace FileUploadApi
         {
             var validationErrors = new List<ValidationError>();
             var failure = new Failure();
+            var rowDetail = new RowDetail 
+            {
+                RowNumber = row.Index,
+                ProductCode = row.Columns[0].Value,
+                ItemCode = row.Columns[1].Value,
+                CustomerId = row.Columns[2].Value,
+                Amount = row.Columns[3].Value
+            };
 
             var isValid = true;
 
@@ -127,7 +142,7 @@ namespace FileUploadApi
                     new Failure
                     {
                         ColumnValidationErrors = validationErrors,
-                        RowNumber = row.Index
+                        Row = rowDetail
                     };
             }
 
@@ -160,7 +175,7 @@ namespace FileUploadApi
 
             var headerRow = new Row();
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
-            IEnumerable<BillPayment> nonDistinct = new List<BillPayment>();
+            IEnumerable<BillPayment> nonDistincts = new List<BillPayment>();
            
             try
             {
@@ -190,57 +205,68 @@ namespace FileUploadApi
 
                 if (uploadResult.ValidRows.Count() > 0 || uploadResult.ValidRows.Any())
                 {
-                    billPayments = rows
-                        .Where(row => uploadResult.ValidRows.Contains(row.Index))
-                        .Select(r => new BillPayment
-                        {
-                            RowNumber = r.Index,
-                            ProductCode = r.Columns[0].Value.ToString(),
-                            ItemCode = r.Columns[1].Value.ToString(),
-                            CustomerId = r.Columns[2].Value.ToString(),
-                            Amount = Convert.ToDouble(r.Columns[3].Value),
-                            BatchId = uploadResult.BatchId,
-                            CreatedDate = dateTimeNow.ToString()
-                        });
-
+                    billPayments = uploadResult.ValidRows.Select(r => new BillPayment 
+                    { 
+                        RowNumber = r.RowNumber,
+                        Amount = Convert.ToDouble(r.Amount),
+                        ProductCode = r.ProductCode,
+                        ItemCode = r.ItemCode,
+                        CustomerId = r.CustomerId,
+                        BatchId = uploadResult.BatchId,
+                        CreatedDate = dateTimeNow.ToString()
+                    });
 
                     if(uploadOptions.ItemType
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentId.ToLower()))
                     {
-                        nonDistinct = billPayments
+                        nonDistincts = billPayments
                             ?.GroupBy(b => new { b.ProductCode, b.CustomerId })
                             .Where(g => g.Count() > 1)
                             .SelectMany(r => r);
 
-                        foreach (var nonDist in nonDistinct)
-                            uploadResult.Failures.Add(new Failure 
+                        foreach (var nonDistinct in nonDistincts)
+                            uploadResult.Failures.Add(new Failure
                             {
-                                RowNumber = nonDist.RowNumber,
+                                Row = new RowDetail
+                                {
+                                    RowNumber = nonDistinct.RowNumber,
+                                    CustomerId = nonDistinct.CustomerId,
+                                    ItemCode = nonDistinct.ItemCode,
+                                    ProductCode = nonDistinct.ProductCode,
+                                    Amount = nonDistinct.Amount.ToString()
+                                },
                                 ColumnValidationErrors = new List<ValidationError>
                                 {
-                                    new ValidationError 
-                                    { 
-                                        PropertyName = "ProductCode, CustomerId", 
-                                        ErrorMessage = "Values should be unique and not be repeated" 
+                                    new ValidationError
+                                    {
+                                        PropertyName = "ProductCode, CustomerId",
+                                        ErrorMessage = "Values should be unique and not be repeated"
                                     }
                                 }
-                            });
+                            }); 
                     }
 
                     if (uploadOptions.ItemType
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
                     {
-                        nonDistinct = billPayments
+                        nonDistincts = billPayments
                             ?.GroupBy(b => new { b.ItemCode, b.CustomerId })
                             .Where(g => g.Count() > 1)
                             .SelectMany(r => r);
 
-                        foreach (var nonDist in nonDistinct)
+                        foreach (var nonDistinct in nonDistincts)
                             uploadResult.Failures.Add(new Failure
                             {
-                                RowNumber = nonDist.RowNumber,
+                                Row = new RowDetail
+                                {
+                                    RowNumber = nonDistinct.RowNumber,
+                                    CustomerId = nonDistinct.CustomerId,
+                                    ItemCode = nonDistinct.ItemCode,
+                                    ProductCode = nonDistinct.ProductCode,
+                                    Amount = nonDistinct.Amount.ToString()
+                                },
                                 ColumnValidationErrors = new List<ValidationError>
                                 {
                                     new ValidationError 
@@ -253,12 +279,19 @@ namespace FileUploadApi
                     }
 
                     billPayments = billPayments
-                        .Where(b => !nonDistinct.Any(n => n.RowNumber == b.RowNumber))
+                        .Where(b => !nonDistincts.Any(n => n.RowNumber == b.RowNumber))
                         .Select(r => r);
 
-                    uploadResult.ValidRows = billPayments.Select(r => r.RowNumber).ToList();
-                    uploadResult.RowsCount = uploadResult.ValidRows.Count();
+                    uploadResult.ValidRows = billPayments.Select(r => new RowDetail 
+                    {
+                        RowNumber = r.RowNumber,
+                        Amount = r.Amount.ToString(),
+                        ProductCode = r.ProductCode,
+                        ItemCode = r.ItemCode,
+                        CustomerId = r.CustomerId
+                    }).ToList();
 
+                    uploadResult.RowsCount = uploadResult.ValidRows.Count();
                 }
 
                 await _dbRepository.InsertPaymentUpload(
@@ -300,14 +333,8 @@ namespace FileUploadApi
                         Status = GenericConstants.AwaitingInitiation,
                         RowStatuses = validationResponse.Data.Results
                     });
-               // else if (validationResponse.Data.NumOfRecords > GenericConstants.RECORDS_SMALL_SIZE && !validationResponse.Data.Results.Any() && validationResponse.Data.ResultMode.ToLower().Equals("queue"))
-                    //try
-                    //{
-                    //    await _bus.Publish(new BillPaymentValidateMessage(fileProperty.Url, uploadResult.BatchId, DateTime.Now));
-                    //}
-                    //catch (Exception) { }
-                //else
-                //    throw new AppException("Invalid response from Bill Payment Validate endpoint", (int)HttpStatusCode.InternalServerError);
+                
+                await _dbRepository.UpdateUploadSuccess((long)uploadOptions.UserId, uploadResult.BatchId);
 
                 return uploadResult;
             }
@@ -474,6 +501,6 @@ namespace FileUploadApi
     public class ValidateRowsResult
     {
         public List<Failure> Failures { get; set; }
-        public List<int> ValidRows { get; set; }
+        public List<RowDetail> ValidRows { get; set; }
     }
 }

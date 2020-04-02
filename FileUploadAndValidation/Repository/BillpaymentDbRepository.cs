@@ -13,6 +13,7 @@ using FilleUploadCore.Exceptions;
 using System.Net;
 using FileUploadAndValidation.Helpers;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace FileUploadAndValidation.Repository
 {
@@ -25,7 +26,6 @@ namespace FileUploadAndValidation.Repository
         {
             _appConfig = appConfig;
             _logger = logger;
-
         }
 
         public async Task<string> InsertPaymentUpload(UploadSummaryDto fileDetail, List<BillPayment> billPayments)
@@ -90,6 +90,37 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
+        public async Task UpdateUploadSuccess(long userId, string batchId)
+        {
+             using (var connection = new SqlConnection(_appConfig.UploadServiceConnectionString))
+            {
+                connection.Open();
+
+                try
+                {
+                    BatchFileSummary fileSummary = await GetBatchUploadSummary(batchId);
+
+                    await connection.ExecuteAsync(
+                        sql: "sp_update_successful_upload",
+                        param: new
+                        {
+                            batch_id = batchId,
+                            user_id = userId
+                        },
+                        commandType: CommandType.StoredProcedure);
+                }
+                catch (AppException ex)
+                {
+                    throw ex;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Error occured while performing Update Successful Upload operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                }
+            }
+        }
+
         public async Task<BatchFileSummary> GetBatchUploadSummary(string batchId)
         {
 
@@ -109,6 +140,36 @@ namespace FileUploadAndValidation.Repository
                     return batchFileSummary ?? throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
                 }
                 catch(AppException ex)
+                {
+                    throw ex;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                }
+            }
+        }
+
+        public async Task<IEnumerable<BatchFileSummary>> GetUploadSummariesByUserId(string userId)
+        {
+
+            using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
+            {
+                MatchNamesWithUnderscores = true;
+                try
+                {
+                    var batchFileSummary = await sqlConnection.QueryAsync<BatchFileSummary>(
+                        sql: @"sp_get_batch_upload_summaries_by_user_id",
+                        param: new
+                        {
+                            user_id = userId
+                        },
+                        commandType: CommandType.StoredProcedure);
+
+                    return batchFileSummary /*?? throw new AppException($"Upload file not found for user!.", (int)HttpStatusCode.NotFound)*/;
+                }
+                catch (AppException ex)
                 {
                     throw ex;
                 }
@@ -328,5 +389,6 @@ namespace FileUploadAndValidation.Repository
                 }
             }
         }
+
     }
 }

@@ -53,6 +53,8 @@ namespace FilleUploadCore.UploadManagers
         public string FileExtension { get; set; }
 
         public string  RawFileLocation { get; set; }
+
+        public long? UserId { get; set; }
     }
 
     public class InitiatePaymentOptions
