@@ -230,9 +230,9 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during the Template Download File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(ex.Message)
+                var result = new ObjectResult(new { ex.Message })
                 {
-                    StatusCode = ex.StatusCode
+                    StatusCode = ex.StatusCode,
                 };
 
                 return result;

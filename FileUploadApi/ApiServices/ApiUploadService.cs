@@ -167,19 +167,19 @@ namespace FileUploadApi.ApiServices
 
             try
             {
-                switch (extension)
+                switch (extension.ToLower())
                 {
                     case "txt":
-                        templateFileName = GenericConstants.BillPaymentTxtTemplate + ".txt";
+                        templateFileName = GenericConstants.BillPaymentTxtTemplate;
                         break;
                     case "csv":
-                        templateFileName = GenericConstants.BillPaymentCsvTemplate + ".csv";
+                        templateFileName = GenericConstants.BillPaymentCsvTemplate;
                         break;
                     case "xlsx":
-                        templateFileName = GenericConstants.BillPaymentXlsxTemplate + ".xlsx";
+                        templateFileName = GenericConstants.BillPaymentXlsxTemplate;
                         break;
                     case "xls":
-                        templateFileName = GenericConstants.BillPaymentXlsTemplate + ".xls";
+                        templateFileName = GenericConstants.BillPaymentXlsTemplate;
                         break;
                     default:
                         throw new AppException("File extension not supported!.");

@@ -64,7 +64,7 @@ namespace FileUploadApi
                         Amount = row.Columns[3].Value 
                     });
 
-                if (validateRowModel.Failure.ColumnValidationErrors.Count > 0 && validateRowModel.Failure.ColumnValidationErrors.Any())
+                if (validateRowModel.Failure != null && validateRowModel.Failure.ColumnValidationErrors != null && validateRowModel.Failure.ColumnValidationErrors.Any())
                     failures.Add(validateRowModel.Failure);
             }
 
