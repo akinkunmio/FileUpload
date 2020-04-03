@@ -256,6 +256,15 @@ namespace FileUploadApi.Controllers
 
             try
             {
+                try
+                {
+                    var userIdConverted = Convert.ToInt64(userId);
+                }
+                catch(Exception ex)
+                {
+                    throw new AppException("Invalid value type passed for 'userId'");
+                }
+
                 response.Data = await _uploadService.GetUserFilesSummary(userId);
             }
             catch (AppException ex)
