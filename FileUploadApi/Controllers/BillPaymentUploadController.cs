@@ -80,7 +80,7 @@ namespace FileUploadApi.Controllers
             return Ok(uploadResult);
         }
 
-        [HttpGet("uploadfile/{batchId}/results")]
+        [HttpGet("{batchId}/status")]
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
             var paginationFilter = 
@@ -125,7 +125,7 @@ namespace FileUploadApi.Controllers
             return Ok(new { batchId, response });
         }
 
-        [HttpGet("uploadfile/{batchId}")]
+        [HttpGet("{batchId}/summary")]
         public async Task<IActionResult> GetUploadFileSummary(string batchId)
         {
             var response = new ResponseModel();
@@ -160,7 +160,7 @@ namespace FileUploadApi.Controllers
             return Ok(response);
         }
 
-        [HttpPost("uploadfile/{batchId}/authorize")]
+        [HttpPost("{batchId}/authorize")]
         public async Task<IActionResult> InitiateTransactionsApprovalAsync(string batchId, [FromBody] InitiatePaymentRequest request)
         {
             var response = new ResponseModel();
@@ -247,6 +247,41 @@ namespace FileUploadApi.Controllers
                 };
                 return result;
             }
+        }
+
+        [HttpPost("user/uploads")]
+        public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId)
+        {
+            var response = new ResponseModel();
+
+            try
+            {
+                response.Data = await _uploadService.GetUserFilesSummary(userId);
+            }
+            catch (AppException ex)
+            {
+                _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+
+                response.Error = ex.Message;
+                var result = new ObjectResult(response)
+                {
+                    StatusCode = ex.StatusCode
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                response.Error = "Unknown error occured. Please retry!.";
+                var result = new ObjectResult(response);
+
+                result.StatusCode = (int)HttpStatusCode.BadRequest;
+                return result;
+            }
+
+            return Ok(response);
         }
     }
 }

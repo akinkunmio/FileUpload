@@ -366,6 +366,10 @@ namespace FileUploadApi
 
                 billPaymentStatuses = billPaymentStatusesObj.RowStatusDtos.Select(s => new BillPaymentRowStatus
                  {
+                      Amount = s.Amount,
+                      CustomerId = s.CustomerId,
+                      ItemCode = s.ItemCode,
+                      ProductCode = s.ProductCode,
                       Error = s.Error,
                       Row = s.RowNum,
                       Status = s.RowStatus
@@ -409,6 +413,41 @@ namespace FileUploadApi
                     Status = batchFileSummary.TransactionStatus,
                     UploadDate = batchFileSummary.UploadDate
                 };
+            }
+            catch (AppException appEx)
+            {
+                throw appEx;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return batchFileSummaryDto;
+        }
+
+        public async Task<List<BatchFileSummaryDto>> GetUserUploadSummaries(string userId)
+        {
+            IEnumerable<BatchFileSummary> userFileSummaries;
+            var batchFileSummaryDto = new List<BatchFileSummaryDto>();
+            try
+            {
+                userFileSummaries = await _dbRepository.GetUploadSummariesByUserId(userId);
+
+                if (userFileSummaries == null)
+                    throw new AppException($"No upload file found for the user with Id '{userId}!.", (int)HttpStatusCode.NotFound);
+
+                batchFileSummaryDto = userFileSummaries.Select(u =>new BatchFileSummaryDto
+                {
+                    BatchId = u.BatchId,
+                    ContentType = u.ContentType,
+                    ItemType = u.ItemType,
+                    NumOfAllRecords = u.NumOfRecords,
+                    NumOfValidRecords = u.NumOfValidRecords,
+                    Status = u.TransactionStatus,
+                    UploadDate = u.UploadDate
+                }).ToList();
+
             }
             catch (AppException appEx)
             {

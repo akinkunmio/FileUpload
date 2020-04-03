@@ -57,6 +57,16 @@ namespace FileUploadApi.ApiServices
             return batchFileSummaryDto;
         }
 
+        public async Task<List<BatchFileSummaryDto>> GetUserFilesSummary(string userId)
+        {
+            ArgumentGuard.NotNullOrWhiteSpace(userId, nameof(userId));
+
+            List<BatchFileSummaryDto> batchFileSummariesDto;
+
+            batchFileSummariesDto = await _bulkBillPaymentService.GetUserUploadSummaries(userId);
+
+            return batchFileSummariesDto;
+        }
         public async Task<BillPaymentRowStatusObject> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));

@@ -5,6 +5,12 @@ BEGIN
 END
 GO
 
+IF (OBJECT_ID('sp_get_batch_upload_summaries_by_user_id') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_get_batch_upload_summaries_by_user_id
+END
+GO
+
 IF (OBJECT_ID('sp_get_bill_payments_status_by_transactions_summary_id') IS NOT NULL)
 BEGIN
 	DROP PROCEDURE sp_get_bill_payments_status_by_transactions_summary_id
@@ -133,7 +139,7 @@ CREATE PROCEDURE [dbo].[sp_get_bill_payments_status_by_transactions_summary_id]
 @page_number int
 AS
 	
-	SELECT [error],[row_status],[row_num] 
+	SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num]
 	FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
           FROM      tbl_bill_payment_transactions_detail
           WHERE     transactions_summary_id = @transactions_summary_id
