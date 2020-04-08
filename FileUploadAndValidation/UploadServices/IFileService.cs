@@ -24,6 +24,8 @@ namespace FileUploadApi.Services
         Task UpdateStatusFromQueue(BillPaymentValidateMessage queueMessage);
 
         Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
+
+        Task<List<BatchFileSummaryDto>> GetUserUploadSummaries(string userId);
     }
    
 }

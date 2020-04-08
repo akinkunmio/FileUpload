@@ -10,7 +10,7 @@ namespace FileUploadAndValidation.Models
     {
         public UploadResult()
         {
-            ValidRows = new List<int>();
+            ValidRows = new List<RowDetail>();
             Failures = new List<Failure>();
         }
 
@@ -18,7 +18,7 @@ namespace FileUploadAndValidation.Models
 
         public string BatchId { get; set; }
 
-        public IList<int> ValidRows { get; set; }
+        public IList<RowDetail> ValidRows { get; set; }    
 
         public IList<Failure> Failures { get; set; }
 
@@ -26,9 +26,23 @@ namespace FileUploadAndValidation.Models
 
         public class Failure
         {
-            public int? RowNumber { get; set; }
+
+            public RowDetail Row { get; set; }
 
             public IList<ValidationError> ColumnValidationErrors { get; set; }
+        }
+
+        public class RowDetail
+        {
+            public int RowNumber { get; set; }
+
+            public string ProductCode { get; set; }
+
+            public string ItemCode { get; set; }
+
+            public string CustomerId { get; set; }
+
+            public string Amount { get; set; }
         }
     }
 

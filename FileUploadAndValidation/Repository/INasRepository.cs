@@ -112,6 +112,10 @@ namespace FileUploadAndValidation.Repository
                 else
                     throw new AppException($"Validation file not found at {path}", (int)HttpStatusCode.NotFound);
             }
+            catch(AppException ex)
+            {
+                throw ex;
+            }
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
@@ -121,7 +125,34 @@ namespace FileUploadAndValidation.Repository
             return result?.AsEnumerable();
         }
 
-      
+        public async Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream)
+        {
+            var location = @"../data/template/";
+            var path = Path.Combine(location, fileName);
+            try
+            {
+                if (File.Exists(path))
+                {
+                    using (FileStream fsSource = new FileStream(path, FileMode.Open, FileAccess.Read))
+                    {
+                       await fsSource.CopyToAsync(outputStream);
+                    }
+                    return path;
+                }
+                else
+                    throw new AppException($"Template file not found at {path}", (int)HttpStatusCode.NotFound);
+            }
+            catch(AppException ex)
+            {
+                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                throw new AppException($"An error occured while extracting Template File in path : {path} from NAS"+ex.Message, (int)HttpStatusCode.InternalServerError);
+            }
+        }
     }
     public interface INasRepository
     {
@@ -132,6 +163,8 @@ namespace FileUploadAndValidation.Repository
         Task<string> SaveRawFile(string batchId, Stream stream, string extension);
 
         Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidateMessage queueMessage);
+
+        Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream);
     }
 
 }

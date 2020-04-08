@@ -20,5 +20,9 @@ namespace FileUploadApi
         Task<IEnumerable<ConfirmedBillPaymentDto>> GetConfirmedBillPayments(string batchId);
 
         Task UpdateBillPaymentInitiation(string batchId);
+
+        Task UpdateUploadSuccess(long userId, string batchId);
+
+        Task<IEnumerable<BatchFileSummary>> GetUploadSummariesByUserId(string userId);
     }
 }

@@ -22,6 +22,8 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using MassTransit;
 using GreenPipes;
+using DbUp;
+using System.Reflection;
 
 namespace FileUploadApi
 {
@@ -95,7 +97,7 @@ namespace FileUploadApi
             services.AddHealthChecks();
             services.AddSwaggerGen(config =>
             {
-                config.SwaggerDoc("v1", new Info { Title = "My API", Version = "V1" });
+                config.SwaggerDoc("v1", new Info { Title = "QTB Upload Service API", Version = "V1" });
 
                 var security = new Dictionary<string, IEnumerable<string>>
                 {
@@ -145,6 +147,27 @@ namespace FileUploadApi
 
             services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
             services.AddSingleton<IHostedService, BusService>();
+
+            PerformScriptUpdate();
+        }
+
+        private void PerformScriptUpdate()
+        {
+                var connString = Configuration["ConnectionStrings:UploadServiceConnectionString"];
+                var upgraderTran = DeployChanges.To
+                    .SqlDatabase(connString)
+                    .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly(),
+                        name => name.StartsWith("FileUploadApi.Scripts"))
+                    .LogToConsole()
+                    .Build();
+
+                var resultEnt = upgraderTran.PerformUpgrade();
+                if (!resultEnt.Successful)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(resultEnt.Error);
+                    Console.ResetColor();
+                }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

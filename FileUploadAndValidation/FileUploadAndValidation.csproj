@@ -50,8 +50,4 @@
     <ProjectReference Include="..\FilleUploadCore\FilleUploadCore.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Scripts\" />
-  </ItemGroup>
-
 </Project>

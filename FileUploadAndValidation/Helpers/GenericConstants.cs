@@ -17,5 +17,11 @@ namespace FileUploadAndValidation.Helpers
         public const string BillPayment = "billpayment";
         public const string ValidateBillerTransactions = "/qbtrans/api/v1/payments/bills/validate";
         public const int RECORDS_SMALL_SIZE = 50;
+        public static string BillPaymentTxtTemplate = "BillPaymentTxtTemplate.txt";
+        public static string BillPaymentCsvTemplate = "BillPaymentCsvTemplate.csv";
+        public static string BillPaymentXlsTemplate = "BillPaymentXlsTemplate.xls";
+        public static string BillPaymentXlsxTemplate = "BillPaymentXlsxTemplate.xlsx";
+        public static string BillPaymentTemplate = "BillPaymentTemplate";
+
     }
 }
