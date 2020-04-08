@@ -16,6 +16,7 @@ using FileUploadApi.Models;
 using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Repository;
 using FileUploadApi.Controllers;
+using System.Net;
 
 namespace FileUploadApi.ApiServices
 {
@@ -30,10 +31,12 @@ namespace FileUploadApi.ApiServices
         private readonly IFileService _bulkBillPaymentService;
         private readonly IFileService _bulkSmsService;
         private readonly INasRepository _nasRepository;
+        private readonly IBillPaymentDbRepository _dbRepository;
 
         public ApiUploadService(Func<FileReaderTypeEnum, IFileReader> fileReader,
             Func<FileServiceTypeEnum, IFileService> fileService, 
-            INasRepository nasRepository)
+            INasRepository nasRepository,
+            IBillPaymentDbRepository dbRepository)
         {
             _txtFileReader = fileReader(FileReaderTypeEnum.TXT);
             _csvFileReader = fileReader(FileReaderTypeEnum.CSV);
@@ -44,6 +47,7 @@ namespace FileUploadApi.ApiServices
             _bulkSmsService = fileService(FileServiceTypeEnum.BulkSMS);
             _bulkBillPaymentService = fileService(FileServiceTypeEnum.BulkBillPayment);
             _nasRepository = nasRepository;
+            _dbRepository = dbRepository;
         }
 
         public async Task<BatchFileSummaryDto> GetFileSummary(string batchId)
@@ -110,8 +114,8 @@ namespace FileUploadApi.ApiServices
 
             uploadResult.BatchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
-            uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(uploadResult.BatchId, stream, uploadOptions.FileExtension);
-            stream.Seek(0, SeekOrigin.Begin);
+            //uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(uploadResult.BatchId, stream, uploadOptions.FileExtension);
+            //stream.Seek(0, SeekOrigin.Begin);
 
             switch (uploadOptions.FileExtension)
             {
@@ -204,6 +208,21 @@ namespace FileUploadApi.ApiServices
             {
                 throw ex;
             }
+        }
+
+        public async Task<string> GetFileValidationResultAsync(string batchId, MemoryStream outputStream)
+        {
+            var batchFileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
+
+            if (batchFileSummary == null)
+                throw new AppException($"Batch Upload Summary for BatchId: {batchId} not found", (int)HttpStatusCode.NotFound);
+
+            if(string.IsNullOrWhiteSpace(batchFileSummary.NasUserValidationFile))
+                throw new AppException($"Validation file not found for batch with Id : {batchId}", (int)HttpStatusCode.NotFound);
+
+            await _nasRepository.GetUserValidationResultAsync(batchFileSummary.NasUserValidationFile, outputStream);
+
+            return batchFileSummary.NasUserValidationFile;
         }
     }
 

@@ -22,5 +22,8 @@ namespace FileUploadApi.ApiServices
         Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
         
         Task<string> GetFileTemplateContentAsync(string extension, MemoryStream outputStream);
+
+        Task<string> GetFileValidationResultAsync(string extension, MemoryStream outputStream);
+
     }
 }

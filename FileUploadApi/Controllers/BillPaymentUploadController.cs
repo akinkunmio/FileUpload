@@ -37,7 +37,8 @@ namespace FileUploadApi.Controllers
             var uploadResult = new UploadResult();
 
             var file = Request.Form.Files.First();
-            var userId = Request.Form["userId"].ToString();
+            var userId = "255";
+            //var userId = Request.Form["userId"].ToString();
 
             try
             {
@@ -288,6 +289,44 @@ namespace FileUploadApi.Controllers
             }
 
             return Ok(response);
+        }
+
+        [HttpPost("download/{batchId}/statusresult")]
+        public async Task<IActionResult> ValidationResultFile(string batchId)
+        {
+            try
+            {
+                var outputStream = new MemoryStream();
+
+                var fileName = await _uploadService.GetFileValidationResultAsync(batchId, outputStream);
+
+                var contentType = MimeUtility.GetMimeMapping(fileName);
+
+                outputStream.Seek(0, SeekOrigin.Begin);
+
+                return File(outputStream, contentType, GenericConstants.ValidationResultFile);
+            }
+            catch (AppException ex)
+            {
+                _logger.LogError("An Error occured during the Template Download File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult(new { ex.Message })
+                {
+                    StatusCode = ex.StatusCode,
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An Error occured during the Template Download File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult("Unknown error occured. Please retry!.")
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest
+                };
+                return result;
+            }
         }
     }
 }

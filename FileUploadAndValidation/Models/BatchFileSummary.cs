@@ -27,5 +27,7 @@ namespace FileUploadAndValidation.Models
         public string NasConfirmedFile { get; set; }
 
         public string ContentType { get; set; }
+
+        public string NasUserValidationFile { get; set; }
     }
 }

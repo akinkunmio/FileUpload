@@ -11,6 +11,8 @@ using System.Linq;
 using FileUploadAndValidation.QueueMessages;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using CsvHelper;
+using System.Globalization;
 
 namespace FileUploadAndValidation.Repository
 {
@@ -153,6 +155,50 @@ namespace FileUploadAndValidation.Repository
                 throw new AppException($"An error occured while extracting Template File in path : {path} from NAS"+ex.Message, (int)HttpStatusCode.InternalServerError);
             }
         }
+
+        public async Task GetUserValidationResultAsync(string fileName, MemoryStream outputStream)
+        {
+            var location = @"../data/uservalidationresult/";
+            var path = Path.Combine(location, fileName);
+            try
+            {
+                if (File.Exists(path))
+                {
+                    using (FileStream fsSource = new FileStream(path, FileMode.Open, FileAccess.Read))
+                    {
+                        await fsSource.CopyToAsync(outputStream);
+                    }
+                }
+                else
+                    throw new AppException($"File not found at {path}", (int)HttpStatusCode.NotFound);
+            }
+            catch (AppException ex)
+            {
+                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                throw new AppException($"An error occured while extracting Validation Result File in path : {path} from NAS" + ex.Message, (int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<string> SaveValidationResultFile(string batchId, List<BillPaymentRowStatus> content)
+        {
+            var location = @"../data/uservalidationresult/";
+            var fileName = batchId + "_validationresult.csv";
+
+            var path = Path.Combine(location, fileName);
+
+            using (var writer = new StreamWriter(path))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                await csv.WriteRecordsAsync(content);
+            }
+
+            return fileName;
+        }
     }
     public interface INasRepository
     {
@@ -165,6 +211,10 @@ namespace FileUploadAndValidation.Repository
         Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(BillPaymentValidateMessage queueMessage);
 
         Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream);
+
+        Task<string> SaveValidationResultFile(string batchId, List<BillPaymentRowStatus> content);
+
+        Task GetUserValidationResultAsync(string fileName, MemoryStream outputStream);
     }
 
 }
