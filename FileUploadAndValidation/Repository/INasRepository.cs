@@ -184,17 +184,30 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<string> SaveValidationResultFile(string batchId, List<BillPaymentRowStatus> content)
+        public async Task<string> SaveValidationResultFile(string batchId, IEnumerable<BillPaymentRowStatus> content)
         {
             var location = @"../data/uservalidationresult/";
             var fileName = batchId + "_validationresult.csv";
 
             var path = Path.Combine(location, fileName);
-
-            using (var writer = new StreamWriter(path))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            try
             {
-                await csv.WriteRecordsAsync(content);
+                if (content == null)
+                    throw new AppException($"No content for UserValidationResult for batch Id : {batchId}");
+
+                using (var writer = new StreamWriter(path))
+                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    await csv.WriteRecordsAsync<BillPaymentRowStatus>(content);
+                }
+            }
+            catch(AppException ex)
+            {
+                throw ex;
+            }
+            catch(Exception ex)
+            {
+                throw new AppException($"An error occured while saving the user file validation result with batch id : {batchId} to NAS " + ex.Message, 500);
             }
 
             return fileName;
@@ -212,7 +225,7 @@ namespace FileUploadAndValidation.Repository
 
         Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream);
 
-        Task<string> SaveValidationResultFile(string batchId, List<BillPaymentRowStatus> content);
+        Task<string> SaveValidationResultFile(string batchId, IEnumerable<BillPaymentRowStatus> content);
 
         Task GetUserValidationResultAsync(string fileName, MemoryStream outputStream);
     }

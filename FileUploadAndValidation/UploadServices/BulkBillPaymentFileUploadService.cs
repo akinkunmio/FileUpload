@@ -183,7 +183,7 @@ namespace FileUploadApi
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.");
 
-                uploadResult.RowsCount = rows.Count();
+                uploadResult.RowsCount = rows.Count() - 1;
 
                 headerRow = rows.First();
 
@@ -205,9 +205,9 @@ namespace FileUploadApi
                 uploadResult.ValidRows = validateRowsResult.ValidRows;
 
                 var dateTimeNow = DateTime.Now;
-               
+
                 if (uploadResult.ValidRows.Count() == 0)
-                    return uploadResult;
+                    throw new AppException("All records are invalid");
 
                 if (uploadResult.ValidRows.Count() > 0 || uploadResult.ValidRows.Any())
                 {
@@ -355,7 +355,7 @@ namespace FileUploadApi
                     });
 
                     BillPaymentRowStatusObject validationResult = await GetBillPaymentResults(uploadResult.BatchId, new PaginationFilter(uploadResult.RowsCount, 1));
-                    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, validationResult.RowStatuses as List<BillPaymentRowStatus>);
+                    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, validationResult.RowStatuses);
                 }
                 
                 await _dbRepository.UpdateUploadSuccess((long)uploadOptions.UserId, uploadResult.BatchId);
@@ -411,7 +411,7 @@ namespace FileUploadApi
                       Status = s.RowStatus
                  });
 
-                if (billPaymentStatuses.Count() < 0)
+                if (billPaymentStatuses.Count() < 1)
                     throw new AppException($"Upload Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);
 
 
