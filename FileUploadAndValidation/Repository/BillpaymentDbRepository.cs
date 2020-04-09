@@ -343,7 +343,7 @@ namespace FileUploadAndValidation.Repository
                             {
 
                                 await connection.ExecuteAsync(
-                                    sql: "sp_update_bill_payments",
+                                    sql: "sp_update_bill_payments_detail",
                                     param: new
                                     {
                                         transactions_summary_id = summaryId,
