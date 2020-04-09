@@ -38,13 +38,17 @@ namespace FileUploadAndValidation.UploadServices
         public async Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
         {
             ValidationResponse validateResponse;
-            var request = new HttpRequestMessage();
             try
             {
-                request = 
+                var requestBody =
                     greaterThanFifty
                     ? CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, fileProperty.BatchId)
                     : CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url);
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"/qbtrans/api/v1/payments/bills/validate")
+                {
+                    Content = new StringContent(requestBody, Encoding.UTF8, "application/json")
+                };
 
                 _httpClient.DefaultRequestHeaders.Authorization =
                    new AuthenticationHeaderValue("Bearer", authToken.Replace("Bearer ", ""));
@@ -86,18 +90,24 @@ namespace FileUploadAndValidation.UploadServices
                 _logger.LogError(ex.Message);
                 throw new AppException("Error occured while performing bill payment validation"+ex.Message, (int)HttpStatusCode.InternalServerError);
             }
-
         }
 
-        private HttpRequestMessage CheckGreaterFiftyRecords(bool check, string url, string batchId = null)
+        private string CheckGreaterFiftyRecords(bool check, string url, string batchId = null)
         {
-            var request = check 
-                ? new HttpRequestMessage(HttpMethod.Get, $"/qbtrans/api/v1/payments/bills/validate?dataStore=1" +
-                    $"&Url={url}&BatchId={batchId}")
-                : new HttpRequestMessage(HttpMethod.Get, $"/qbtrans/api/v1/payments/bills/validate?dataStore=1" +
-                    $"&Url={url}");
+            return check 
+                ?
+                JsonConvert.SerializeObject(new
+                {
+                    DataStore = 1,
+                    DataStoreUrl = url,
+                    BatchId = batchId
 
-            return request;
+                })
+                : JsonConvert.SerializeObject(new
+                {
+                    DataStore = 1,
+                    DataStoreUrl = url
+                });
         }
 
         public async Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
