@@ -37,8 +37,7 @@ namespace FileUploadApi.Controllers
             var uploadResult = new UploadResult();
 
             var file = Request.Form.Files.First();
-            var userId = "255";
-            //var userId = Request.Form["userId"].ToString();
+            var userId = Request.Form["userId"].ToString();
 
             try
             {

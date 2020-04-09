@@ -114,8 +114,8 @@ namespace FileUploadApi.ApiServices
 
             uploadResult.BatchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
 
-            //uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(uploadResult.BatchId, stream, uploadOptions.FileExtension);
-            //stream.Seek(0, SeekOrigin.Begin);
+            uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(uploadResult.BatchId, stream, uploadOptions.FileExtension);
+            stream.Seek(0, SeekOrigin.Begin);
 
             switch (uploadOptions.FileExtension)
             {
