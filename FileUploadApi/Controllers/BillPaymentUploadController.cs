@@ -290,7 +290,7 @@ namespace FileUploadApi.Controllers
             return Ok(response);
         }
 
-        [HttpPost("download/{batchId}/statusresult")]
+        [HttpGet("download/{batchId}/statusresult")]
         public async Task<IActionResult> ValidationResultFile(string batchId)
         {
             try
