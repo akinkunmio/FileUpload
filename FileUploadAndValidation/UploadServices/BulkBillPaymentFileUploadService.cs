@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using static FileUploadAndValidation.Models.UploadResult;
 
@@ -181,7 +182,9 @@ namespace FileUploadApi
             {
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.");
-                
+
+                uploadResult.RowsCount = rows.Count() - 1;
+
                 headerRow = rows.First();
 
                 var columnContract = new ColumnContract[] { };
@@ -202,6 +205,9 @@ namespace FileUploadApi
                 uploadResult.ValidRows = validateRowsResult.ValidRows;
 
                 var dateTimeNow = DateTime.Now;
+
+                if (uploadResult.ValidRows.Count() == 0)
+                    throw new AppException("All records are invalid");
 
                 if (uploadResult.ValidRows.Count() > 0 || uploadResult.ValidRows.Any())
                 {
@@ -291,21 +297,33 @@ namespace FileUploadApi
                         CustomerId = r.CustomerId
                     }).ToList();
 
-                    uploadResult.RowsCount = uploadResult.ValidRows.Count();
+                   // uploadResult.RowsCount = uploadResult.ValidRows.Count();
                 }
 
-                await _dbRepository.InsertPaymentUpload(
-                    new UploadSummaryDto
+                var failedBillPayments = uploadResult.Failures.Select(f =>
+                    new FailedBillPayment
                     {
-                        BatchId = uploadResult.BatchId,
-                        NumOfAllRecords = uploadResult.RowsCount,
-                        Status = GenericConstants.PendingValidation,
-                        UploadDate = dateTimeNow.ToString(),
-                        CustomerFileName = uploadOptions.FileName,
-                        ItemType = uploadOptions.ItemType,
-                        ContentType = uploadOptions.ContentType,
-                        NasRawFile = uploadOptions.RawFileLocation,
-                    }, billPayments.ToList());
+                         Amount = f.Row.Amount,
+                         CreatedDate = dateTimeNow.ToString(),
+                         CustomerId = f.Row.CustomerId,
+                         ItemCode = f.Row.ItemCode,
+                         ProductCode = f.Row.ProductCode,
+                         RowNumber = f.Row.RowNumber,
+                         Error = ConstructValidationError(f)
+                    }
+                );
+
+                await _dbRepository.InsertAllUploadRecords(new UploadSummaryDto
+                {
+                    BatchId = uploadResult.BatchId,
+                    NumOfAllRecords = uploadResult.RowsCount,
+                    Status = GenericConstants.PendingValidation,
+                    UploadDate = dateTimeNow.ToString(),
+                    CustomerFileName = uploadOptions.FileName,
+                    ItemType = uploadOptions.ItemType,
+                    ContentType = uploadOptions.ContentType,
+                    NasRawFile = uploadOptions.RawFileLocation,
+                }, billPayments.ToList(), failedBillPayments.ToList());
 
                 var toValidatePayments = billPayments.Select(b =>
                 {
@@ -323,7 +341,9 @@ namespace FileUploadApi
 
                 var validationResponse = await _billPaymentService.ValidateBillRecords(fileProperty, uploadOptions.AuthToken, toValidatePayments.Count() > 50);
 
+                string validationResultFileName;
                 if (validationResponse.Data.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.Data.Results.Any() && validationResponse.Data.ResultMode.ToLower().Equals("json"))
+                {
                     await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
                     {
                         BatchId = uploadResult.BatchId,
@@ -333,6 +353,10 @@ namespace FileUploadApi
                         Status = GenericConstants.AwaitingInitiation,
                         RowStatuses = validationResponse.Data.Results
                     });
+
+                    BillPaymentRowStatusObject validationResult = await GetBillPaymentResults(uploadResult.BatchId, new PaginationFilter(uploadResult.RowsCount, 1));
+                    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, validationResult.RowStatuses);
+                }
                 
                 await _dbRepository.UpdateUploadSuccess((long)uploadOptions.UserId, uploadResult.BatchId);
 
@@ -351,6 +375,18 @@ namespace FileUploadApi
             }
         }
 
+        private string ConstructValidationError(Failure failure)
+        {
+            var result = new StringBuilder();
+            foreach(var error in failure.ColumnValidationErrors)
+            {
+                result.Append($"{error.PropertyName}: {error.ErrorMessage}");
+                result.Append(", ");
+            }
+
+            return result.ToString();
+        }
+       
         public async Task<BillPaymentRowStatusObject> GetBillPaymentResults(string batchId, PaginationFilter pagination)
         {
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
@@ -375,7 +411,7 @@ namespace FileUploadApi
                       Status = s.RowStatus
                  });
 
-                if (billPaymentStatuses.Count() < 0)
+                if (billPaymentStatuses.Count() < 1)
                     throw new AppException($"Upload Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);
 
 
@@ -437,7 +473,7 @@ namespace FileUploadApi
                 if (userFileSummaries == null)
                     throw new AppException($"No upload file found for the user with Id '{userId}!.", (int)HttpStatusCode.NotFound);
 
-                batchFileSummaryDto = userFileSummaries.Select(u =>new BatchFileSummaryDto
+                batchFileSummaryDto = userFileSummaries.Select(u => new BatchFileSummaryDto
                 {
                     BatchId = u.BatchId,
                     ContentType = u.ContentType,
@@ -530,6 +566,8 @@ namespace FileUploadApi
 
             return result;
         }
+        
+
     }
 
     public class ValidateRowModel

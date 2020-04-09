@@ -22,6 +22,7 @@ namespace FileUploadAndValidation.Helpers
         public static string BillPaymentXlsTemplate = "BillPaymentXlsTemplate.xls";
         public static string BillPaymentXlsxTemplate = "BillPaymentXlsxTemplate.xlsx";
         public static string BillPaymentTemplate = "BillPaymentTemplate";
+        public static string ValidationResultFile = "ValidationResult.csv";
 
     }
 }

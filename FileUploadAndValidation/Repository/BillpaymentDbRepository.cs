@@ -27,8 +27,8 @@ namespace FileUploadAndValidation.Repository
             _appConfig = appConfig;
             _logger = logger;
         }
-
-        public async Task<string> InsertPaymentUpload(UploadSummaryDto fileDetail, List<BillPayment> billPayments)
+        
+        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, List<BillPayment> billPayments, List<FailedBillPayment> invalidBillPayments)
         {
             try
             {
@@ -54,24 +54,44 @@ namespace FileUploadAndValidation.Repository
                                transaction: sqlTransaction,
                                commandType: System.Data.CommandType.StoredProcedure);
 
-
                             foreach (var billPayment in billPayments)
                             {
-                                await connection.ExecuteAsync(sql: "sp_insert_bill_payments",
+                                await connection.ExecuteAsync(sql: "sp_insert_valid_bill_payments",
                                     param: new
                                     {
                                         product_code = billPayment.ProductCode,
                                         item_code = billPayment.ItemCode,
                                         customer_id = billPayment.CustomerId,
                                         amount = billPayment.Amount,
-                                        row_status = billPayment.Status,
                                         created_date = billPayment.CreatedDate,
                                         row_num = billPayment.RowNumber,
-                                        transactions_summary_Id = transactionSummaryId
+                                        transactions_summary_Id = transactionSummaryId,
+                                        initial_validation_status = "Valid"
                                     },
                                     transaction: sqlTransaction,
                                     commandType: System.Data.CommandType.StoredProcedure);
                             }
+
+                            foreach (var billPayment in invalidBillPayments)
+                            {
+                                await connection.ExecuteAsync(sql: "sp_insert_invalid_bill_payments",
+                                    param: new
+                                    {
+                                        product_code = billPayment.ProductCode,
+                                        item_code = billPayment.ItemCode,
+                                        customer_id = billPayment.CustomerId,
+                                        amount = billPayment.Amount,
+                                        row_status = "Invalid",
+                                        created_date = billPayment.CreatedDate,
+                                        row_num = billPayment.RowNumber,
+                                        transactions_summary_Id = transactionSummaryId,
+                                        initial_validation_status = "Invalid",
+                                        error = billPayment.Error
+                                    },
+                                    transaction: sqlTransaction,
+                                    commandType: System.Data.CommandType.StoredProcedure);
+                            }
+
                             sqlTransaction.Commit();
                             return fileDetail.BatchId;
                         }
@@ -323,7 +343,7 @@ namespace FileUploadAndValidation.Repository
                             {
 
                                 await connection.ExecuteAsync(
-                                    sql: "sp_update_bill_payments",
+                                    sql: "sp_update_bill_payments_detail",
                                     param: new
                                     {
                                         transactions_summary_id = summaryId,

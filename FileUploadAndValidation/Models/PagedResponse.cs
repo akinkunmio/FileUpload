@@ -30,6 +30,15 @@ namespace FileUploadAndValidation.Models
 
     public class PaginationFilter
     {
+        public PaginationFilter(int pageSize, int pageNumber)
+        {
+            PageSize = pageSize;
+            PageNumber = pageNumber;
+        }
+        public PaginationFilter()
+        {
+
+        }
         public int PageSize { get; set; }
 
         public int PageNumber { get; set; }

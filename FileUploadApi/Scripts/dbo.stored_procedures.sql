@@ -11,6 +11,12 @@ BEGIN
 END
 GO
 
+IF (OBJECT_ID('sp_get_batch_upload_summary_by_batch_id') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_get_batch_upload_summary_by_batch_id
+END
+GO
+
 IF (OBJECT_ID('sp_get_bill_payments_status_by_transactions_summary_id') IS NOT NULL)
 BEGIN
 	DROP PROCEDURE sp_get_bill_payments_status_by_transactions_summary_id
@@ -36,11 +42,18 @@ BEGIN
 END
 GO
 
-IF (OBJECT_ID('sp_insert_bill_payments') IS NOT NULL)
+IF (OBJECT_ID('sp_insert_valid_bill_payments') IS NOT NULL)
 BEGIN
-	DROP PROCEDURE sp_insert_bill_payments
+	DROP PROCEDURE sp_insert_valid_bill_payments
 END
 GO
+
+IF (OBJECT_ID('sp_insert_invalid_bill_payments') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_insert_invalid_bill_payments
+END
+GO
+
 
 IF (OBJECT_ID('sp_update_bill_payment_summary_status') IS NOT NULL)
 BEGIN
@@ -158,6 +171,7 @@ AS
 	WHERE [transactions_summary_id] = @transactions_summary_id and row_status = 'Valid';
 GO
 
+								
 CREATE PROCEDURE [dbo].[sp_insert_bill_payment_transaction_summary]
 @batch_id nvarchar(100),
 @status nvarchar(50),
@@ -167,21 +181,46 @@ CREATE PROCEDURE [dbo].[sp_insert_bill_payment_transaction_summary]
 @content_type nvarchar(256),
 @nas_raw_file nvarchar(max)
 AS
-	INSERT INTO tbl_transactions_summary(batch_id,transaction_status,item_type,num_of_records,upload_date,content_type,nas_raw_file ) 
+	INSERT INTO tbl_transactions_summary(batch_id, transaction_status, item_type, num_of_records, upload_date, content_type, nas_raw_file) 
 	VALUES(@batch_id,@status,@item_type,@num_of_records,@upload_date,@content_type,@nas_raw_file) 
 	SELECT SCOPE_IDENTITY();
 GO
 
 
-CREATE PROCEDURE [dbo].[sp_insert_bill_payments]
+CREATE PROCEDURE [dbo].[sp_insert_valid_bill_payments]
 @product_code nvarchar(100),
 @item_code nvarchar(100),
 @customer_id nvarchar(100),
-@amount float,
+@amount nvarchar(100),
+@transactions_summary_id bigint,
+@row_num int,
+@created_date nvarchar(50),
+@initial_validation_status nvarchar(50)
+AS
+	INSERT INTO tbl_bill_payment_transactions_detail
+	(product_code,
+	item_code,
+	customer_id,
+	amount,
+	transactions_summary_id,
+	row_num,
+	created_date,
+	initial_validation_status) 
+	VALUES(@product_code,@item_code,@customer_id,@amount,@transactions_summary_id,@row_num,@created_date,@initial_validation_status) 
+	SELECT SCOPE_IDENTITY();
+GO
+
+CREATE PROCEDURE [dbo].[sp_insert_invalid_bill_payments]
+@product_code nvarchar(100),
+@item_code nvarchar(100),
+@customer_id nvarchar(100),
+@amount nvarchar(100),
 @transactions_summary_id bigint,
 @row_num int,
 @row_status nvarchar(50),
-@created_date nvarchar(50)
+@created_date nvarchar(50),
+@initial_validation_status nvarchar(50),
+@error nvarchar(max)
 AS
 	INSERT INTO tbl_bill_payment_transactions_detail
 	(product_code,
@@ -191,8 +230,19 @@ AS
 	transactions_summary_id,
 	row_status,
 	row_num,
-	created_date) 
-	VALUES(@product_code,@item_code,@customer_id,@amount,@transactions_summary_id,@row_status,@row_num,@created_date) 
+	created_date,
+	initial_validation_status,
+	error) 
+	VALUES(@product_code,
+	@item_code,
+	@customer_id,
+	@amount,
+	@transactions_summary_id,
+	@row_status,
+	@row_num,
+	@created_date,
+	@initial_validation_status,
+	@error) 
 	SELECT SCOPE_IDENTITY();
 GO
 
@@ -205,6 +255,18 @@ AS
 	UPDATE tbl_transactions_summary 
 	SET transaction_status=@status, modified_date=@modified_date
 	WHERE batch_id=@batch_id;
+GO
+
+
+CREATE PROCEDURE [dbo].[sp_update_bill_payments_detail]
+@transactions_summary_id BIGINT,
+@error NVARCHAR (Max),
+@row_num INT,
+@row_status NVARCHAR (50)
+AS
+	UPDATE tbl_bill_payment_transactions_detail 
+	SET error=@error, row_status=@row_status
+	WHERE transactions_summary_id=@transactions_summary_id and row_num=@row_num;
 GO
 
 CREATE PROCEDURE [dbo].[sp_update_bill_payment_upload_summary]
@@ -223,7 +285,7 @@ GO
 
 CREATE PROCEDURE [dbo].[sp_update_bill_payments]
 @transactions_summary_id BIGINT,
-@error NVARCHAR (256),
+@error NVARCHAR (max),
 @row_num INT,
 @row_status NVARCHAR (50)
 AS
