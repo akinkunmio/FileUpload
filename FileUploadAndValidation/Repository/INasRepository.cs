@@ -131,6 +131,7 @@ namespace FileUploadAndValidation.Repository
         {
             var location = @"../data/template/";
             var path = Path.Combine(location, fileName);
+
             try
             {
                 if (File.Exists(path))
@@ -160,6 +161,7 @@ namespace FileUploadAndValidation.Repository
         {
             var location = @"../data/uservalidationresult/";
             var path = Path.Combine(location, fileName);
+
             try
             {
                 if (File.Exists(path))
@@ -190,6 +192,7 @@ namespace FileUploadAndValidation.Repository
             var fileName = batchId + "_validationresult.csv";
 
             var path = Path.Combine(location, fileName);
+
             try
             {
                 if (content == null)

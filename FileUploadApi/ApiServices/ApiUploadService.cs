@@ -83,13 +83,13 @@ namespace FileUploadApi.ApiServices
             {
                 billPaymentStatuses = await _bulkBillPaymentService.GetBillPaymentResults(batchId, pagination);
             }
-            catch (AppException)
+            catch (AppException ex)
             {
-                throw;
+                throw ex;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
             return billPaymentStatuses;
         }

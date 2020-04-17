@@ -323,6 +323,7 @@ namespace FileUploadApi
                     ItemType = uploadOptions.ItemType,
                     ContentType = uploadOptions.ContentType,
                     NasRawFile = uploadOptions.RawFileLocation,
+                    UserId = (long)uploadOptions.UserId
                 }, billPayments.ToList(), failedBillPayments.ToList());
 
                 var toValidatePayments = billPayments.Select(b =>
@@ -356,9 +357,9 @@ namespace FileUploadApi
 
                     BillPaymentRowStatusObject validationResult = await GetBillPaymentResults(uploadResult.BatchId, new PaginationFilter(uploadResult.RowsCount, 1));
                     validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, validationResult.RowStatuses);
+
+                    await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
                 }
-                
-                await _dbRepository.UpdateUploadSuccess((long)uploadOptions.UserId, uploadResult.BatchId);
 
                 return uploadResult;
             }

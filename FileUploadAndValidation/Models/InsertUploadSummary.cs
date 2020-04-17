@@ -20,5 +20,7 @@ namespace FileUploadApi
         public string ItemType { get; set; }
 
         public string ContentType { get; set; }
+        
+        public long UserId { get; set; }
     }
 }

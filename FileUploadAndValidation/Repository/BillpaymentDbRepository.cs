@@ -49,7 +49,8 @@ namespace FileUploadAndValidation.Repository
                                    num_of_records = fileDetail.NumOfAllRecords,
                                    upload_date = fileDetail.UploadDate,
                                    content_type = fileDetail.ContentType,
-                                   nas_raw_file = fileDetail.NasRawFile
+                                   nas_raw_file = fileDetail.NasRawFile,
+                                   userid = fileDetail.UserId
                                },
                                transaction: sqlTransaction,
                                commandType: System.Data.CommandType.StoredProcedure);
@@ -110,7 +111,7 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task UpdateUploadSuccess(long userId, string batchId)
+        public async Task UpdateUploadSuccess(string batchId, string userValidationFileName)
         {
              using (var connection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
@@ -125,7 +126,7 @@ namespace FileUploadAndValidation.Repository
                         param: new
                         {
                             batch_id = batchId,
-                            user_id = userId
+                            nas_uservalidationfile = userValidationFileName
                         },
                         commandType: CommandType.StoredProcedure);
                 }
