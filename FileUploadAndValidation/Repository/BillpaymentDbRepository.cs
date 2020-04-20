@@ -194,7 +194,7 @@ namespace FileUploadAndValidation.Repository
 
                     result.Data = results.Skip((paginationFilter.PageNumber - 1) * paginationFilter.PageSize).Take(paginationFilter.PageSize);
 
-                    result.TotalRowsCount = result.Data.Count();
+                    result.TotalRowsCount = results.Count();
 
                     return result;
                 }

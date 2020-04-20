@@ -9,7 +9,7 @@ namespace FileUploadAndValidation.Models
         public PagedResponse()
         {
             PageNumber = 1;
-            PageSize = 20;
+            PageSize = 10;
         }
 
         public PagedResponse(IEnumerable<T> data)

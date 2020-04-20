@@ -266,7 +266,7 @@ namespace FileUploadApi.Controllers
 
                 if (!success)
                 {
-                    throw new AppException($"Invalid value '{userId}' passed for 'userId'");
+                    throw new AppException($"Invalid value '{userId}' passed for userId");
                 }
 
                 var result = await _uploadService.GetUserFilesSummary(userId, paginationFilter);

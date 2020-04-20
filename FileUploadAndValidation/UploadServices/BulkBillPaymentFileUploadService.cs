@@ -496,6 +496,8 @@ namespace FileUploadApi
                     FileName = GenericHelpers.GetFileNameFromBatchId(u.BatchId)
                 });
 
+                pagedData.TotalRowsCount = userFileSummaries.TotalRowsCount;
+
             }
             catch (AppException appEx)
             {
