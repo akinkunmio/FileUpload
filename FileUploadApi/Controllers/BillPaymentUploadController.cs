@@ -83,12 +83,10 @@ namespace FileUploadApi.Controllers
         [HttpGet("{batchId}/status")]
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
-            var paginationFilter = 
-                new PaginationFilter 
-                { 
-                    PageNumber = pagination.PageNumber,
-                    PageSize = pagination.PageSize 
-                };
+            var paginationFilter =
+               new PaginationFilter(pagination.PageSize, pagination.PageNumber);
+
+            string fileName;
 
             var response = new PagedResponse<BillPaymentRowStatus>()
             {
@@ -99,8 +97,9 @@ namespace FileUploadApi.Controllers
             try
             {
                 var result =  await _uploadService.GetBillPaymentsStatus(batchId, paginationFilter);
-                response.Data = result.RowStatuses;
+                response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
+                fileName = GenericHelpers.GetFileNameFromBatchId(batchId);
             }
             catch(AppException ex)
             {
@@ -122,7 +121,7 @@ namespace FileUploadApi.Controllers
                 return BadRequest("Unknown error occured. Please retry!. |" + ex.Message);
             }
 
-            return Ok(new { batchId, response });
+            return Ok(new { batchId, response, fileName});
         }
 
         [HttpGet("{batchId}/summary")]
@@ -250,19 +249,29 @@ namespace FileUploadApi.Controllers
         }
 
         [HttpPost("user/uploads")]
-        public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId)
+        public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] PaginationQuery pagination)
         {
-            var response = new ResponseModel();
+            var paginationFilter =
+                new PaginationFilter(pagination.PageSize, pagination.PageNumber);
+
+            var response = new PagedResponse<BatchFileSummaryDto>()
+            {
+                PageSize = paginationFilter.PageSize,
+                PageNumber = paginationFilter.PageNumber
+            };
 
             try
             {
                 bool success = double.TryParse(userId, out double number);
+
                 if (!success)
                 {
-                    throw new AppException($"Invalid value '{userId}' passed for 'userId'");
+                    throw new AppException($"Invalid value '{userId}' passed for userId");
                 }
 
-                response.Data = await _uploadService.GetUserFilesSummary(userId);
+                var result = await _uploadService.GetUserFilesSummary(userId, paginationFilter);
+                response.Data = result.Data;
+                response.TotalCount = result.TotalRowsCount;
             }
             catch (AppException ex)
             {

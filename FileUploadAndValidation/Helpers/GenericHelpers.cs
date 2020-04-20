@@ -42,9 +42,16 @@ namespace FileUploadAndValidation.Helpers
 
         public static string GenerateBatchId(string fileName, DateTime date)
         {
-            return fileName + "_" + RandomString() + "_" + date.ToString("yyyyMMddHHmmssffff");
+            return fileName + "|" + RandomString() + "|" + date.ToString("yyyyMMddHHmmssffff");
         }
         
+        public static string GetFileNameFromBatchId(string batchId)
+        {
+            var array = batchId.Split('|');
+            array = array.Take(array.Count() - 2).ToArray();
+            return string.Join("", array);
+        }
+
         private static string RandomString()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

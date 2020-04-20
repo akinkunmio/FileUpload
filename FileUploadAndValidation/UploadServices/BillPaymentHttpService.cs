@@ -101,9 +101,9 @@ namespace FileUploadAndValidation.UploadServices
                     DataStore = 1,
                     DataStoreUrl = url,
                     BatchId = batchId
-
                 })
-                : JsonConvert.SerializeObject(new
+                : 
+                JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
                     DataStoreUrl = url
@@ -160,10 +160,12 @@ namespace FileUploadAndValidation.UploadServices
             }
             catch (AppException ex)
             {
+                _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
             catch (Exception ex)
             {
+                _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw new AppException("Unknown error occured while initiating Bill Payment Initiation"+ex.Message, (int)HttpStatusCode.InternalServerError);
             }
 

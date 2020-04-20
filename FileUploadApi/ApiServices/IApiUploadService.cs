@@ -13,11 +13,11 @@ namespace FileUploadApi.ApiServices
     {
         Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream);
 
-        Task<BillPaymentRowStatusObject> GetBillPaymentsStatus(string batchId, PaginationFilter pagination);
+        Task<PagedData<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination);
 
         Task<BatchFileSummaryDto> GetFileSummary(string batchId);
 
-        Task<List<BatchFileSummaryDto>> GetUserFilesSummary(string userId);
+        Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, PaginationFilter paginationFilter);
 
         Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
         

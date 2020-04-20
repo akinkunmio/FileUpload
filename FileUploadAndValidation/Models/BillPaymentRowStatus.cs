@@ -45,11 +45,10 @@ namespace FileUploadAndValidation.Models
         public int TotalRowsCount { get; set; }
     }
 
-    public class BillPaymentRowStatusObject
+    public class PagedData<T>
     {
-        public IEnumerable<BillPaymentRowStatus> RowStatuses { get; set; }
+        public IEnumerable<T> Data { get; set; }
 
         public int TotalRowsCount { get; set; }
     }
-
 }

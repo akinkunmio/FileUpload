@@ -9,7 +9,7 @@ namespace FileUploadAndValidation.Models
         public PagedResponse()
         {
             PageNumber = 1;
-            PageSize = 20;
+            PageSize = 10;
         }
 
         public PagedResponse(IEnumerable<T> data)
@@ -32,8 +32,8 @@ namespace FileUploadAndValidation.Models
     {
         public PaginationFilter(int pageSize, int pageNumber)
         {
-            PageSize = pageSize;
-            PageNumber = pageNumber;
+            PageSize = (pageSize > 0) ?  pageSize : 10;
+            PageNumber = (pageNumber > 0) ? pageNumber : 1;
         }
         public PaginationFilter()
         {
