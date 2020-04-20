@@ -176,8 +176,8 @@ namespace FileUploadApi
 
             var headerRow = new Row();
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
-            IEnumerable<BillPayment> nonDistincts = new List<BillPayment>();
-           
+            IEnumerable<BillPayment> failedItemTypeValidationBills = new List<BillPayment>();
+
             try
             {
                 if (!rows.Any())
@@ -222,16 +222,29 @@ namespace FileUploadApi
                         CreatedDate = dateTimeNow.ToString()
                     });
 
-                    if(uploadOptions.ItemType
+                    var productCodeList = billPayments.Select(s => s.ProductCode).ToArray();
+
+                    string firstItem = productCodeList[0];
+
+                    bool allEqual = productCodeList.Skip(1)
+                      .All(s => string.Equals(firstItem, s, StringComparison.InvariantCultureIgnoreCase));
+
+                    if (!allEqual)
+                    {
+                        throw new AppException("ProductCode should have same value for all records");
+                    }
+
+
+                    if (uploadOptions.ItemType
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentId.ToLower()))
                     {
-                        nonDistincts = billPayments
+                        failedItemTypeValidationBills = billPayments
                             ?.GroupBy(b => new { b.ProductCode, b.CustomerId })
                             .Where(g => g.Count() > 1)
                             .SelectMany(r => r);
 
-                        foreach (var nonDistinct in nonDistincts)
+                        foreach (var nonDistinct in failedItemTypeValidationBills)
                             uploadResult.Failures.Add(new Failure
                             {
                                 Row = new RowDetail
@@ -247,7 +260,7 @@ namespace FileUploadApi
                                     new ValidationError
                                     {
                                         PropertyName = "ProductCode, CustomerId",
-                                        ErrorMessage = "Values should be unique and not be repeated"
+                                        ErrorMessage = "Values should be unique and not be same"
                                     }
                                 }
                             }); 
@@ -257,12 +270,12 @@ namespace FileUploadApi
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
                     {
-                        nonDistincts = billPayments
+                        failedItemTypeValidationBills = billPayments
                             ?.GroupBy(b => new { b.ItemCode, b.CustomerId })
                             .Where(g => g.Count() > 1)
                             .SelectMany(r => r);
 
-                        foreach (var nonDistinct in nonDistincts)
+                        foreach (var nonDistinct in failedItemTypeValidationBills)
                             uploadResult.Failures.Add(new Failure
                             {
                                 Row = new RowDetail
@@ -278,14 +291,14 @@ namespace FileUploadApi
                                     new ValidationError 
                                     { 
                                         PropertyName = "ItemCode, CustomerId", 
-                                        ErrorMessage = "Values should be unique and not be repeated" 
+                                        ErrorMessage = "Values should be unique and not be same" 
                                     }
                                 }
                             });
                     }
 
                     billPayments = billPayments
-                        .Where(b => !nonDistincts.Any(n => n.RowNumber == b.RowNumber))
+                        .Where(b => !failedItemTypeValidationBills.Any(n => n.RowNumber == b.RowNumber))
                         .Select(r => r);
 
                     uploadResult.ValidRows = billPayments.Select(r => new RowDetail 
@@ -297,7 +310,6 @@ namespace FileUploadApi
                         CustomerId = r.CustomerId
                     }).ToList();
 
-                   // uploadResult.RowsCount = uploadResult.ValidRows.Count();
                 }
 
                 var failedBillPayments = uploadResult.Failures.Select(f =>
@@ -312,6 +324,9 @@ namespace FileUploadApi
                          Error = ConstructValidationError(f)
                     }
                 );
+
+                if (uploadResult.ValidRows.Count() == 0)
+                    throw new AppException("All records are invalid");
 
                 await _dbRepository.InsertAllUploadRecords(new UploadSummaryDto
                 {
@@ -355,8 +370,8 @@ namespace FileUploadApi
                         RowStatuses = validationResponse.Data.Results
                     });
 
-                    BillPaymentRowStatusObject validationResult = await GetBillPaymentResults(uploadResult.BatchId, new PaginationFilter(uploadResult.RowsCount, 1));
-                    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, validationResult.RowStatuses);
+                    var validationResult = await GetBillPaymentResults(uploadResult.BatchId, new PaginationFilter(uploadResult.RowsCount, 1));
+                    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, validationResult.Data);
 
                     await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
                 }
@@ -388,7 +403,7 @@ namespace FileUploadApi
             return result.ToString();
         }
        
-        public async Task<BillPaymentRowStatusObject> GetBillPaymentResults(string batchId, PaginationFilter pagination)
+        public async Task<PagedData<BillPaymentRowStatus>> GetBillPaymentResults(string batchId, PaginationFilter pagination)
         {
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
@@ -414,8 +429,6 @@ namespace FileUploadApi
 
                 if (billPaymentStatuses.Count() < 1)
                     throw new AppException($"Upload Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);
-
-
             }
             catch (AppException appEx)
             {
@@ -426,7 +439,7 @@ namespace FileUploadApi
                 throw new AppException($"An error occured while fetching results for {batchId}!.");
             }
 
-            return new BillPaymentRowStatusObject { RowStatuses = billPaymentStatuses, TotalRowsCount = totalRowCount };
+            return new PagedData<BillPaymentRowStatus> { Data = billPaymentStatuses, TotalRowsCount = totalRowCount };
         }
 
         public async Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId)
@@ -463,18 +476,15 @@ namespace FileUploadApi
             return batchFileSummaryDto;
         }
 
-        public async Task<List<BatchFileSummaryDto>> GetUserUploadSummaries(string userId)
+        public async Task<PagedData<BatchFileSummaryDto>> GetUserUploadSummaries(string userId, PaginationFilter paginationFilter)
         {
-            IEnumerable<BatchFileSummary> userFileSummaries;
-            var batchFileSummaryDto = new List<BatchFileSummaryDto>();
+            var userFileSummaries = new PagedData<BatchFileSummary>();
+            var pagedData = new PagedData<BatchFileSummaryDto>();
             try
             {
-                userFileSummaries = await _dbRepository.GetUploadSummariesByUserId(userId);
-
-                if (userFileSummaries == null)
-                    throw new AppException($"No upload file found for the user with Id '{userId}!.", (int)HttpStatusCode.NotFound);
-
-                batchFileSummaryDto = userFileSummaries.Select(u => new BatchFileSummaryDto
+                userFileSummaries = await _dbRepository.GetUploadSummariesByUserId(userId, paginationFilter);
+                
+                pagedData.Data = userFileSummaries.Data.Select(u => new BatchFileSummaryDto
                 {
                     BatchId = u.BatchId,
                     ContentType = u.ContentType,
@@ -482,8 +492,9 @@ namespace FileUploadApi
                     NumOfAllRecords = u.NumOfRecords,
                     NumOfValidRecords = u.NumOfValidRecords,
                     Status = u.TransactionStatus,
-                    UploadDate = u.UploadDate
-                }).ToList();
+                    UploadDate = u.UploadDate,
+                    FileName = GenericHelpers.GetFileNameFromBatchId(u.BatchId)
+                });
 
             }
             catch (AppException appEx)
@@ -495,7 +506,7 @@ namespace FileUploadApi
                 throw ex;
             }
 
-            return batchFileSummaryDto;
+            return pagedData;
         }
 
         public async Task UpdateStatusFromQueue(BillPaymentValidateMessage queueMessage)

@@ -20,5 +20,7 @@ namespace FileUploadApi.Models
         public string ItemType { get; set; }
 
         public string ContentType { get; set; }
+
+        public string FileName { get; set; }
     }
 }

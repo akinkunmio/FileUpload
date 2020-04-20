@@ -61,23 +61,23 @@ namespace FileUploadApi.ApiServices
             return batchFileSummaryDto;
         }
 
-        public async Task<List<BatchFileSummaryDto>> GetUserFilesSummary(string userId)
+        public async Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, PaginationFilter paginationFilter)
         {
             ArgumentGuard.NotNullOrWhiteSpace(userId, nameof(userId));
 
-            List<BatchFileSummaryDto> batchFileSummariesDto;
+            var batchFileSummariesDto = new PagedData<BatchFileSummaryDto>();
 
-            batchFileSummariesDto = await _bulkBillPaymentService.GetUserUploadSummaries(userId);
+            batchFileSummariesDto = await _bulkBillPaymentService.GetUserUploadSummaries(userId, paginationFilter);
 
             return batchFileSummariesDto;
         }
-        public async Task<BillPaymentRowStatusObject> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
+        public async Task<PagedData<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
             ArgumentGuard.NotDefault(pagination.PageNumber, nameof(pagination.PageNumber));
             ArgumentGuard.NotDefault(pagination.PageSize, nameof(pagination.PageSize));
 
-            BillPaymentRowStatusObject billPaymentStatuses;
+            var billPaymentStatuses = new PagedData<BillPaymentRowStatus>();
 
             try
             {

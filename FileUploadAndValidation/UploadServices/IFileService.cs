@@ -17,7 +17,7 @@ namespace FileUploadApi.Services
 
         Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult);
 
-        Task<BillPaymentRowStatusObject> GetBillPaymentResults(string batchId, PaginationFilter pagination);
+        Task<PagedData<BillPaymentRowStatus>> GetBillPaymentResults(string batchId, PaginationFilter pagination);
 
         Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId);
 
@@ -25,7 +25,7 @@ namespace FileUploadApi.Services
 
         Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
 
-        Task<List<BatchFileSummaryDto>> GetUserUploadSummaries(string userId);
+        Task<PagedData<BatchFileSummaryDto>> GetUserUploadSummaries(string userId, PaginationFilter paginationFilter);
     }
    
 }

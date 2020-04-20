@@ -32,8 +32,8 @@ namespace FileUploadAndValidation.Models
     {
         public PaginationFilter(int pageSize, int pageNumber)
         {
-            PageSize = pageSize;
-            PageNumber = pageNumber;
+            PageSize = (pageSize > 0) ?  pageSize : 10;
+            PageNumber = (pageNumber > 0) ? pageNumber : 1;
         }
         public PaginationFilter()
         {
