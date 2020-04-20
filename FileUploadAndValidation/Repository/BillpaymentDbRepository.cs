@@ -350,20 +350,37 @@ namespace FileUploadAndValidation.Repository
                             commandType: CommandType.StoredProcedure,
                             transaction: sqlTransaction);
 
-                            foreach (var status in updateBillPayments.RowStatuses)
+                            if(updateBillPayments.RowStatuses.Count() == 1)
                             {
-
+                                var status = updateBillPayments.RowStatuses.First();
                                 await connection.ExecuteAsync(
-                                    sql: "sp_update_bill_payments_detail",
-                                    param: new
-                                    {
-                                        transactions_summary_id = summaryId,
-                                        error = status.Error,
-                                        row_num = status.Row,
-                                        row_status = status.Status
-                                    },
-                                    commandType: CommandType.StoredProcedure,
-                                    transaction: sqlTransaction);
+                                        sql: "sp_update_bill_payments_detail_enterprise_error",
+                                        param: new
+                                        {
+                                            transactions_summary_id = summaryId,
+                                            error = status.Error,
+                                            row_status = status.Status
+                                        },
+                                        commandType: CommandType.StoredProcedure,
+                                        transaction: sqlTransaction);
+                            }
+
+                            if (updateBillPayments.RowStatuses.Count() > 1)
+                            {
+                                foreach (var status in updateBillPayments.RowStatuses)
+                                {
+                                    await connection.ExecuteAsync(
+                                        sql: "sp_update_bill_payments_detail",
+                                        param: new
+                                        {
+                                            transactions_summary_id = summaryId,
+                                            error = status.Error,
+                                            row_num = status.Row,
+                                            row_status = status.Status
+                                        },
+                                        commandType: CommandType.StoredProcedure,
+                                        transaction: sqlTransaction);
+                                }
                             }
                             sqlTransaction.Commit();
                         }
