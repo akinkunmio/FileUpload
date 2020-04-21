@@ -351,7 +351,7 @@ namespace FileUploadAndValidation.Repository
                                     status = updateBillPayments.Status,
                                     modified_date = updateBillPayments.ModifiedDate,
                                     nas_tovalidate_file = updateBillPayments.NasToValidateFile,
-                                    valid_amount_sum = rowStatusDto.RowStatusDtos.Where(v => v.RowStatus.ToLower().Equals("valid")).Select(s => s.Amount).Sum()
+                                    valid_amount_sum = rowStatusDto?.RowStatusDtos.Where(v => v.RowStatus.ToLower().Equals("valid")).Select(s => s.Amount).Sum()
                                 },
                             commandType: CommandType.StoredProcedure,
                             transaction: sqlTransaction); 
