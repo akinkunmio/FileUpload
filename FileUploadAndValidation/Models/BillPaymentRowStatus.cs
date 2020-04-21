@@ -43,6 +43,8 @@ namespace FileUploadAndValidation.Models
         public IEnumerable<BillPaymentRowStatusDto> RowStatusDtos { get; set; }
 
         public int TotalRowsCount { get; set; }
+
+        public double ValidAmountSum { get; set; }
     }
 
     public class PagedData<T>
@@ -50,5 +52,7 @@ namespace FileUploadAndValidation.Models
         public IEnumerable<T> Data { get; set; }
 
         public int TotalRowsCount { get; set; }
+
+        public double TotalAmountSum { get; set; }
     }
 }

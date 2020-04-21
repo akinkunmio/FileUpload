@@ -12,6 +12,7 @@ using FilleUploadCore.FileReaders;
 using FilleUploadCore.Helpers;
 using FilleUploadCore.UploadManagers;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,16 +32,19 @@ namespace FileUploadApi
         private readonly INasRepository _nasRepository;
         private readonly IBillPaymentService _billPaymentService;
         private readonly IBus _bus;
+        private readonly ILogger<BulkBillPaymentFileService> _logger;
 
         public BulkBillPaymentFileService(IBillPaymentDbRepository dbRepository, 
             INasRepository nasRepository,
             IBillPaymentService billPaymentService,
-            IBus bus)
+            IBus bus,
+            ILogger<BulkBillPaymentFileService> logger)
         {
             _dbRepository = dbRepository;
             _nasRepository = nasRepository;
             _billPaymentService = billPaymentService;
             _bus = bus;
+            _logger = logger;
         }
 
         public async Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
@@ -214,7 +218,7 @@ namespace FileUploadApi
                     billPayments = uploadResult.ValidRows.Select(r => new BillPayment 
                     { 
                         RowNumber = r.RowNumber,
-                        Amount = Convert.ToDouble(r.Amount),
+                        Amount = double.Parse(r.Amount),
                         ProductCode = r.ProductCode,
                         ItemCode = r.ItemCode,
                         CustomerId = r.CustomerId,
@@ -226,15 +230,15 @@ namespace FileUploadApi
 
                     string firstItem = productCodeList[0];
 
+                    if(string.Equals(firstItem, uploadOptions.ProductCode, StringComparison.InvariantCultureIgnoreCase))
+                        throw new AppException($"Expected file ProductCode to be {uploadOptions.ProductCode}, but found {firstItem}!.");
+
                     bool allEqual = productCodeList.Skip(1)
                       .All(s => string.Equals(firstItem, s, StringComparison.InvariantCultureIgnoreCase));
 
                     if (!allEqual)
-                    {
                         throw new AppException("ProductCode should have same value for all records");
-                    }
-
-
+                    
                     if (uploadOptions.ItemType
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentId.ToLower()))
@@ -386,6 +390,7 @@ namespace FileUploadApi
             }
             catch (Exception exception)
             {
+                _logger.LogError("Error occured while uploading bill payment file with error message {ex.message} | {ex.StackTrace}", exception.Message, exception.StackTrace);
                 uploadResult.ErrorMessage = exception.Message;
                 throw new AppException(exception.Message, (int)HttpStatusCode.InternalServerError, uploadResult);
             }
@@ -428,18 +433,19 @@ namespace FileUploadApi
                  });
 
                 if (billPaymentStatuses.Count() < 1)
-                    throw new AppException($"Upload Batch Id:{batchId} was not found", (int)HttpStatusCode.NotFound);
+                    throw new AppException($"Upload Batch Id '{batchId}' was not found", (int)HttpStatusCode.NotFound);
             }
             catch (AppException appEx)
             {
                 throw appEx;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError("Error occured while getting bill payment statuses with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw new AppException($"An error occured while fetching results for {batchId}!.");
             }
 
-            return new PagedData<BillPaymentRowStatus> { Data = billPaymentStatuses, TotalRowsCount = totalRowCount };
+            return new PagedData<BillPaymentRowStatus> { Data = billPaymentStatuses, TotalRowsCount = totalRowCount};
         }
 
         public async Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId)
@@ -470,6 +476,7 @@ namespace FileUploadApi
             }
             catch (Exception ex)
             {
+                _logger.LogError("Error occured while getting upload summary with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
 
@@ -505,6 +512,7 @@ namespace FileUploadApi
             }
             catch (Exception ex)
             {
+                _logger.LogError("Error occured while getting user upload summaries with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
 
@@ -528,8 +536,7 @@ namespace FileUploadApi
                         NumOfValidRecords = validationStatuses.Where(v => v.Status.ToLower().Equals("valid")).Count(),
                         Status = GenericConstants.AwaitingInitiation,
                         RowStatuses = validationStatuses.ToList()
-                    });
-                
+                    });                
                 throw new AppException($"File to be validated with batch Id:'{queueMessage.BatchId}' has no content on NAS!");
 
             }
@@ -539,6 +546,7 @@ namespace FileUploadApi
             }
             catch (Exception ex)
             {
+                _logger.LogError("Error occured while updating queue status with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
         }
@@ -573,8 +581,9 @@ namespace FileUploadApi
             {
                 throw appEx;
             }
-            catch(Exception)
+            catch(Exception ex)
             {
+                _logger.LogError("Error occured while while initiating payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw new AppException("An error occured while initiating payment");
             }
 

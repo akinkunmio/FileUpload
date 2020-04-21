@@ -26,6 +26,8 @@ namespace FileUploadAndValidation.Models
         public int TotalCount { get; set; }
 
         public string Error { get; set; }
+
+        public double ValidAmountTotal { get; set; }
     }
 
     public class PaginationFilter

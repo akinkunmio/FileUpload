@@ -292,7 +292,7 @@ namespace FileUploadAndValidation.Repository
                     if (summaryId == 0)
                         throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
                    
-                    var summary = await GetBatchUploadSummary(batchId);
+                    BatchFileSummary summary = await GetBatchUploadSummary(batchId);
                     var totalRowsCount = summary.NumOfRecords;
 
                     var result = await sqlConnection.QueryAsync<BillPaymentRowStatusDto>(
@@ -305,7 +305,10 @@ namespace FileUploadAndValidation.Repository
                         },
                         commandType: CommandType.StoredProcedure);
 
-                    return new BillPaymentRowStatusDtoObject { RowStatusDtos = result, TotalRowsCount = totalRowsCount };
+                    if (result == null)
+                        throw new AppException($"No records was found for the file with batchId '{batchId}'");
+
+                    return new BillPaymentRowStatusDtoObject { RowStatusDtos = result, TotalRowsCount = totalRowsCount, ValidAmountSum = summary.ValidAmountSum };
                 }
                 catch(AppException ex)
                 {
@@ -328,10 +331,12 @@ namespace FileUploadAndValidation.Repository
 
                 try
                 {
-                    var fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId);
+                    BatchFileSummary fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId);
 
                     if (fileSummary == null)
                         throw new AppException($"Upload Batch Id '{updateBillPayments.BatchId}' not found!.", (int)HttpStatusCode.NotFound);
+
+                    var rowStatusDto = await GetBillPaymentRowStatuses(fileSummary.BatchId, new PaginationFilter { PageNumber = 1, PageSize = fileSummary.NumOfRecords });
 
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
@@ -345,10 +350,11 @@ namespace FileUploadAndValidation.Repository
                                     num_of_valid_records = updateBillPayments.NumOfValidRecords,
                                     status = updateBillPayments.Status,
                                     modified_date = updateBillPayments.ModifiedDate,
-                                    nas_tovalidate_file = updateBillPayments.NasToValidateFile
+                                    nas_tovalidate_file = updateBillPayments.NasToValidateFile,
+                                    valid_amount_sum = rowStatusDto.RowStatusDtos.Where(v => v.RowStatus.ToLower().Equals("valid")).Select(s => s.Amount).Sum()
                                 },
                             commandType: CommandType.StoredProcedure,
-                            transaction: sqlTransaction);
+                            transaction: sqlTransaction); 
 
                             if(updateBillPayments.RowStatuses.Count() == 1)
                             {

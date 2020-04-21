@@ -30,14 +30,15 @@ namespace FileUploadApi.Controllers
             _uploadService = uploadService;
             _logger = logger;
         }
-       
+        
         [HttpPost("uploadfile/{itemType}")]
         public async Task<IActionResult> PostBulkBillPaymentAsync(string itemType)
         {
             var uploadResult = new UploadResult();
 
             var file = Request.Form.Files.First();
-            var userId = Request.Form["userId"].ToString();
+            var userId = Request.Form["id"].ToString();
+            var productCode = Request.Form["productCode"].ToString();
 
             try
             {
@@ -49,7 +50,8 @@ namespace FileUploadApi.Controllers
                     FileSize = file.Length,
                     FileExtension = Path.GetExtension(file.FileName).Replace(".", string.Empty).ToLower(),
                     ItemType = itemType,
-                    UserId = Convert.ToInt64(userId)
+                    UserId = long.Parse(userId),
+                    ProductCode = productCode
                 };
 
                 using (var contentStream = file.OpenReadStream())
@@ -97,8 +99,11 @@ namespace FileUploadApi.Controllers
             try
             {
                 var result =  await _uploadService.GetBillPaymentsStatus(batchId, paginationFilter);
+
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
+                response.ValidAmountTotal = result.TotalAmountSum;
+
                 fileName = GenericHelpers.GetFileNameFromBatchId(batchId);
             }
             catch(AppException ex)
@@ -177,10 +182,8 @@ namespace FileUploadApi.Controllers
                     UserName = request.UserName
                 };
 
-
                 var data = await _uploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
                 response.Data = data;
-
             }
             catch (AppException ex)
             {
@@ -248,6 +251,16 @@ namespace FileUploadApi.Controllers
             }
         }
 
+        private void ValidateUserId(string id)
+        {
+            bool success = long.TryParse(id, out long number);
+
+            if (!success)
+            {
+                throw new AppException($"Invalid value '{id}' passed!.");
+            }
+        }
+
         [HttpPost("user/uploads")]
         public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] PaginationQuery pagination)
         {
@@ -262,13 +275,8 @@ namespace FileUploadApi.Controllers
 
             try
             {
-                bool success = double.TryParse(userId, out double number);
-
-                if (!success)
-                {
-                    throw new AppException($"Invalid value '{userId}' passed for userId");
-                }
-
+                ValidateUserId(userId);
+               
                 var result = await _uploadService.GetUserFilesSummary(userId, paginationFilter);
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
