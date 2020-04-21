@@ -230,7 +230,7 @@ namespace FileUploadApi
 
                     string firstItem = productCodeList[0];
 
-                    if(string.Equals(firstItem, uploadOptions.ProductCode, StringComparison.InvariantCultureIgnoreCase))
+                    if(!string.Equals(firstItem, uploadOptions.ProductCode, StringComparison.InvariantCultureIgnoreCase))
                         throw new AppException($"Expected file ProductCode to be {uploadOptions.ProductCode}, but found {firstItem}!.");
 
                     bool allEqual = productCodeList.Skip(1)
