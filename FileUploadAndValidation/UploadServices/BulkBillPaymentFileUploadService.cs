@@ -413,6 +413,7 @@ namespace FileUploadApi
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
             int totalRowCount;
+            double validAmountSum;
 
             try
             {
@@ -420,6 +421,8 @@ namespace FileUploadApi
                     .GetBillPaymentRowStatuses(batchId, pagination);
 
                 totalRowCount = billPaymentStatusesObj.TotalRowsCount;
+
+                validAmountSum = billPaymentStatusesObj.ValidAmountSum;
 
                 billPaymentStatuses = billPaymentStatusesObj.RowStatusDtos.Select(s => new BillPaymentRowStatus
                  {
@@ -445,7 +448,7 @@ namespace FileUploadApi
                 throw new AppException($"An error occured while fetching results for {batchId}!.");
             }
 
-            return new PagedData<BillPaymentRowStatus> { Data = billPaymentStatuses, TotalRowsCount = totalRowCount};
+            return new PagedData<BillPaymentRowStatus> { Data = billPaymentStatuses, TotalRowsCount = totalRowCount, TotalAmountSum = validAmountSum };
         }
 
         public async Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId)

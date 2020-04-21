@@ -40,6 +40,8 @@ namespace FileUploadApi.Controllers
             var userId = Request.Form["id"].ToString();
             var productCode = Request.Form["productCode"].ToString();
 
+            ValidateUserId(userId);
+
             try
             {
                 var uploadOptions = new UploadOptions
