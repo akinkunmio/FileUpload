@@ -336,7 +336,7 @@ namespace FileUploadAndValidation.Repository
                     if (fileSummary == null)
                         throw new AppException($"Upload Batch Id '{updateBillPayments.BatchId}' not found!.", (int)HttpStatusCode.NotFound);
 
-                    var rowStatusDto = await GetBillPaymentRowStatuses(fileSummary.BatchId, new PaginationFilter { PageNumber = 1, PageSize = fileSummary.NumOfRecords });
+                    var rowStatusDto = await GetBillPaymentRowStatuses(fileSummary.BatchId, new PaginationFilter (fileSummary.NumOfRecords, 1 ));
 
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
@@ -351,7 +351,7 @@ namespace FileUploadAndValidation.Repository
                                     status = updateBillPayments.Status,
                                     modified_date = updateBillPayments.ModifiedDate,
                                     nas_tovalidate_file = updateBillPayments.NasToValidateFile,
-                                    valid_amount_sum = rowStatusDto?.RowStatusDtos.Where(v => v.RowStatus.ToLower().Equals("valid")).Select(s => s.Amount).Sum()
+                                    valid_amount_sum = rowStatusDto?.RowStatusDtos.Where(v => v.RowStatus.ToLower().Equals("valid"))?.Select(s => s.Amount).Sum()
                                 },
                             commandType: CommandType.StoredProcedure,
                             transaction: sqlTransaction); 
@@ -403,7 +403,7 @@ namespace FileUploadAndValidation.Repository
                 }    
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Update Bill Payment Initiation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError("Error occured while performing Update Bill Payment Validation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
             }
