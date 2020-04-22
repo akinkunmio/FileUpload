@@ -331,12 +331,15 @@ namespace FileUploadAndValidation.Repository
 
                 try
                 {
-                    BatchFileSummary fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId);
+                    var fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId);
 
                     if (fileSummary == null)
                         throw new AppException($"Upload Batch Id '{updateBillPayments.BatchId}' not found!.", (int)HttpStatusCode.NotFound);
 
                     var rowStatusDto = await GetBillPaymentRowStatuses(fileSummary.BatchId, new PaginationFilter (fileSummary.NumOfRecords, 1 ));
+
+                    var valids = updateBillPayments.RowStatuses?.Where(v => v.Status.ToLower().Equals("valid"));
+                    var totalAmount = rowStatusDto.RowStatusDtos?.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => s.Amount).Sum();
 
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
@@ -351,7 +354,7 @@ namespace FileUploadAndValidation.Repository
                                     status = updateBillPayments.Status,
                                     modified_date = updateBillPayments.ModifiedDate,
                                     nas_tovalidate_file = updateBillPayments.NasToValidateFile,
-                                    valid_amount_sum = rowStatusDto?.RowStatusDtos.Where(v => v.RowStatus.ToLower().Equals("valid"))?.Select(s => s.Amount).Sum()
+                                    valid_amount_sum = totalAmount
                                 },
                             commandType: CommandType.StoredProcedure,
                             transaction: sqlTransaction); 
