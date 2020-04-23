@@ -119,10 +119,12 @@ namespace FileUploadAndValidation.UploadServices
                     BusinessId = initiatePaymentOptions.BusinessId,
                     UserId = initiatePaymentOptions.UserId,
                     ApprovalConfigId = initiatePaymentOptions.ApprovalConfigId,
-                    UserName = initiatePaymentOptions.UserName
+                    UserName = initiatePaymentOptions.UserName,
+                    DataStore = 1,
+                    DataStoreUrl = fileProperty.Url
                 });
 
-                var request = new HttpRequestMessage(HttpMethod.Post, $"/qbtrans/api/v1/payments/bills/initiate-payment?dataStore=1&Url={fileProperty.Url}")
+                var request = new HttpRequestMessage(HttpMethod.Post, $"/qbtrans/api/v1/payments/bills/initiate-payment")
                 {
                     Content = new StringContent(req, Encoding.UTF8, "application/json")
                 };
