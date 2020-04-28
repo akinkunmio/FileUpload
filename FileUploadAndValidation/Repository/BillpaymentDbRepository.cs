@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace FileUploadAndValidation.Repository
 {
-    public class BillPaymentRepository : IDbRepository<BillPayment, FailedBillPayment>
+    public class BillPaymentRepository : IDbRepository
     {
         private readonly IAppConfig _appConfig;
         private readonly ILogger<BillPaymentRepository> _logger;
@@ -28,7 +28,7 @@ namespace FileUploadAndValidation.Repository
             _logger = logger;
         }
         
-        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, IList<BillPayment> billPayments, IList<FailedBillPayment> invalidBillPayments, string itemType = null)
+        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, IList<RowDetail> billPayments, IList<Failure> invalidBillPayments, string itemType = null)
         {
             try
             {
@@ -279,7 +279,7 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<BillPaymentRowStatusDtoObject> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination)
+        public async Task<RowStatusDtoObject> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination)
         {
             using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
@@ -308,7 +308,7 @@ namespace FileUploadAndValidation.Repository
                     if (result == null)
                         throw new AppException($"No records was found for the file with batchId '{batchId}'");
 
-                    return new BillPaymentRowStatusDtoObject { RowStatusDtos = result, TotalRowsCount = totalRowsCount, ValidAmountSum = summary.ValidAmountSum };
+                    return new RowStatusDtoObject { RowStatusDtos = result, TotalRowsCount = totalRowsCount, ValidAmountSum = summary.ValidAmountSum };
                 }
                 catch(AppException ex)
                 {

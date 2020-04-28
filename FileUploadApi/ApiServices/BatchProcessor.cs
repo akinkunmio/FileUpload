@@ -18,6 +18,7 @@ using FileUploadAndValidation.Repository;
 using FileUploadApi.Controllers;
 using System.Net;
 using Microsoft.AspNetCore.Http;
+using FileUploadAndValidation.FileServices;
 
 namespace FileUploadApi.ApiServices
 {
@@ -27,7 +28,8 @@ namespace FileUploadApi.ApiServices
         private readonly IBatchRepository _batchRepository;
         private readonly IEnumerable<IFileReader> _fileReader;
 
-        public BatchProcessor(IBatchRepository batchRepository, IFileContentValidator fileContentValidator,
+        public BatchProcessor(IBatchRepository batchRepository,
+            IFileContentValidator fileContentValidator,
             IEnumerable<IFileReader> fileReader)
         {
             _batchRepository = batchRepository;
@@ -47,7 +49,6 @@ namespace FileUploadApi.ApiServices
                 && !request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower()))
                 throw new AppException("Invalid Content Type specified");
 
-              //use either validationtype or contentype name
             if (request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower())
                 || request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
                 request.ContentType = GenericConstants.Firs;

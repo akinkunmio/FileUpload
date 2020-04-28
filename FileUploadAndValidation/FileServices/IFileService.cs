@@ -24,9 +24,6 @@ namespace FileUploadApi.Services
         Task<PagedData<BatchFileSummaryDto>> GetUserUploadSummaries(string userId, PaginationFilter paginationFilter);
     }
 
-    public interface IFileContentValidator
-    {
-        Task<UploadResult> Validate(FileUploadRequest uploadRequest, IEnumerable<Row> rows);
-    }
+    
 
 }

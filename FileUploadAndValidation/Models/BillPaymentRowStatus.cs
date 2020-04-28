@@ -96,9 +96,9 @@ namespace FileUploadAndValidation.Models
     }
 
 
-    public class BillPaymentRowStatusDtoObject
+    public class RowStatusDtoObject<T>
     {
-        public IEnumerable<BillPaymentRowStatusDto> RowStatusDtos { get; set; }
+        public IEnumerable<T> RowStatusDtos { get; set; }
 
         public int TotalRowsCount { get; set; }
 

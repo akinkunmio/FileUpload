@@ -33,7 +33,7 @@ namespace FileUploadAndValidation.Repository
             throw new NotImplementedException();
         }
 
-        public Task<BillPaymentRowStatusDtoObject> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination)
+        public Task<RowStatusDtoObject> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination)
         {
             throw new NotImplementedException();
         }

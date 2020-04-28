@@ -16,7 +16,7 @@ using System.Web;
 
 namespace FileUploadAndValidation.UploadServices
 {
-    public class BillPaymentHttpService : IBillPaymentService
+    public class BillPaymentHttpService : IHttpService
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<BillPaymentHttpService> _logger;
@@ -154,7 +154,7 @@ namespace FileUploadAndValidation.UploadServices
                     {
                         approvalResult = JsonConvert.DeserializeObject<FailedInitiatePaymentResponse>(responseResult);
                         throw new AppException(approvalResult.ResponseDescription, (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
-                    }
+                    }C:\Interswitch\Quick-Teller-for-Business\qb-upload-service\FileUploadAndValidation\HttpServices.cs\BillPaymentHttpService.cs
                     throw new AppException("Unable to initiate bill transaction payment.", (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
                 }
             }
@@ -173,7 +173,7 @@ namespace FileUploadAndValidation.UploadServices
 
     }
 
-    public interface IBillPaymentService
+    public interface IHttpService
     {
         Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty);
 

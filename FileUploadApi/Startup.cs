@@ -25,6 +25,7 @@ using GreenPipes;
 using DbUp;
 using System.Reflection;
 using AutoMapper;
+using FileUploadAndValidation.Models;
 
 namespace FileUploadApi
 {
@@ -46,7 +47,7 @@ namespace FileUploadApi
             //services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
 
             services.AddSingleton<IAppConfig, AppConfig>();
-            services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
+            services.AddHttpClient<IHttpService, BillPaymentHttpService>();
             services.AddScoped<IDbRepository, BillPaymentRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
@@ -54,24 +55,7 @@ namespace FileUploadApi
             //services.AddScoped<FirsWhtFileService>();
             //services.AddScoped<AutoPayFileService>();
             //services.AddScoped<BulkSmsFileService>();
-            services.AddScoped<BillPaymentFileService>();
-
-            services.AddTransient<Func<FileServiceTypeEnum, IFileService>>(serviceProvider => key => 
-            {
-                switch (key)
-                {
-                    //case FileServiceTypeEnum.FirsWht:
-                    //    return serviceProvider.GetService<FirsWhtFileService>();
-                    //case FileServiceTypeEnum.AutoPay:
-                    //    return serviceProvider.GetService<AutoPayFileService>();
-                    //case FileServiceTypeEnum.BulkSMS:
-                    //    return serviceProvider.GetService<BulkSmsFileService>();
-                    case FileServiceTypeEnum.BillPayment:
-                        return serviceProvider.GetService<BillPaymentFileService>();
-                    default:
-                        return null;
-                }
-            });
+            services.AddScoped<IFileService, BillPaymentFileService<BillPaymentRowStatus>>();
 
             services.AddScoped<IFileReader, TxtFileReader>();
             services.AddScoped<IFileReader, CsvFileReader>();

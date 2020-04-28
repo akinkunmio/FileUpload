@@ -25,13 +25,13 @@ namespace FileUploadApi.Services
     {
         private readonly IFirsDbRepository _dbRepository;
         private readonly INasRepository _nasRepository;
-        private readonly IBillPaymentService _billPaymentService;
+        private readonly IHttpService _billPaymentService;
         private readonly IBus _bus;
         private readonly ILogger<FirsFileService> _logger;
 
         public FirsFileService(IFirsDbRepository dbRepository,
             INasRepository nasRepository,
-            IBillPaymentService billPaymentService,
+            IHttpService billPaymentService,
             IBus bus,
             ILogger<FirsFileService> logger)
         {
