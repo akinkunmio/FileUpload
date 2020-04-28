@@ -19,11 +19,9 @@ namespace FileUploadAndValidation.UploadServices
     public class BillPaymentHttpService : IBillPaymentService
     {
         private readonly HttpClient _httpClient;
-        private readonly IAppConfig _appConfig;
         private readonly ILogger<BillPaymentHttpService> _logger;
         public BillPaymentHttpService(HttpClient httpClient, IAppConfig appConfig, ILogger<BillPaymentHttpService> logger)
         {
-            _appConfig = appConfig;
             _logger = logger;
             _httpClient = httpClient;
 
@@ -88,7 +86,7 @@ namespace FileUploadAndValidation.UploadServices
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                throw new AppException("Error occured while performing bill payment validation"+ex.Message, (int)HttpStatusCode.InternalServerError);
+                throw new AppException("Error occured while performing bill payment validation"+ex.Message);
             }
         }
 
@@ -168,7 +166,7 @@ namespace FileUploadAndValidation.UploadServices
             catch (Exception ex)
             {
                 _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("Unknown error occured while initiating Bill Payment Initiation"+ex.Message, (int)HttpStatusCode.InternalServerError);
+                throw new AppException("Unknown error occured while initiating Bill Payment Initiation"+ex.Message);
             }
 
         }

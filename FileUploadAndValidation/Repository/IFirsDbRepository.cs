@@ -1,13 +1,13 @@
 ﻿using FileUploadAndValidation.Models;
-using FilleUploadCore.FileReaders;
+using FileUploadApi;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-namespace FileUploadApi
+
+namespace FileUploadAndValidation.Repository
 {
-  
-    public interface IBillPaymentDbRepository<T>
+    public interface IFirsDbRepository
     {
-        Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, List<BillPayment> billPayments, List<FailedBillPayment> invalidBillPayments);
+        Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, List<Firs> billPayments, List<FailedFirs> invalidBillPayments, string validationType);
 
         Task<BatchFileSummary> GetBatchUploadSummary(string batchId);
 

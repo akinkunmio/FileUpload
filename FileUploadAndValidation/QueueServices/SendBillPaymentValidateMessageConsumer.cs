@@ -34,7 +34,7 @@ namespace FileUploadAndValidation.QueueServices
             _billPaymentDbRepository = billPaymentDbRepository;
             _nasRepository = nasRepository;
             _logger = logger;
-            _bulkBillPaymentService = fileService(FileServiceTypeEnum.BulkBillPayment);
+            _bulkBillPaymentService = fileService(FileServiceTypeEnum.BillPayment);
         }
 
         public async Task Consume(ConsumeContext<ValidationResponseData> context)
@@ -43,7 +43,7 @@ namespace FileUploadAndValidation.QueueServices
             var batchId = queueMessage.RequestId;
             try
             {
-                var validationStatuses = await _nasRepository.ExtractValidationResult(new BillPaymentValidateMessage 
+                var validationStatuses = await _nasRepository.ExtractValidationResult(new PaymentValidateMessage 
                     ( 
                         batchId: batchId,
                         resultLocation: queueMessage.ResultLocation, 

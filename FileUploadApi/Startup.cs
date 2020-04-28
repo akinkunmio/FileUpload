@@ -53,7 +53,7 @@ namespace FileUploadApi
             //services.AddScoped<FirsWhtFileService>();
             //services.AddScoped<AutoPayFileService>();
             //services.AddScoped<BulkSmsFileService>();
-            services.AddScoped<BulkBillPaymentFileService>();
+            services.AddScoped<BillPaymentFileService>();
 
             services.AddTransient<Func<FileServiceTypeEnum, IFileService>>(serviceProvider => key => 
             {
@@ -65,8 +65,8 @@ namespace FileUploadApi
                     //    return serviceProvider.GetService<AutoPayFileService>();
                     //case FileServiceTypeEnum.BulkSMS:
                     //    return serviceProvider.GetService<BulkSmsFileService>();
-                    case FileServiceTypeEnum.BulkBillPayment:
-                        return serviceProvider.GetService<BulkBillPaymentFileService>();
+                    case FileServiceTypeEnum.BillPayment:
+                        return serviceProvider.GetService<BillPaymentFileService>();
                     default:
                         return null;
                 }

@@ -11,21 +11,22 @@ using FileUploadAndValidation.UploadServices;
 
 namespace FileUploadApi.Services
 {
-    public interface IFileService
+    public interface IFileService<T>
     {
-        Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts);
-
-        Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult);
-
-        Task<PagedData<BillPaymentRowStatus>> GetBillPaymentResults(string batchId, PaginationFilter pagination);
+        Task<PagedData<RowStatus>> GetPaymentResults(string batchId, PaginationFilter pagination);
 
         Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId);
 
-        Task UpdateStatusFromQueue(BillPaymentValidateMessage queueMessage);
+        Task UpdateStatusFromQueue(PaymentValidateMessage queueMessage);
 
         Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
 
         Task<PagedData<BatchFileSummaryDto>> GetUserUploadSummaries(string userId, PaginationFilter paginationFilter);
     }
-   
+
+    public interface IFileContentValidator
+    {
+        Task<UploadResult> Validate(FileUploadRequest uploadRequest, IEnumerable<Row> rows);
+    }
+
 }

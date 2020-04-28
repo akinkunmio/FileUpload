@@ -27,6 +27,63 @@ namespace FileUploadAndValidation.Helpers
             }
         }
 
+        public static List<ValidationError> ValidateRowCell(Row row, ColumnContract[] columnContracts, bool isValid)
+        {
+            var validationErrors = new List<ValidationError>();
+
+            for (var i = 0; i < columnContracts.Length; i++)
+            {
+
+                var errorMessage = "";
+                ColumnContract contract = columnContracts[i];
+                Column column = row.Columns[i];
+
+                try
+                {
+                    if (contract.Required == true && string.IsNullOrWhiteSpace(column.Value))
+                    {
+                        errorMessage = "Value must be provided";
+                    }
+                    if (contract.Max != default && column.Value != null && contract.Max < column.Value.Length)
+                    {
+                        errorMessage = "Specified maximum length exceeded";
+                    }
+                    if (contract.Min != default && column.Value != null && column.Value.Length < contract.Min)
+                    {
+                        errorMessage = "Specified minimum length not met";
+                    }
+                    if (contract.DataType != default && column.Value != null)
+                    {
+                        if (!GenericHelpers.ColumnDataTypes().ContainsKey(contract.DataType))
+                            errorMessage = "Specified data type is not supported";
+                        try
+                        {
+                            dynamic typedValue = Convert.ChangeType(column.Value, GenericHelpers.ColumnDataTypes()[contract.DataType]);
+                        }
+                        catch (Exception)
+                        {
+                            errorMessage = "Invalid value for data type specified";
+                        }
+                    }
+                    if (!string.IsNullOrWhiteSpace(errorMessage))
+                        throw new ValidationException(
+                            new ValidationError
+                            {
+                                ErrorMessage = errorMessage,
+                                PropertyName = contract.ColumnName
+                            },
+                            errorMessage);
+                }
+                catch (ValidationException exception)
+                {
+                    isValid = false;
+                    validationErrors.Add(exception.ValidationError);
+                }
+            }
+
+            return validationErrors;
+        }
+
         public static Dictionary<string, Type> ColumnDataTypes()
         {
             return new Dictionary<string, Type>() {
@@ -48,7 +105,7 @@ namespace FileUploadAndValidation.Helpers
         public static string GetFileNameFromBatchId(string batchId)
         {
             var array = batchId.Split('_');
-            array = array.Take(array.Count() - 2).ToArray();
+            array = array.Take(array.Count() - 3).ToArray();
             return string.Join("", array);
         }
 

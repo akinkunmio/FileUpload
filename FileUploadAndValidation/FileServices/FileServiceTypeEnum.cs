@@ -6,9 +6,9 @@ namespace FileUploadAndValidation.UploadServices
 {
     public enum FileServiceTypeEnum
     {
-        FirsWht,
+        Firs,
         AutoPay,
-        BulkSMS,
-        BulkBillPayment
+        SMS,
+        BillPayment
     }
 }

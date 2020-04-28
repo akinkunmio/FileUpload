@@ -26,7 +26,7 @@ namespace FileUploadApi.ApiServices
         private readonly IFileReader _csvFileReader;
         private readonly IFileReader _xlsxFileReader;
         private readonly IFileReader _xlsFileReader;
-        private readonly IFileService _firsWhtService;
+        private readonly IFileService _firsService;
         private readonly IFileService _autoPayService;
         private readonly IFileService _bulkBillPaymentService;
         private readonly IFileService _bulkSmsService;
@@ -42,10 +42,10 @@ namespace FileUploadApi.ApiServices
             _csvFileReader = fileReader(FileReaderTypeEnum.CSV);
             _xlsxFileReader = fileReader(FileReaderTypeEnum.XLSX);
             _xlsFileReader = fileReader(FileReaderTypeEnum.XLS);
-            _firsWhtService = fileService(FileServiceTypeEnum.FirsWht);
+            _firsService = fileService(FileServiceTypeEnum.Firs);
             _autoPayService = fileService(FileServiceTypeEnum.AutoPay);
-            _bulkSmsService = fileService(FileServiceTypeEnum.BulkSMS);
-            _bulkBillPaymentService = fileService(FileServiceTypeEnum.BulkBillPayment);
+            _bulkSmsService = fileService(FileServiceTypeEnum.SMS);
+            _bulkBillPaymentService = fileService(FileServiceTypeEnum.BillPayment);
             _nasRepository = nasRepository;
             _dbRepository = dbRepository;
         }
@@ -97,25 +97,26 @@ namespace FileUploadApi.ApiServices
         public async Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream)
         {
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
-            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileExtension, nameof(uploadOptions.FileExtension));
-            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.FileName, nameof(uploadOptions.FileName));
-            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ItemType, nameof(uploadOptions.ItemType));
-            ArgumentGuard.NotDefault(stream.Length, nameof(stream.Length));
+            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ValidationType, nameof(uploadOptions.ValidationType));
 
-            if (!uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
-                && !uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
-                throw new AppException("Invalid Item Type specified");
+            if (!uploadOptions.ValidationType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
+                && !uploadOptions.ValidationType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
+                && !uploadOptions.ValidationType.ToLower().Equals(GenericConstants.WVAT.ToLower())
+                && !uploadOptions.ValidationType.ToLower().Equals(GenericConstants.WHT.ToLower()))                
+                throw new AppException("Invalid Validation Type specified");
 
             if (uploadOptions.UserId == null)
-                throw new AppException("User Id cannot be null");
+                throw new AppException("Id cannot be null");
+
+            if (uploadOptions.ValidationType.ToLower().Equals(GenericConstants.WHT.ToLower()) 
+                || uploadOptions.ValidationType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+                uploadOptions.ContentType = GenericConstants.Firs;
 
             IEnumerable<Row> rows = new List<Row>();
             UploadResult uploadResult = new UploadResult();
 
-            uploadResult.BatchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now);
-
-            uploadOptions.RawFileLocation = await _nasRepository.SaveRawFile(uploadResult.BatchId, stream, uploadOptions.FileExtension);
-            stream.Seek(0, SeekOrigin.Begin);
+            // uploadResult.BatchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now, uploadOptions.ValidationType);
+            var batchId = GenericHelpers.GenerateBatchId(uploadOptions.FileName, DateTime.Now, uploadOptions.ValidationType);
 
             switch (uploadOptions.FileExtension)
             {
@@ -137,8 +138,9 @@ namespace FileUploadApi.ApiServices
 
             switch (uploadOptions.ContentType.ToLower())
             {
-                case "firs_wht":
-                    return await _firsWhtService.Upload(uploadOptions, rows, uploadResult);
+                case "firs":
+                    uploadResult = await _firsService.Upload(uploadOptions, rows, uploadResult);
+                    break;
                 case "autopay":
                     return await _autoPayService.Upload(uploadOptions, rows, uploadResult);
                 case "sms":
