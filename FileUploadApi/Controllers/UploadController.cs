@@ -63,7 +63,7 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Unexpected Error occured during Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!. |" + ex.Message });
+                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!."});
             }
 
             return Ok(uploadResult);
@@ -96,7 +96,9 @@ namespace FileUploadApi.Controllers
             catch (AppException ex)
             {
                 _logger.LogError("Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
+                
                 response.Error = ex.Message;
+                
                 var result = new ObjectResult(new { ex.Message })
                 {
                     StatusCode = ex.StatusCode,
@@ -177,6 +179,7 @@ namespace FileUploadApi.Controllers
                 // _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
                 response.Error = ex.Message;
+                
                 var result = new ObjectResult(new { ex.Message })
                 {
                     StatusCode = ex.StatusCode,
@@ -240,6 +243,7 @@ namespace FileUploadApi.Controllers
 
         private void ValidateUserId(string id)
         {
+            if()
             bool success = long.TryParse(id, out long number);
 
             if (!success)

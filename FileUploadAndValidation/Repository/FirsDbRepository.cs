@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.Repository
 {
-    public class FirsDbRepository : IFirsDbRepository
+    public class FirsDbRepository : IDbRepository<Firs, FailedFirs>
     {
         private readonly IAppConfig _appConfig;
         private readonly ILogger<FirsDbRepository> _logger;

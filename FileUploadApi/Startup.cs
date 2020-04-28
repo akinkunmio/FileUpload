@@ -24,6 +24,7 @@ using MassTransit;
 using GreenPipes;
 using DbUp;
 using System.Reflection;
+using AutoMapper;
 
 namespace FileUploadApi
 {
@@ -46,7 +47,7 @@ namespace FileUploadApi
 
             services.AddSingleton<IAppConfig, AppConfig>();
             services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
-            services.AddScoped<IBillPaymentDbRepository, BillPaymentRepository>();
+            services.AddScoped<IDbRepository, BillPaymentRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IApiUploadService, ApiUploadService>();
 
@@ -72,27 +73,12 @@ namespace FileUploadApi
                 }
             });
 
-            services.AddScoped<TxtFileReader>();
-            services.AddScoped<CsvFileReader>();
-            services.AddScoped<XlsFileReader>();
-            services.AddScoped<XlsxFileReader>();
-            
-            services.AddTransient<Func<FileReaderTypeEnum, IFileReader>>(serviceProvider => key =>
-            {
-                switch (key)
-                {
-                    case FileReaderTypeEnum.TXT:
-                        return serviceProvider.GetService<TxtFileReader>();
-                    case FileReaderTypeEnum.CSV:
-                        return serviceProvider.GetService<CsvFileReader>();
-                    case FileReaderTypeEnum.XLS:
-                        return serviceProvider.GetService<XlsFileReader>();
-                    case FileReaderTypeEnum.XLSX:
-                        return serviceProvider.GetService<XlsxFileReader>();
-                    default:
-                        return null;
-                }
-            });
+            services.AddScoped<IFileReader, TxtFileReader>();
+            services.AddScoped<IFileReader, CsvFileReader>();
+            services.AddScoped<IFileReader, XlsFileReader>();
+            services.AddScoped<IFileReader, XlsxFileReader>();
+
+            services.AddAutoMapper(typeof(Startup));
 
             services.AddHealthChecks();
             services.AddSwaggerGen(config =>

@@ -26,15 +26,15 @@ using static FileUploadAndValidation.Models.UploadResult;
 
 namespace FileUploadApi
 {
-    public class BillPaymentFileService : IFileService, IFileContentValidator
+    public class BillPaymentFileService : IFileService<BillPaymentRowStatus>, IFileContentValidator
     {
-        private readonly IBillPaymentDbRepository _dbRepository;
+        private readonly IDbRepository<BillPayment, FailedBillPayment> _dbRepository;
         private readonly INasRepository _nasRepository;
         private readonly IBillPaymentService _billPaymentService;
         private readonly IBus _bus;
         private readonly ILogger<BillPaymentFileService> _logger;
 
-        public BillPaymentFileService(IBillPaymentDbRepository dbRepository, 
+        public BillPaymentFileService(IDbRepository<BillPayment, FailedBillPayment> dbRepository, 
             INasRepository nasRepository,
             IBillPaymentService billPaymentService,
             IBus bus,
@@ -51,16 +51,16 @@ namespace FileUploadApi
         {
            // Console.WriteLine("Validating rows...");
 
-            List<BillPaymentRowDetail> validRows = new List<BillPaymentRowDetail>();
-            ValidateRowModel<BillPaymentRowDetail> validateRowModel;
-            var failures = new List<Failure<BillPaymentRowDetail>>();
+            List<RowDetail> validRows = new List<RowDetail>();
+            ValidateRowModel validateRowModel;
+            var failures = new List<Failure>();
 
             foreach (var row in contentRows)
             {
                 validateRowModel = await ValidateRow(row, columnContracts);
 
                 if (validateRowModel.IsValid)
-                    validRows.Add( new BillPaymentRowDetail 
+                    validRows.Add( new RowDetail 
                     {  
                         RowNumber = row.Index, 
                         ProductCode = row.Columns[0].Value, 
@@ -73,10 +73,10 @@ namespace FileUploadApi
                     failures.Add(validateRowModel.Failure);
             }
 
-            return new ValidateRowsResult<BillPaymentRowDetail> { Failures = failures, ValidRows = validRows } ;
+            return new ValidateRowsResult<RowDetail> { Failures = failures, ValidRows = validRows } ;
         }
 
-        private async Task<ValidateRowModel<RowDetail>> ValidateRow(Row row, ColumnContract[] columnContracts)
+        private async Task<ValidateRowModel> ValidateRow(Row row, ColumnContract[] columnContracts)
         {
             var isValid = true;
 
@@ -84,7 +84,7 @@ namespace FileUploadApi
 
             var failure = new Failure();
             
-            var rowDetail = new BillPaymentRowDetail 
+            var rowDetail = new RowDetail 
             {
                 RowNumber = row.Index,
                 ProductCode = row.Columns[0].Value,
@@ -96,20 +96,19 @@ namespace FileUploadApi
             if (validationErrors.Count() > 0)
             {
                 failure = 
-                    new Failure<BillPaymentRowDetail>
+                    new Failure
                     {
                         ColumnValidationErrors = validationErrors,
                         Row = rowDetail
                     };
             }
 
-            return await Task.FromResult(new ValidateRowModel<BillPaymentRowDetail> { IsValid = isValid, Failure = failure });
+            return await Task.FromResult(new ValidateRowModel { IsValid = isValid, Failure = failure });
         }
 
-        public async Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows)
+        public async Task<UploadResult> Validate(FileUploadRequest uploadOptions, IEnumerable<Row> rows)
         {
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
-            ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ValidationType, nameof(uploadOptions.ValidationType));
             ArgumentGuard.NotNullOrEmpty(rows, nameof(rows));
 
             var headerRow = new Row();
@@ -128,10 +127,10 @@ namespace FileUploadApi
 
                 var columnContract = new ColumnContract[] { };
 
-                if (uploadOptions.ValidationType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+                if (uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
                     columnContract = ContentTypeColumnContract.BillerPaymentIdWithItem();
 
-                if (uploadOptions.ValidationType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
+                if (uploadOptions.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
                     columnContract = ContentTypeColumnContract.BillerPaymentId();
 
                 GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
@@ -174,19 +173,19 @@ namespace FileUploadApi
                     if (!allEqual)
                         throw new AppException("ProductCode should have same value for all records");
                     
-                    if (uploadOptions.ValidationType
+                    if (uploadOptions.ItemType
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentId.ToLower()))
                     {
                         failedItemTypeValidationBills = billPayments
-                            ?.GroupBy(b => new { b.ProductCode, b.CustomerId })
+                            ?.GroupBy(b => new { b.CustomerId })
                             .Where(g => g.Count() > 1)
                             .SelectMany(r => r);
 
                         foreach (var nonDistinct in failedItemTypeValidationBills)
-                            uploadResult.Failures.Add(new Failure<BillPaymentRowDetail>
+                            uploadResult.Failures.Add(new Failure
                             {
-                                Row = new BillPaymentRowDetail
+                                Row = new RowDetail
                                 {
                                     RowNumber = nonDistinct.RowNumber,
                                     CustomerId = nonDistinct.CustomerId,
@@ -198,14 +197,14 @@ namespace FileUploadApi
                                 {
                                     new ValidationError
                                     {
-                                        PropertyName = "ProductCode, CustomerId",
+                                        PropertyName = "Customer Id",
                                         ErrorMessage = "Values should be unique and not be same"
                                     }
                                 }
                             }); 
                     }
 
-                    if (uploadOptions.ValidationType
+                    if (uploadOptions.ItemType
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
                     {
@@ -215,9 +214,9 @@ namespace FileUploadApi
                             .SelectMany(r => r);
 
                         foreach (var nonDistinct in failedItemTypeValidationBills)
-                            uploadResult.Failures.Add(new Failure<BillPaymentRowDetail>
+                            uploadResult.Failures.Add(new Failure
                             {
-                                Row = new BillPaymentRowDetail
+                                Row = new RowDetail
                                 {
                                     RowNumber = nonDistinct.RowNumber,
                                     CustomerId = nonDistinct.CustomerId,
@@ -229,8 +228,8 @@ namespace FileUploadApi
                                 {
                                     new ValidationError 
                                     { 
-                                        PropertyName = "ItemCode, CustomerId", 
-                                        ErrorMessage = "Values should be unique and not be same" 
+                                        PropertyName = "Item Code and Customer Id", 
+                                        ErrorMessage = "Values should be unique." 
                                     }
                                 }
                             });
@@ -240,7 +239,7 @@ namespace FileUploadApi
                         .Where(b => !failedItemTypeValidationBills.Any(n => n.RowNumber == b.RowNumber))
                         .Select(r => r);
 
-                    uploadResult.ValidRows = billPayments.Select(r => new BillPaymentRowDetail 
+                    uploadResult.ValidRows = billPayments.Select(r => new RowDetail 
                     {
                         RowNumber = r.RowNumber,
                         Amount = r.Amount.ToString(),
@@ -274,7 +273,7 @@ namespace FileUploadApi
                     Status = GenericConstants.PendingValidation,
                     UploadDate = dateTimeNow.ToString(),
                     CustomerFileName = uploadOptions.FileName,
-                    ItemType = uploadOptions.ValidationType,
+                    ItemType = uploadOptions.ItemType,
                     ContentType = uploadOptions.ContentType,
                     NasRawFile = uploadOptions.RawFileLocation,
                     UserId = (long)uploadOptions.UserId
@@ -331,22 +330,24 @@ namespace FileUploadApi
             }
         }
 
-        private string ConstructValidationError(Failure<BillPaymentRowDetail> failure)
+        private string ConstructValidationError(Failure failure)
         {
             var result = new StringBuilder();
-            foreach(var error in failure.ColumnValidationErrors)
+            for(int i = 0; i < failure.ColumnValidationErrors.Count(); i++)
             {
-                result.Append($"{error.PropertyName}: {error.ErrorMessage}");
-                result.Append(", ");
+                result.Append($"{failure.ColumnValidationErrors[i].PropertyName}: {failure.ColumnValidationErrors[i].ErrorMessage}");
+               
+                if(failure.ColumnValidationErrors[i] != null)
+                    result.Append(", ");
             }
 
             return result.ToString();
         }
        
-        public async Task<PagedData<RowStatus>> GetPaymentResults(string batchId, PaginationFilter pagination)
+        public async Task<PagedData<BillPaymentRowStatus>> GetPaymentResults(string batchId, PaginationFilter pagination)
         {
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
-            IEnumerable<RowStatus> billPaymentStatuses = default;
+            IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
             int totalRowCount;
             double validAmountSum;
 
@@ -383,7 +384,7 @@ namespace FileUploadApi
                 throw new AppException($"An error occured while fetching results for {batchId}!.");
             }
 
-            return new PagedData<RowStatus> { Data = billPaymentStatuses, TotalRowsCount = totalRowCount, TotalAmountSum = validAmountSum };
+            return new PagedData<BillPaymentRowStatus> { Data = billPaymentStatuses, TotalRowsCount = totalRowCount, TotalAmountSum = validAmountSum };
         }
 
         public async Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId)
@@ -527,16 +528,17 @@ namespace FileUploadApi
 
             return result;
         }
+
     }
 
-    public class ValidateRowModel<T>
+    public class ValidateRowModel
     {
         public bool IsValid { get; set; }
-        public Failure<T> Failure { get; set; }
+        public Failure Failure { get; set; }
     }
     public class ValidateRowsResult<T>
     {
-        public List<Failure<T>> Failures { get; set; }
+        public List<Failure> Failures { get; set; }
         public List<T> ValidRows { get; set; }
     }
 }

@@ -19,13 +19,13 @@ namespace FileUploadAndValidation.QueueServices
 {
     public class SendBillPaymentValidateMessageConsumer : IConsumer<ValidationResponseData>
     {
-        private readonly IBillPaymentDbRepository _billPaymentDbRepository;
+        private readonly IDbRepository _billPaymentDbRepository;
         private readonly INasRepository _nasRepository;
         private readonly IFileService _bulkBillPaymentService;
         private readonly ILogger<SendBillPaymentValidateMessageConsumer> _logger;
 
 
-        public SendBillPaymentValidateMessageConsumer(IBillPaymentDbRepository billPaymentDbRepository, 
+        public SendBillPaymentValidateMessageConsumer(IDbRepository billPaymentDbRepository, 
             INasRepository nasRepository,
             Func<FileServiceTypeEnum, IFileService> fileService,
             ILogger<SendBillPaymentValidateMessageConsumer> logger
@@ -68,6 +68,7 @@ namespace FileUploadAndValidation.QueueServices
 
                 var fileName = await _nasRepository.SaveValidationResultFile(batchId, validationResult.Data as List<BillPaymentRowStatus>);
 
+                //check for zero valid item and update with required status
                 await _billPaymentDbRepository.UpdateUploadSuccess(batchId, fileName);
             }
             catch (AppException ex)

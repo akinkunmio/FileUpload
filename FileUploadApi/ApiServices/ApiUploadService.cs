@@ -31,12 +31,12 @@ namespace FileUploadApi.ApiServices
         private readonly IFileService _bulkBillPaymentService;
         private readonly IFileService _bulkSmsService;
         private readonly INasRepository _nasRepository;
-        private readonly IBillPaymentDbRepository _dbRepository;
+        private readonly IDbRepository _dbRepository;
 
         public ApiUploadService(Func<FileReaderTypeEnum, IFileReader> fileReader,
             Func<FileServiceTypeEnum, IFileService> fileService, 
             INasRepository nasRepository,
-            IBillPaymentDbRepository dbRepository)
+            IDbRepository dbRepository)
         {
             _txtFileReader = fileReader(FileReaderTypeEnum.TXT);
             _csvFileReader = fileReader(FileReaderTypeEnum.CSV);

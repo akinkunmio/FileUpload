@@ -38,7 +38,7 @@ namespace FileUploadAndValidation.Models
             {
                 FileRef = file,
                 AuthToken = request.Headers["Authorization"],
-                ContentType = request.Query["itemType"],
+               // ContentType = request.Query["itemType"],
                 FileName = file.FileName.Split('.')[0],
                 FileSize = file.Length,
                 FileExtension = Path.GetExtension(file.FileName)

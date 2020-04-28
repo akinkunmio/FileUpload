@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace FileUploadAndValidation.Repository
 {
-    public class BillPaymentRepository : IBillPaymentDbRepository
+    public class BillPaymentRepository : IDbRepository<BillPayment, FailedBillPayment>
     {
         private readonly IAppConfig _appConfig;
         private readonly ILogger<BillPaymentRepository> _logger;
@@ -28,7 +28,7 @@ namespace FileUploadAndValidation.Repository
             _logger = logger;
         }
         
-        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, List<BillPayment> billPayments, List<FailedBillPayment> invalidBillPayments)
+        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, IList<BillPayment> billPayments, IList<FailedBillPayment> invalidBillPayments, string itemType = null)
         {
             try
             {

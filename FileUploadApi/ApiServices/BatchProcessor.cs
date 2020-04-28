@@ -24,16 +24,15 @@ namespace FileUploadApi.ApiServices
     public class BatchProcessor : IBatchProcessor
     {
         private readonly IFileContentValidator _fileContentValidator;
-        private readonly INasRepository _nasRepository;
         private readonly IBatchRepository _batchRepository;
-        private readonly IFileReader _fileReader;
+        private readonly IEnumerable<IFileReader> _fileReader;
 
-
-        public BatchProcessor(IBatchRepository batchRepository, INasRepository nasRepository, IFileContentValidator fileContentValidator)
+        public BatchProcessor(IBatchRepository batchRepository, IFileContentValidator fileContentValidator,
+            IEnumerable<IFileReader> fileReader)
         {
-            _nasRepository = nasRepository;
             _batchRepository = batchRepository;
             _fileContentValidator = fileContentValidator;
+            _fileReader = fileReader;
         }
 
         public async Task<UploadResult> UploadFileAsync(HttpRequest httpRequest)
@@ -48,10 +47,7 @@ namespace FileUploadApi.ApiServices
                 && !request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower()))
                 throw new AppException("Invalid Content Type specified");
 
-            if (request.UserId == null)
-                throw new AppException("Id cannot be null");
-
-            //use either validationtype or contentype name
+              //use either validationtype or contentype name
             if (request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower())
                 || request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
                 request.ContentType = GenericConstants.Firs;
@@ -63,53 +59,32 @@ namespace FileUploadApi.ApiServices
 
             using(var contentStream = request.FileRef.OpenReadStream())
             {
-                var rawFileLocation = _nasRepository.SaveRawFile(batchId, contentStream, request.FileExtension);
-                rows = _fileReader.Read(contentStream);
+                rows = GetRows(request.FileExtension, contentStream);
+
                 uploadResult = await _fileContentValidator.Validate(request,rows);
 
-                await _batchRepository.Save(batchId, uploadResult.ValidRows, uploadResult.Failures);
+                await _batchRepository.Save(batchId, request, uploadResult.ValidRows, uploadResult.Failures);
 
                 return uploadResult;
             }
         }
 
-        //private void Switch()
-        //{
-        //    switch (uploadOptions.FileExtension)
-        //    {
-        //        case "txt":
-        //            rows = _txtFileReader.Read(stream);
-        //            break;
-        //        case "csv":
-        //            rows = _csvFileReader.Read(stream);
-        //            break;
-        //        case "xlsx":
-        //            rows = _xlsxFileReader.Read(stream);
-        //            break;
-        //        case "xls":
-        //            rows = _xlsFileReader.Read(stream);
-        //            break;
-        //        default:
-        //            throw new AppException("File extension not supported!.");
-        //    }
-
-        //    switch (uploadOptions.ContentType.ToLower())
-        //    {
-        //        case "firs":
-        //            uploadResult = await _firsService.Upload(uploadOptions, rows, uploadResult);
-        //            break;
-        //        case "autopay":
-        //            return await _autoPayService.Upload(uploadOptions, rows, uploadResult);
-        //        case "sms":
-        //            return await _bulkSmsService.Upload(uploadOptions, rows, uploadResult);
-        //        case "billpayment":
-        //            uploadResult = await _bulkBillPaymentService.Upload(uploadOptions, rows, uploadResult);
-        //            break;
-        //        default:
-        //            throw new AppException("Content type not supported!.");
-        //    }
-        //}
+        private IEnumerable<Row> GetRows(string fileExtension, Stream contentStream)
+        {
+            switch (fileExtension)
+            {
+                case "txt":
+                    return _fileReader.ToArray()[0].Read(contentStream);
+                case "csv":
+                    return _fileReader.ToArray()[1].Read(contentStream);
+                case "xlsx":
+                    return _fileReader.ToArray()[2].Read(contentStream);
+                case "xls":
+                    return _fileReader.ToArray()[3].Read(contentStream);
+                default:
+                    throw new AppException("File extension not supported!.");
+            }
+        }
 
     }
-
 }

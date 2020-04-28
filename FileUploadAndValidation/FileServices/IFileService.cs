@@ -13,7 +13,7 @@ namespace FileUploadApi.Services
 {
     public interface IFileService<T>
     {
-        Task<PagedData<RowStatus>> GetPaymentResults(string batchId, PaginationFilter pagination);
+        Task<PagedData<T>> GetPaymentResults(string batchId, PaginationFilter pagination);
 
         Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId);
 
