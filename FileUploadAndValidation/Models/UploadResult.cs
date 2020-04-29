@@ -32,6 +32,14 @@ namespace FileUploadAndValidation.Models
         public IList<ValidationError> ColumnValidationErrors { get; set; }
     }
 
+public class FirsWhtRowDetail : RowDetail 
+{
+    
+}
+public class FirsRowDetail : RowDetail 
+{
+
+}
     public class RowDetail
     {
         public int RowNumber { get; set; }

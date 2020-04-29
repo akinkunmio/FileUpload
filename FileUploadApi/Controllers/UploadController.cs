@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using MimeMapping;
 using FilleUploadCore.FileReaders;
+using System.Collections.Generic;
 
 namespace FileUploadApi.Controllers
 {
@@ -25,12 +26,13 @@ namespace FileUploadApi.Controllers
         private readonly IBatchProcessor _batchProcessor;
         private readonly IApiUploadService _uploadService;
         private readonly ILogger<UploadController> _logger;
+        private readonly IEnumerable<IFileReader> _fileReaders;
 
-
-        public UploadController(IBatchProcessor batchProcessor, ILogger<UploadController> logger)
+        public UploadController(IBatchProcessor batchProcessor, IEnumerable<IFileReader> fileReaders , ILogger<UploadController> logger)
         {
             _logger = logger;
             _batchProcessor = batchProcessor;
+            _fileReaders = fileReaders;
         }
 
         [HttpPost("uploadfile/{validationType}")]
@@ -38,13 +40,17 @@ namespace FileUploadApi.Controllers
         {
             var uploadResult = new UploadResult();
 
-            var userId = Request.Form["id"].ToString();
-
-            ValidateUserId(userId);
-
             try
             {
-                await _batchProcessor.UploadFileAsync(Request);
+                IFileUploadRequest request = new FileUploadRequest(Request);
+                ValidateUserId(request.UserId.ToString());
+                IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");
+
+                using (var contentStream = request.FileRef.OpenReadStream())
+                {
+                    IEnumerable<Row> rows = fileContentReader.Read(contentStream);
+                    uploadResult = await _batchProcessor.UploadFileAsync(rows, request);
+                }
             }
             catch (AppException ex)
             {
@@ -62,7 +68,6 @@ namespace FileUploadApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("An Unexpected Error occured during Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-
                 return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!."});
             }
 
@@ -243,13 +248,6 @@ namespace FileUploadApi.Controllers
 
         private void ValidateUserId(string id)
         {
-            if()
-            bool success = long.TryParse(id, out long number);
-
-            if (!success)
-            {
-                throw new AppException($"Invalid value '{id}' passed!.");
-            }
         }
 
         [HttpPost("user/uploads")]

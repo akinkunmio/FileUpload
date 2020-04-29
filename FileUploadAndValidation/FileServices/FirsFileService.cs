@@ -17,19 +17,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static FileUploadAndValidation.Models.UploadResult<FileUploadAndValidation.Models.FirsRowDetail>;
+//using static FileUploadAndValidation.Models.UploadResult<FileUploadAndValidation.Models.FirsRowDetail>;
 
 namespace FileUploadApi.Services
 {
-    public class FirsFileService : IFileService<FirsRowDetail>
+    public class FirsFileService //: IFileService<FirsRowDetail>
     {
-        private readonly IFirsDbRepository _dbRepository;
+        private readonly IDbRepository<Firs, FailedFirs> _dbRepository;
         private readonly INasRepository _nasRepository;
         private readonly IBillPaymentService _billPaymentService;
         private readonly IBus _bus;
         private readonly ILogger<FirsFileService> _logger;
 
-        public FirsFileService(IFirsDbRepository dbRepository,
+        public FirsFileService(IDbRepository<Firs, FailedFirs> dbRepository,
             INasRepository nasRepository,
             IBillPaymentService billPaymentService,
             IBus bus,
@@ -49,14 +49,14 @@ namespace FileUploadApi.Services
             var validRows = new List<FirsRowDetail>();
           
             ValidateRowModel<FirsRowDetail> validateRowModel;
-            var failures = new List<Failure<FirsRowDetail>>();
+            var failures = new List<Failure/*<FirsRowDetail>*/>();
 
             foreach (var row in contentRows)
             {
                 validateRowModel = await ValidateRow(validationType, row, columnContracts);
 
                 if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WHT.ToLower()))
-                    validRows.Add(new FirsWhtRowDetail
+                    validRows.Add(new FirsRowDetail
                     {
                         RowNumber = row.Index,
                         BeneficiaryTin = row.Columns[0].Value,
@@ -72,7 +72,7 @@ namespace FileUploadApi.Services
                     });
                 else if ( validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
                 {
-                    validRows.Add(new FirsWVatRowDetail
+                    validRows.Add(new FirsRowDetail
                     {
                         RowNumber = row.Index,
                         ContractorName = row.Columns[0].Value,
@@ -105,11 +105,11 @@ namespace FileUploadApi.Services
 
             var validationErrors = GenericHelpers.ValidateRowCell(row, columnContracts, isValid);
 
-            var failure = new Failure<FirsRowDetail>();
+            var failure = new Failure(); // Failure<FirsRowDetail>();
             var rowDetail = new FirsRowDetail();
 
             if (validationType.ToLower().Equals(GenericConstants.WHT.ToLower()))
-                rowDetail = new FirsWhtRowDetail
+                rowDetail = new FirsRowDetail
                 {
                     RowNumber = row.Index,
                     BeneficiaryTin = row.Columns[0].Value,
@@ -125,7 +125,7 @@ namespace FileUploadApi.Services
                 };
             else if (validationType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
             {
-                rowDetail = new FirsWVatRowDetail
+                rowDetail = new FirsRowDetail
                 {
                     RowNumber = row.Index,
                     ContractorName = row.Columns[0].Value,
@@ -148,7 +148,7 @@ namespace FileUploadApi.Services
             if (validationErrors.Count() > 0)
             {
                 failure =
-                    new Failure<FirsRowDetail>
+                    new Failure() //<FirsRowDetail>
                     {
                         ColumnValidationErrors = validationErrors,
                         Row = rowDetail
@@ -158,14 +158,14 @@ namespace FileUploadApi.Services
             return await Task.FromResult(new ValidateRowModel<FirsRowDetail> { IsValid = isValid, Failure = failure });
         }
 
-        public async Task<UploadResult<FirsRowDetail>> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows)
+        public async Task<UploadResult/*<FirsRowDetail>*/> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows)
         {
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ValidationType, nameof(uploadOptions.ValidationType));
             ArgumentGuard.NotNullOrEmpty(rows, nameof(rows));
 
             var headerRow = new Row();
-            var uploadResult = new UploadResult<FirsRowDetail>();
+            var uploadResult = new UploadResult();
             IEnumerable<Firs> firsPayments = new List<Firs>();
             IEnumerable<Firs> failedItemTypeValidationBills = new List<Firs>();
 
@@ -193,7 +193,7 @@ namespace FileUploadApi.Services
                 var validateRowsResult = await ValidateContent(uploadOptions.ValidationType, contentRows, columnContract);
 
                 uploadResult.Failures = validateRowsResult.Failures;
-                uploadResult.ValidRows = validateRowsResult.ValidRows;
+                //uploadResult.ValidRows = validateRowsResult.ValidRows;
 
                 var dateTimeNow = DateTime.Now;
 
@@ -225,7 +225,7 @@ namespace FileUploadApi.Services
                     }
                     else if (uploadOptions.ValidationType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
                     {
-                        var firsWVatValidRows = (IList<FirsWVatRowDetail>)uploadResult.ValidRows;
+                        var firsWVatValidRows = (IList<FirsRowDetail>)uploadResult.ValidRows;
 
                         firsPayments = firsWVatValidRows.Select(r => new FirsWVat
                         {
@@ -340,7 +340,7 @@ namespace FileUploadApi.Services
                 }
 
 
-                IEnumerable<FailedFirs> failedFirs = default;
+                IEnumerable<FailedFirs> failedFirs = new List<FailedFirs>();
                 if (uploadOptions.ValidationType.ToLower().Equals(GenericConstants.WHT.ToLower()))
                 {
                     var firsWhtFailedRows = (IList<FirsWhtRowDetail>)uploadResult.Failures;
@@ -364,7 +364,7 @@ namespace FileUploadApi.Services
                 }
                 else if (uploadOptions.ValidationType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
                 {
-                    var firsWVatFailedRows = (IList<FirsWVatRowDetail>)uploadResult.Failures;
+                    var firsWVatFailedRows = (IList<FirsRowDetail>)uploadResult.Failures;
 
                     failedFirs = firsWVatFailedRows.Select(r => new FailedFirsWVat
                     {
@@ -404,15 +404,15 @@ namespace FileUploadApi.Services
                     UserId = (long)uploadOptions.UserId
                 }, firsPayments.ToList(), failedFirs.ToList(), uploadOptions.ValidationType);
 
-                var toValidatePayments = firsPayments.Select(f =>
+                var toValidatePayments = firsPayments.Select(b =>
                 {
                     return new NasBillPaymentDto
                     {
-                        amount = b.Amount,
-                        customer_id = b.CustomerId,
-                        row = b.RowNumber,
-                        item_code = b.ItemCode,
-                        product_code = b.ProductCode,
+                        // amount = b.Amount,
+                        // customer_id = b.CustomerId,
+                        // row = b.RowNumber,
+                        // item_code = b.ItemCode,
+                        // product_code = b.ProductCode,
                     };
                 });
 
@@ -434,7 +434,7 @@ namespace FileUploadApi.Services
                     });
 
                     var validationResult = await GetPaymentResults(uploadResult.BatchId, new PaginationFilter(uploadResult.RowsCount, 1));
-                    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, validationResult.Data);
+                    validationResultFileName = ""; //await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, validationResult.Data);
 
                     await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
                 }
@@ -451,7 +451,8 @@ namespace FileUploadApi.Services
             {
                 _logger.LogError("Error occured while uploading bill payment file with error message {ex.message} | {ex.StackTrace}", exception.Message, exception.StackTrace);
                 uploadResult.ErrorMessage = exception.Message;
-                throw new AppException(exception.Message, uploadResult);
+                //throw new AppException(exception.Message, uploadResult);
+                throw;
             }
         }
 
@@ -481,7 +482,7 @@ namespace FileUploadApi.Services
             throw new NotImplementedException();
         }
 
-        private string ConstructValidationError(Failure<FirsRowDetail> failure)
+        private string ConstructValidationError(/*Failure<FirsRowDetail>*/ Failure failure)
         {
             var result = new StringBuilder();
             foreach (var error in failure.ColumnValidationErrors)

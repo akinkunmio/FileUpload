@@ -26,7 +26,8 @@ namespace FileUploadApi.Services
 
     public interface IFileContentValidator
     {
-        Task<UploadResult> Validate(FileUploadRequest uploadRequest, IEnumerable<Row> rows);
+        Task<UploadResult> Validate(IEnumerable<Row> rows);
+        bool CanProcess(string contentType);
     }
 
 }

@@ -106,7 +106,7 @@ namespace FileUploadApi
             return await Task.FromResult(new ValidateRowModel { IsValid = isValid, Failure = failure });
         }
 
-        public async Task<UploadResult> Validate(FileUploadRequest uploadOptions, IEnumerable<Row> rows)
+        public async Task<UploadResult> Validate(IEnumerable<Row> rows, IFileUploadRequest uploadOptions)
         {
             ArgumentGuard.NotNullOrWhiteSpace(uploadOptions.ContentType, nameof(uploadOptions.ContentType));
             ArgumentGuard.NotNullOrEmpty(rows, nameof(rows));
@@ -347,7 +347,7 @@ namespace FileUploadApi
         public async Task<PagedData<BillPaymentRowStatus>> GetPaymentResults(string batchId, PaginationFilter pagination)
         {
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
-            IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
+            IEnumerable<BillPaymentRowStatus> billPaymentStatuses = new List<BillPaymentRowStatus>();
             int totalRowCount;
             double validAmountSum;
 
@@ -529,8 +529,20 @@ namespace FileUploadApi
             return result;
         }
 
+        public Task<UploadResult> Validate(IEnumerable<Row> rows)
+        {
+            Validate(rows, null);
+        }
+
+        public bool CanProcess(string contentType)
+        {
+            return contentType == FileServiceTypeEnum.BillPayment.ToString();
+        }
     }
 
+public class ValidateRowModel<T> : ValidateRowModel
+    {
+    }
     public class ValidateRowModel
     {
         public bool IsValid { get; set; }

@@ -19,15 +19,15 @@ namespace FileUploadAndValidation.QueueServices
 {
     public class SendBillPaymentValidateMessageConsumer : IConsumer<ValidationResponseData>
     {
-        private readonly IDbRepository _billPaymentDbRepository;
+        private readonly IDbRepository<BillPayment, Failure> _billPaymentDbRepository;
         private readonly INasRepository _nasRepository;
-        private readonly IFileService _bulkBillPaymentService;
+        private readonly IFileService<BillPayment> _bulkBillPaymentService;
         private readonly ILogger<SendBillPaymentValidateMessageConsumer> _logger;
 
 
-        public SendBillPaymentValidateMessageConsumer(IDbRepository billPaymentDbRepository, 
+        public SendBillPaymentValidateMessageConsumer(IDbRepository<BillPayment, Failure> billPaymentDbRepository, 
             INasRepository nasRepository,
-            Func<FileServiceTypeEnum, IFileService> fileService,
+            Func<FileServiceTypeEnum, IFileService<BillPayment>> fileService,
             ILogger<SendBillPaymentValidateMessageConsumer> logger
             )
         {
@@ -64,9 +64,9 @@ namespace FileUploadAndValidation.QueueServices
                         RowStatuses = validationStatuses.ToList()
                     });
                     
-                var validationResult = await _bulkBillPaymentService.GetBillPaymentResults(batchId, new PaginationFilter(validationStatuses.Count(), 1));
+                var validationResult = new List<BillPaymentRowStatus>();// await _bulkBillPaymentService.GetBillPaymentResults(batchId, new PaginationFilter(validationStatuses.Count(), 1));
 
-                var fileName = await _nasRepository.SaveValidationResultFile(batchId, validationResult.Data as List<BillPaymentRowStatus>);
+                var fileName = await _nasRepository.SaveValidationResultFile(batchId, validationResult /*validationResult.Data*/ as List<BillPaymentRowStatus>);
 
                 //check for zero valid item and update with required status
                 await _billPaymentDbRepository.UpdateUploadSuccess(batchId, fileName);

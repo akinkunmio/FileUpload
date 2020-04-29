@@ -25,6 +25,7 @@ using GreenPipes;
 using DbUp;
 using System.Reflection;
 using AutoMapper;
+using FileUploadAndValidation.Models;
 
 namespace FileUploadApi
 {
@@ -47,32 +48,21 @@ namespace FileUploadApi
 
             services.AddSingleton<IAppConfig, AppConfig>();
             services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
-            services.AddScoped<IDbRepository, BillPaymentRepository>();
+            services.AddScoped<IDbRepository<BillPayment, FailedBillPayment>, BillPaymentRepository>();
+            services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<INasRepository, NasRepository>();
-            services.AddScoped<IApiUploadService, ApiUploadService>();
+            services.AddScoped<IBatchProcessor, BatchProcessor>();
+            //services.AddScoped<IApiUploadService, ApiUploadService>();
 
             //services.AddScoped<FirsWhtFileService>();
             //services.AddScoped<AutoPayFileService>();
             //services.AddScoped<BulkSmsFileService>();
             services.AddScoped<BillPaymentFileService>();
 
-            services.AddTransient<Func<FileServiceTypeEnum, IFileService>>(serviceProvider => key => 
-            {
-                switch (key)
-                {
-                    //case FileServiceTypeEnum.FirsWht:
-                    //    return serviceProvider.GetService<FirsWhtFileService>();
-                    //case FileServiceTypeEnum.AutoPay:
-                    //    return serviceProvider.GetService<AutoPayFileService>();
-                    //case FileServiceTypeEnum.BulkSMS:
-                    //    return serviceProvider.GetService<BulkSmsFileService>();
-                    case FileServiceTypeEnum.BillPayment:
-                        return serviceProvider.GetService<BillPaymentFileService>();
-                    default:
-                        return null;
-                }
-            });
+            //Setup File Content Validators
+            services.AddScoped<IFileContentValidator, BillPaymentFileService>();
 
+            //Setup File Readers per file extension
             services.AddScoped<IFileReader, TxtFileReader>();
             services.AddScoped<IFileReader, CsvFileReader>();
             services.AddScoped<IFileReader, XlsFileReader>();
@@ -139,6 +129,7 @@ namespace FileUploadApi
 
         private void PerformScriptUpdate()
         {
+            return;
                 var connString = Configuration["ConnectionStrings:UploadServiceConnectionString"];
                 var upgraderTran = DeployChanges.To
                     .SqlDatabase(connString)

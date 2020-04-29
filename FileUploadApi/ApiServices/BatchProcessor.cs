@@ -23,68 +23,47 @@ namespace FileUploadApi.ApiServices
 {
     public class BatchProcessor : IBatchProcessor
     {
-        private readonly IFileContentValidator _fileContentValidator;
+        private readonly IEnumerable<IFileContentValidator> _fileContentValidators;
         private readonly IBatchRepository _batchRepository;
-        private readonly IEnumerable<IFileReader> _fileReader;
 
-        public BatchProcessor(IBatchRepository batchRepository, IFileContentValidator fileContentValidator,
-            IEnumerable<IFileReader> fileReader)
+        public BatchProcessor(IBatchRepository batchRepository, IEnumerable<IFileContentValidator> fileContentValidators)
         {
             _batchRepository = batchRepository;
-            _fileContentValidator = fileContentValidator;
-            _fileReader = fileReader;
+            _fileContentValidators = fileContentValidators;
         }
 
-        public async Task<UploadResult> UploadFileAsync(HttpRequest httpRequest)
+        public async Task<UploadResult> UploadFileAsync(IEnumerable<Row> rows, IFileUploadRequest request)
         {
-            var request = FileUploadRequest.FromRequest(httpRequest);
-
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
 
-            if (!request.ContentType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
-                && !request.ContentType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
-                && !request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower())
-                && !request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            if (!ContentSupported(request.ContentType))
                 throw new AppException("Invalid Content Type specified");
 
-              //use either validationtype or contentype name
+            //use either validationtype or contentype name
             if (request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower())
                 || request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
                 request.ContentType = GenericConstants.Firs;
 
-            IEnumerable<Row> rows = default;
-            var uploadResult = new UploadResult();
+            var batchId = GenericHelpers.GenerateBatchId("QTB", DateTime.Now);
+            var _fileContentValidator = _fileContentValidators.FirstOrDefault(r => r.CanProcess(request.ContentType)) ?? throw new AppException("Invalid file content");
+            var uploadResult = await _fileContentValidator.Validate(rows);
+            await _batchRepository.Save(batchId, request, uploadResult.ValidRows, uploadResult.Failures);
 
-            var batchId = GenericHelpers.GenerateBatchId(request.FileName, DateTime.Now);
-
-            using(var contentStream = request.FileRef.OpenReadStream())
-            {
-                rows = GetRows(request.FileExtension, contentStream);
-
-                uploadResult = await _fileContentValidator.Validate(request,rows);
-
-                await _batchRepository.Save(batchId, request, uploadResult.ValidRows, uploadResult.Failures);
-
-                return uploadResult;
-            }
+            return uploadResult;
         }
 
-        private IEnumerable<Row> GetRows(string fileExtension, Stream contentStream)
+        private bool ContentSupported(string contentType)
         {
-            switch (fileExtension)
-            {
-                case "txt":
-                    return _fileReader.ToArray()[0].Read(contentStream);
-                case "csv":
-                    return _fileReader.ToArray()[1].Read(contentStream);
-                case "xlsx":
-                    return _fileReader.ToArray()[2].Read(contentStream);
-                case "xls":
-                    return _fileReader.ToArray()[3].Read(contentStream);
-                default:
-                    throw new AppException("File extension not supported!.");
-            }
-        }
+            if (string.IsNullOrEmpty(contentType)) return false;
 
+            var supported = new[] {
+                GenericConstants.BillPaymentIdPlusItem.ToLower(),
+                GenericConstants.BillPaymentId.ToLower(),
+                GenericConstants.WVAT.ToLower(),
+                GenericConstants.WHT.ToLower()
+            };
+
+            return supported.Any(c => c == contentType.ToLower());
+        }
     }
 }

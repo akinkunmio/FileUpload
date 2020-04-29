@@ -3,10 +3,12 @@ using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation.Utils;
 using FileUploadApi;
+using FilleUploadCore.Exceptions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -48,7 +50,7 @@ namespace FileUploadAndValidation.Repository
             throw new NotImplementedException();
         }
 
-        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, List<Firs> firsList, List<FailedFirs> failedFirsList, string validationType)
+        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, IList<Firs> firsList, IList<FailedFirs> failedFirsList, string validationType)
         {
             try
             {
@@ -140,20 +142,20 @@ namespace FileUploadAndValidation.Repository
                                     await connection.ExecuteAsync(sql: "sp_insert_valid_firs_wvat",
                                         param: new
                                         {
-                                            beneficiary_address = firsWht.BeneficiaryAddress,
-                                            beneficiary_name = firsWht.BeneficiaryName,
-                                            beneficiary_tin = firsWht.BeneficiaryTin,
-                                            contract_amount = firsWht.ContractAmount,
-                                            contract_date = firsWht.ContractDate,
-                                            contract_type = firsWht.ContractType,
-                                            wht_rate = firsWht.WhtRate,
-                                            wht_amount = firsWht.WhtAmount,
-                                            period_covered = firsWht.PeriodCovered,
-                                            invoice_number = firsWht.InvoiceNumber,
-                                            created_date = firsWht.CreatedDate,
-                                            row_num = firsWht.RowNumber,
-                                            transactions_summary_Id = transactionSummaryId,
-                                            initial_validation_status = "Valid"
+                                            // beneficiary_address = firsWht.BeneficiaryAddress,
+                                            // beneficiary_name = firsWht.BeneficiaryName,
+                                            // beneficiary_tin = firsWht.BeneficiaryTin,
+                                            // contract_amount = firsWht.ContractAmount,
+                                            // contract_date = firsWht.ContractDate,
+                                            // contract_type = firsWht.ContractType,
+                                            // wht_rate = firsWht.WhtRate,
+                                            // wht_amount = firsWht.WhtAmount,
+                                            // period_covered = firsWht.PeriodCovered,
+                                            // invoice_number = firsWht.InvoiceNumber,
+                                            // created_date = firsWht.CreatedDate,
+                                            // row_num = firsWht.RowNumber,
+                                            // transactions_summary_Id = transactionSummaryId,
+                                            // initial_validation_status = "Valid"
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
