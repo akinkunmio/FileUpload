@@ -33,10 +33,10 @@ namespace FileUploadAndValidation.Models
         public static FileUploadRequest FromRequest(HttpRequest request)
         {
             var file = request.Form.Files.First();
-            var userId = request.Form["id"].ToString();
-            var productCode = request.Form["productCode"].ToString();
-            var productName = request.Form["productName"].ToString();
-            var businessTin = request.Form["businessTin"].ToString();
+            var userId = request.Form["id"].ToString() ?? "255";
+            var productCode = request.Form["productCode"].ToString() ?? "DSTV";
+            var productName = request.Form["productName"].ToString() ?? "DSTV";
+            var businessTin = request.Form["businessTin"].ToString() ?? "";
 
             return new FileUploadRequest
             {

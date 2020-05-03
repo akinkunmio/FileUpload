@@ -272,12 +272,15 @@ namespace FileUploadAndValidation.Models
 
         public double TotalAmountSum { get; set; }
 
-        public bool Valid { get; set; }
+        //public bool Valid { get; set; }
 
-        public bool Invalid { get; set; }
+        //public bool Invalid { get; set; }
 
         public string ContentType { get; set; }
 
         public string ItemType { get; set; }
+        public string ProductCode { get; set; }
+        public string ProductName { get; set; }
+        public string FileName { get; set; }
     }
 }

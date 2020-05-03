@@ -32,6 +32,14 @@ namespace FileUploadAndValidation.Models
         public string ContentType { get; set; }
 
         public string ItemType { get; set; }
+
+        public string ProductCode { get; set; }
+
+        public string ProductName { get; set; }
+
+        public string BatchId { get; set; }
+
+        public string FileName { get; set; }
     }
 
     public class PaginationFilter

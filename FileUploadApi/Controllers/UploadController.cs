@@ -32,8 +32,8 @@ namespace FileUploadApi.Controllers
             _batchProcessor = batchProcessor;
         }
 
-        [HttpPost("uploadfile/{validationType}")]
-        public async Task<IActionResult> PostBulkBillPaymentAsync(string validationType)
+        [HttpPost("uploadfile/{contentType}/{itemType}")]
+        public async Task<IActionResult> PostBulkUploadPaymentAsync()
         {
             var uploadResult = new UploadResult();
 
@@ -72,9 +72,11 @@ namespace FileUploadApi.Controllers
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
             var paginationFilter =
-               new PaginationFilter(pagination.PageSize, pagination.PageNumber, pagination.Status, pagination.ContentType, pagination.ItemType);
-
-            string fileName;
+               new PaginationFilter(pagination.PageSize, 
+               pagination.PageNumber, 
+               pagination.Status, 
+               pagination.ContentType, 
+               pagination.ItemType);
 
             var response = new PagedResponse<dynamic>()
             {
@@ -91,8 +93,10 @@ namespace FileUploadApi.Controllers
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
                 response.ValidAmountTotal = result.TotalAmountSum;
-
-                fileName = GenericHelpers.GetFileNameFromBatchId(batchId);
+                response.ProductName = result.ProductName;
+                response.ProductCode = result.ProductCode;
+                response.FileName = result.FileName;
+                response.BatchId = batchId;
             }
             catch (AppException ex)
             {
@@ -116,7 +120,7 @@ namespace FileUploadApi.Controllers
                 return BadRequest("Unknown error occured. Please retry!. |" + ex.Message);
             }
 
-            return Ok(new { batchId, response, fileName });
+            return Ok(response);
         }
 
         //[HttpGet("{batchId}/summary")]
@@ -260,7 +264,14 @@ namespace FileUploadApi.Controllers
         public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] PaginationQuery pagination)
         {
             var paginationFilter =
-                new PaginationFilter { PageSize = pagination.PageSize, PageNumber = pagination.PageNumber };
+                new PaginationFilter 
+                { 
+                    PageSize = pagination.PageSize, 
+                    PageNumber = pagination.PageNumber,
+                    ContentType = pagination.ContentType,
+                    ItemType = pagination.ItemType,
+                    Status = pagination.Status
+                };
 
             var response = new PagedResponse<BatchFileSummaryDto>()
             {

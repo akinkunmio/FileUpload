@@ -52,6 +52,7 @@ namespace FileUploadApi
             services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
 
             services.AddScoped<IBatchRepository, BatchRepository>();
+            services.AddScoped<IBatchProcessor, BatchProcessor>();
 
             services.AddSingleton<IAppConfig, AppConfig>();
             services.AddHttpClient<IHttpService, HttpService>();
@@ -115,27 +116,27 @@ namespace FileUploadApi
             services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
             services.AddSingleton<IHostedService, BusService>();
 
-            PerformScriptUpdate();
+            //PerformScriptUpdate();
         }
 
-        private void PerformScriptUpdate()
-        {
-                var connString = Configuration["ConnectionStrings:UploadServiceConnectionString"];
-                var upgraderTran = DeployChanges.To
-                    .SqlDatabase(connString)
-                    .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly(),
-                        name => name.StartsWith("FileUploadApi.Scripts"))
-                    .LogToConsole()
-                    .Build();
+        //private void PerformScriptUpdate()
+        //{
+        //        var connString = Configuration["ConnectionStrings:UploadServiceConnectionString"];
+        //        var upgraderTran = DeployChanges.To
+        //            .SqlDatabase(connString)
+        //            .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly(),
+        //                name => name.StartsWith("FileUploadApi.Scripts"))
+        //            .LogToConsole()
+        //            .Build();
 
-                var resultEnt = upgraderTran.PerformUpgrade();
-                if (!resultEnt.Successful)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(resultEnt.Error);
-                    Console.ResetColor();
-                }
-        }
+        //        var resultEnt = upgraderTran.PerformUpgrade();
+        //        if (!resultEnt.Successful)
+        //        {
+        //            Console.ForegroundColor = ConsoleColor.Red;
+        //            Console.WriteLine(resultEnt.Error);
+        //            Console.ResetColor();
+        //        }
+        //}
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostingEnvironment env, ILoggerFactory loggerFactory)

@@ -190,16 +190,19 @@ namespace FileUploadApi.ApiServices
 
             //IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             //IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
-            int totalRowCount;
-            double validAmountSum;
-
+            //int totalRowCount;
+            //double validAmountSum;
             try
             {
+                var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
+
                 var paymentStatus = await _dbRepository.GetPaymentRowStatuses(batchId, pagination);
 
-                totalRowCount = paymentStatus.TotalRowsCount;
-
-                validAmountSum = paymentStatus.ValidAmountSum;
+                paymentStatuses.TotalRowsCount = paymentStatus.TotalRowsCount;
+                paymentStatuses.TotalAmountSum = paymentStatus.ValidAmountSum;
+                paymentStatuses.ProductCode = fileSummary.ProductCode ?? "";
+                paymentStatuses.ProductName = fileSummary.ProductName ??  "";
+                paymentStatuses.FileName = fileSummary.FileName ?? GenericHelpers.GetFileNameFromBatchId(batchId);
 
                 if (pagination.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
                 || pagination.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
