@@ -5,19 +5,19 @@ using System.Threading.Tasks;
 namespace FileUploadApi
 {
   
-    public interface IDbRepository<T>
+    public interface IDbRepository
     {
         Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, IList<RowDetail> billPayments, IList<Failure> invalidBillPayments, string itemType = null);
 
         Task<BatchFileSummary> GetBatchUploadSummary(string batchId);
 
-        Task<RowStatusDtoObject<T>> GetBillPaymentRowStatuses(string batchId, PaginationFilter pagination);
+        Task<RowStatusDtoObject> GetPaymentRowStatuses(string batchId, PaginationFilter pagination);
 
         Task UpdateValidationResponse(UpdateValidationResponseModel updateBillPayments);
 
         Task<long> GetBatchUploadSummaryId(string batchId);
 
-        Task<IEnumerable<ConfirmedBillPaymentDto>> GetConfirmedBillPayments(string batchId);
+        Task<IEnumerable<RowDetail>> GetConfirmedBillPayments(string batchId);
 
         Task UpdateBillPaymentInitiation(string batchId);
 

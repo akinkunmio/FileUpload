@@ -23,6 +23,13 @@ namespace FileUploadAndValidation.Models
         public IList<Failure> Failures { get; set; }
 
         public int RowsCount { get; set; }
+
+        public string ProductCode { get; set; }
+
+        public string ProductName { get; set; }
+
+
+
     }
 
     public class Failure
@@ -35,6 +42,12 @@ namespace FileUploadAndValidation.Models
     public class RowDetail
     {
         public int RowNumber { get; set; }
+
+        public string RowStatus { get; set; }
+
+        public string CreatedDate { get; set; }
+
+        public string Error { get; set; }
 
         public string ProductCode { get; set; }
 

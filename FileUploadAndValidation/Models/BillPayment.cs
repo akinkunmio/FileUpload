@@ -65,8 +65,10 @@ namespace FileUploadAndValidation.Models
         public string ModifiedDate { get; set; }
     }
 
-    public class FirsWht : Firs
+    public class FirsWht
     {
+        public int Row { get; set; }
+
         public string BeneficiaryTin { get; set; }
 
         public string BeneficiaryName { get; set; }
@@ -88,8 +90,10 @@ namespace FileUploadAndValidation.Models
         public decimal WhtAmount { get; set; }
     }
 
-    public class FirsWVat : Firs
+    public class FirsWVat
     {
+        public int Row { get; set; }
+
         public string ContractorName { get; set; }
 
         public string ContractorAddress { get; set; }

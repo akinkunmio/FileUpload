@@ -23,7 +23,6 @@ namespace FileUploadApi.Controllers
     public class UploadController : ControllerBase
     {
         private readonly IBatchProcessor _batchProcessor;
-        private readonly IApiUploadService _uploadService;
         private readonly ILogger<UploadController> _logger;
 
 
@@ -73,19 +72,21 @@ namespace FileUploadApi.Controllers
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
             var paginationFilter =
-               new PaginationFilter(pagination.PageSize, pagination.PageNumber);
+               new PaginationFilter(pagination.PageSize, pagination.PageNumber, pagination.Status, pagination.ContentType, pagination.ItemType);
 
             string fileName;
 
-            var response = new PagedResponse<BillPaymentRowStatus>()
+            var response = new PagedResponse<dynamic>()
             {
-                PageSize = paginationFilter.PageSize,
-                PageNumber = paginationFilter.PageNumber,
+                PageSize = pagination.PageSize,
+                PageNumber = pagination.PageNumber,
+                ItemType = pagination.ItemType,
+                ContentType = pagination.ContentType,
             };
 
             try
             {
-                var result = await _uploadService.GetBillPaymentsStatus(batchId, paginationFilter);
+                var result = await _batchProcessor.GetBillPaymentsStatus(batchId, paginationFilter);
 
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
@@ -118,40 +119,40 @@ namespace FileUploadApi.Controllers
             return Ok(new { batchId, response, fileName });
         }
 
-        [HttpGet("{batchId}/summary")]
-        public async Task<IActionResult> GetUploadFileSummary(string batchId)
-        {
-            var response = new ResponseModel();
+        //[HttpGet("{batchId}/summary")]
+        //public async Task<IActionResult> GetUploadFileSummary(string batchId)
+        //{
+        //    var response = new ResponseModel();
 
-            try
-            {
-                response.Data = await _uploadService.GetFileSummary(batchId);
-            }
-            catch (AppException ex)
-            {
-                _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+        //    try
+        //    {
+        //        response.Data = await _batchProcessor.GetFileSummary(batchId);
+        //    }
+        //    catch (AppException ex)
+        //    {
+        //        _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
 
-                response.Error = ex.Message;
-                var result = new ObjectResult(response)
-                {
-                    StatusCode = ex.StatusCode
-                };
+        //        response.Error = ex.Message;
+        //        var result = new ObjectResult(response)
+        //        {
+        //            StatusCode = ex.StatusCode
+        //        };
 
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+        //        return result;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                response.Error = "Unknown error occured. Please retry!.";
-                var result = new ObjectResult(response);
+        //        response.Error = "Unknown error occured. Please retry!.";
+        //        var result = new ObjectResult(response);
 
-                result.StatusCode = (int)HttpStatusCode.BadRequest;
-                return result;
-            }
+        //        result.StatusCode = (int)HttpStatusCode.BadRequest;
+        //        return result;
+        //    }
 
-            return Ok(response);
-        }
+        //    return Ok(response);
+        //}
 
         [HttpPost("{batchId}/authorize")]
         public async Task<IActionResult> InitiateTransactionsApprovalAsync(string batchId, [FromBody] InitiatePaymentRequest request)
@@ -168,10 +169,14 @@ namespace FileUploadApi.Controllers
                     ApprovalConfigId = request.ApprovalConfigId,
                     BusinessId = request.BusinessId,
                     UserId = request.UserId,
-                    UserName = request.UserName
+                    UserName = request.UserName,
+                    BusinessTin = request.BusinessTin,
+                    TaxTypeId = request.TaxTypeId,
+                    TaxTypeName = request.TaxTypeName,
+                    ProductId = request.ProductId
                 };
 
-                var data = await _uploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
+                var data = await _batchProcessor.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
                 response.Data = data;
             }
             catch (AppException ex)
@@ -210,7 +215,7 @@ namespace FileUploadApi.Controllers
             {
                 var outputStream = new MemoryStream();
 
-                var filePath = await _uploadService.GetFileTemplateContentAsync(extension, outputStream);
+                var filePath = await _batchProcessor.GetFileTemplateContentAsync(extension, outputStream);
 
                 var contentType = MimeUtility.GetMimeMapping(filePath);
 
@@ -243,7 +248,6 @@ namespace FileUploadApi.Controllers
 
         private void ValidateUserId(string id)
         {
-            if()
             bool success = long.TryParse(id, out long number);
 
             if (!success)
@@ -256,7 +260,7 @@ namespace FileUploadApi.Controllers
         public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] PaginationQuery pagination)
         {
             var paginationFilter =
-                new PaginationFilter(pagination.PageSize, pagination.PageNumber);
+                new PaginationFilter { PageSize = pagination.PageSize, PageNumber = pagination.PageNumber };
 
             var response = new PagedResponse<BatchFileSummaryDto>()
             {
@@ -268,7 +272,7 @@ namespace FileUploadApi.Controllers
             {
                 ValidateUserId(userId);
 
-                var result = await _uploadService.GetUserFilesSummary(userId, paginationFilter);
+                var result = await _batchProcessor.GetUserFilesSummary(userId, paginationFilter);
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
             }
@@ -305,7 +309,7 @@ namespace FileUploadApi.Controllers
             {
                 var outputStream = new MemoryStream();
 
-                var fileName = await _uploadService.GetFileValidationResultAsync(batchId, outputStream);
+                var fileName = await _batchProcessor.GetFileValidationResultAsync(batchId, outputStream);
 
                 var contentType = MimeUtility.GetMimeMapping(fileName);
 

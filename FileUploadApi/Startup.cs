@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using Swashbuckle.AspNetCore.Swagger;
-using FileUploadApi.Services;
 using FileUploadAndValidation.FileReaders;
 using FileUploadAndValidation.FileReaderImpl;
 using FilleUploadCore.FileReaders;
@@ -26,6 +25,7 @@ using DbUp;
 using System.Reflection;
 using AutoMapper;
 using FileUploadAndValidation.Models;
+using FileUploadAndValidation.FileServices;
 
 namespace FileUploadApi
 {
@@ -43,24 +43,21 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            //services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
-            //services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
-
-            services.AddSingleton<IAppConfig, AppConfig>();
-            services.AddHttpClient<IHttpService, BillPaymentHttpService>();
-            services.AddScoped<IDbRepository, BillPaymentRepository>();
-            services.AddScoped<INasRepository, NasRepository>();
-            services.AddScoped<IApiUploadService, ApiUploadService>();
-
-            //services.AddScoped<FirsWhtFileService>();
-            //services.AddScoped<AutoPayFileService>();
-            //services.AddScoped<BulkSmsFileService>();
-            services.AddScoped<IFileService, BillPaymentFileService<BillPaymentRowStatus>>();
-
             services.AddScoped<IFileReader, TxtFileReader>();
             services.AddScoped<IFileReader, CsvFileReader>();
             services.AddScoped<IFileReader, XlsFileReader>();
             services.AddScoped<IFileReader, XlsxFileReader>();
+
+            services.AddScoped<IFileContentValidator, BillPaymentFileContentValidator>();
+            services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
+
+            services.AddScoped<IBatchRepository, BatchRepository>();
+
+            services.AddSingleton<IAppConfig, AppConfig>();
+            services.AddHttpClient<IHttpService, HttpService>();
+            
+            services.AddScoped<IDbRepository, DbRepository>();
+            services.AddScoped<INasRepository, NasRepository>();
 
             services.AddAutoMapper(typeof(Startup));
 

@@ -19,7 +19,10 @@ namespace FileUploadAndValidation.Helpers
         public const string Sms = "sms";
         public const string BillPayment = "billpayment";
         public const string Firs = "firs";
-        public const string ValidateBillerTransactions = "/qbtrans/api/v1/payments/bills/validate";
+        public const string ValidateBillPaymentUrl = "/qbtrans/api/v1/payments/bills/validate";
+        public const string ValidateFirsUrl = "/qbtrans/api/v1/payments/firs/validate";
+        public const string InitiateBillPaymentUrl = "/qbtrans/api/v1/payments/bills/initiate-payment";
+        public const string InitiateFirPaymentUrl = "/qbtrans/api/v1/payments/bills/initiate-payment";
         public const int RECORDS_SMALL_SIZE = 50;
         public static string BillPaymentTxtTemplate = "BillPaymentTxtTemplate.txt";
         public static string BillPaymentCsvTemplate = "BillPaymentCsvTemplate.csv";

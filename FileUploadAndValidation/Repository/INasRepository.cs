@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using CsvHelper;
 using System.Globalization;
+using FileUploadAndValidation.Helpers;
 
 namespace FileUploadAndValidation.Repository
 {
@@ -25,15 +26,16 @@ namespace FileUploadAndValidation.Repository
             _logger = logger;
             _appConfig = appConfig;
         }
-
-        public async Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
+      
+        public async Task<FileProperty> SaveFileToValidate(string batchId, string itemType, IEnumerable<RowDetail> rowDetails)
         {
             try
             {
                 var fileLocation = _appConfig.NasFolderLocation + @"validate\";
                 var fileName = batchId + "_validate.json";
 
-                string json = JsonConvert.SerializeObject(billPayments);
+                dynamic rows = MapToNasToValidateFilePOCO(itemType, rowDetails); 
+                string json = JsonConvert.SerializeObject(rows);
 
                 var path = fileLocation + fileName;
 
@@ -53,14 +55,76 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
+        private dynamic MapToNasToValidateFilePOCO(string itemType, IEnumerable<RowDetail> rowDetails)
+        {
+            dynamic result = default;
+
+            if(itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) || itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
+            {
+                result = rowDetails
+                    .Select(r => new NasBillPaymentDto
+                    {
+                        amount = decimal.Parse(r.Amount),
+                        customer_id = r.CustomerId,
+                        item_code = r.ItemCode,
+                        product_code = r.ProductCode,
+                        row = r.RowNumber
+                    });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            {
+                result = rowDetails
+                    .Select(r => new FirsWht
+                    {
+                        Row = r.RowNumber,
+                        BeneficiaryTin = r.BeneficiaryTin,
+                        BeneficiaryName = r.BeneficiaryName,
+                        BeneficiaryAddress = r.BeneficiaryAddress,
+                        ContractDate = r.ContractDate,
+                        ContractAmount = decimal.Parse(r.ContractAmount),
+                        InvoiceNumber = r.InvoiceNumber,
+                        ContractType = r.ContractType,
+                        PeriodCovered = r.PeriodCovered,
+                        WhtRate = decimal.Parse(r.WhtRate),
+                        WhtAmount = decimal.Parse(r.WhtAmount)
+                    });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            {
+                result = rowDetails
+                    .Select(r => new FirsWVat
+                    {
+                        Row = r.RowNumber,
+                        ContractorName = r.ContractorName,
+                        ContractorAddress = r.ContractorAddress,
+                        ContractorTin = r.ContractorTin,
+                        ContractDescription = r.ContractDescription,
+                        TransactionDate = r.TransactionDate,
+                        NatureOfTransaction = r.NatureOfTransaction,
+                        InvoiceNumber = r.InvoiceNumber,
+                        TransactionCurrency = r.TransactionCurrency,
+                        CurrencyInvoicedValue = decimal.Parse(r.CurrencyInvoicedValue),
+                        TransactionInvoicedValue = decimal.Parse(r.TransactionInvoicedValue),
+                        CurrencyExchangeRate = decimal.Parse(r.CurrencyExchangeRate),
+                        TaxAccountNumber = r.TaxAccountNumber,
+                        WvatRate = decimal.Parse(r.WvatRate),
+                        WvatValue = decimal.Parse(r.WvatValue)
+                    });
+            }
+
+            return result;
+        }
+
+        public async Task<FileProperty> SaveFileToConfirmed(string batchId, string itemType, IEnumerable<RowDetail> rowDetails)
         {
             try
             {
                 var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
                 var fileName = batchId + "_confirmed.json";
 
-                string json = JsonConvert.SerializeObject(billPayments);
+                string json = JsonConvert.SerializeObject(MapToNasToValidateFilePOCO(itemType, rowDetails));
 
                 var path = fileLocation + fileName;
 
@@ -198,7 +262,7 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<string> SaveValidationResultFile(string batchId, IEnumerable<BillPaymentRowStatus> content)
+        public async Task<string> SaveValidationResultFile(string batchId, string itemType, IEnumerable<RowDetail> content)
         {
             var location = @"../data/uservalidationresult/";
             var fileName = batchId + "_validationresult.csv";
@@ -213,7 +277,7 @@ namespace FileUploadAndValidation.Repository
                 using (var writer = new StreamWriter(path))
                 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
-                    await csv.WriteRecordsAsync<BillPaymentRowStatus>(content);
+                    await csv.WriteRecordsAsync<BillPaymentRowStatusTyped>(MapToValidationResultFilePOCO(itemType, content));
                 }
             }
             catch(AppException ex)
@@ -229,12 +293,79 @@ namespace FileUploadAndValidation.Repository
 
             return fileName;
         }
+
+        private dynamic MapToValidationResultFilePOCO(string itemType, IEnumerable<RowDetail> rowDetails)
+        {
+            dynamic result = default;
+
+            if (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) || itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
+            {
+                result = rowDetails
+                    .Select(s => new BillPaymentRowStatusTyped
+                    {
+                        Row = s.RowNumber,
+                        Error = s.Error,
+                        Status = s.RowStatus,
+                        Amount = double.Parse(s.Amount),
+                        CustomerId = s.CustomerId,
+                        ItemCode = s.ItemCode,
+                        ProductCode = s.ProductCode
+                    });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            {
+                result = rowDetails
+                    .Select(r => new FirsWhtRowStatusTyped
+                    {
+                        Row = r.RowNumber,
+                        Error = r.Error,
+                        Status = r.RowStatus,
+                        BeneficiaryTin = r.BeneficiaryTin,
+                        BeneficiaryName = r.BeneficiaryName,
+                        BeneficiaryAddress = r.BeneficiaryAddress,
+                        ContractDate = r.ContractDate,
+                        ContractAmount = decimal.TryParse(r.ContractAmount, out decimal amount) ? decimal.Parse(r.ContractAmount) : default,
+                        InvoiceNumber = r.InvoiceNumber,
+                        ContractType = r.ContractType,
+                        PeriodCovered = r.PeriodCovered,
+                        WhtRate = decimal.TryParse(r.WhtRate, out decimal rate) ? decimal.Parse(r.WhtRate) : default,
+                        WhtAmount = decimal.TryParse(r.WhtAmount, out decimal wamount) ? decimal.Parse(r.WhtAmount) : default
+                    });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            {
+                result = rowDetails
+                    .Select(r => new FirsWVatRowStatusTyped
+                    {
+                        Row = r.RowNumber,
+                        ContractorName = r.ContractorName,
+                        ContractorAddress = r.ContractorAddress,
+                        ContractorTin = r.ContractorTin,
+                        ContractDescription = r.ContractDescription,
+                        TransactionDate = r.TransactionDate,
+                        NatureOfTransaction = r.NatureOfTransaction,
+                        InvoiceNumber = r.InvoiceNumber,
+                        TransactionCurrency = r.TransactionCurrency,
+                        CurrencyInvoicedValue = decimal.TryParse(r.CurrencyInvoicedValue, out decimal civ) ? decimal.Parse(r.CurrencyInvoicedValue) : default,
+                        TransactionInvoicedValue = decimal.TryParse(r.TransactionInvoicedValue, out decimal tiv) ? decimal.Parse(r.TransactionInvoicedValue) : default,
+                        CurrencyExchangeRate = decimal.TryParse(r.CurrencyExchangeRate, out decimal cer) ? decimal.Parse(r.CurrencyExchangeRate) : default,
+                        TaxAccountNumber = r.TaxAccountNumber,
+                        WvatRate = decimal.TryParse(r.WvatRate, out decimal wr) ? decimal.Parse(r.WvatRate) : default,
+                        WvatValue = decimal.TryParse(r.WvatValue, out decimal wv) ? decimal.Parse(r.WvatValue) : default
+                    });
+            }
+
+            return result;
+        }
+
     }
     public interface INasRepository
     {
-        Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments);
+        Task<FileProperty> SaveFileToValidate(string batchId, string itemType, IEnumerable<RowDetail> rowDetails);
 
-        Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments);
+        Task<FileProperty> SaveFileToConfirmed(string batchId, string itemType, IEnumerable<RowDetail> rowDetails);
 
         Task<string> SaveRawFile(string batchId, Stream stream, string extension);
 
@@ -242,7 +373,7 @@ namespace FileUploadAndValidation.Repository
 
         Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream);
 
-        Task<string> SaveValidationResultFile(string batchId, IEnumerable<BillPaymentRowStatus> content);
+        Task<string> SaveValidationResultFile(string batchId, string itemType, IEnumerable<RowDetail> content);
 
         Task GetUserValidationResultAsync(string fileName, MemoryStream outputStream);
     }

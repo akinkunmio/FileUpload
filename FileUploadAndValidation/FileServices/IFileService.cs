@@ -11,9 +11,9 @@ using FileUploadAndValidation.UploadServices;
 
 namespace FileUploadApi.Services
 {
-    public interface IFileService<T>
+    public interface IFileService
     {
-        Task<PagedData<T>> GetPaymentResults(string batchId, PaginationFilter pagination);
+        Task<PagedData<dynamic>> GetPaymentResults(string batchId, PaginationFilter pagination);
 
         Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId);
 

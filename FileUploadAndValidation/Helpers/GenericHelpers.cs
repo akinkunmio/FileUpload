@@ -1,4 +1,5 @@
-﻿using FilleUploadCore.Exceptions;
+﻿using FileUploadAndValidation.Models;
+using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,20 @@ namespace FileUploadAndValidation.Helpers
                 if (!headerRowColumn.ToLower().Contains(columnName.ToLower()))
                     throw new ValidationException($"Invalid header column name. Expected: {columnName}, Found: {headerRowColumn}");
             }
+        }
+
+        public static string ConstructValidationError(Failure failure)
+        {
+            var result = new StringBuilder();
+            for (int i = 0; i < failure.ColumnValidationErrors.Count(); i++)
+            {
+                result.Append($"{failure.ColumnValidationErrors[i].PropertyName}: {failure.ColumnValidationErrors[i].ErrorMessage}");
+
+                if (failure.ColumnValidationErrors[i] != null)
+                    result.Append(", ");
+            }
+
+            return result.ToString();
         }
 
         public static List<ValidationError> ValidateRowCell(Row row, ColumnContract[] columnContracts, bool isValid)

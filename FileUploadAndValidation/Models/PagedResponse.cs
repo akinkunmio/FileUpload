@@ -8,8 +8,6 @@ namespace FileUploadAndValidation.Models
     {
         public PagedResponse()
         {
-            PageNumber = 1;
-            PageSize = 10;
         }
 
         public PagedResponse(IEnumerable<T> data)
@@ -28,15 +26,32 @@ namespace FileUploadAndValidation.Models
         public string Error { get; set; }
 
         public double ValidAmountTotal { get; set; }
+
+        public StatusEnum Status { get; set; }
+
+        public string ContentType { get; set; }
+
+        public string ItemType { get; set; }
     }
 
     public class PaginationFilter
     {
-        public PaginationFilter(int pageSize, int pageNumber)
+        public PaginationFilter(int pageSize, int pageNumber, StatusEnum status, string contentType, string itemType)
         {
             PageSize = (pageSize > 0) ?  pageSize : 10;
             PageNumber = (pageNumber > 0) ? pageNumber : 1;
+            Status = status;
+            ContentType = contentType;
+            ItemType = itemType;
         }
+        public PaginationFilter(int pageSize, int pageNumber, string contentType, string itemType)
+        {
+            PageNumber = pageNumber;
+            PageSize = pageSize;
+            ContentType = contentType;
+            ItemType = itemType;
+        }
+
         public PaginationFilter()
         {
 
@@ -44,5 +59,18 @@ namespace FileUploadAndValidation.Models
         public int PageSize { get; set; }
 
         public int PageNumber { get; set; }
+
+        public StatusEnum Status { get; set; } = StatusEnum.All;
+
+        public string ContentType { get; set; }
+
+        public string ItemType { get; set; }
+    }
+
+    public enum StatusEnum
+    {
+        All = 0,
+        Valid = 1,
+        Invalid = 2
     }
 }

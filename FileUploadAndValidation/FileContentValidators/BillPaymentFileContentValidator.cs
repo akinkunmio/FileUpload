@@ -14,10 +14,10 @@ using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.FileServices
 {
-    public class BillPaymentContentValidator : IFileContentValidator
+    public class BillPaymentFileContentValidator : IFileContentValidator
     {
-        private readonly ILogger<BillPaymentContentValidator> _logger;
-        public BillPaymentContentValidator(ILogger<BillPaymentContentValidator> logger)
+        private readonly ILogger<BillPaymentFileContentValidator> _logger;
+        public BillPaymentFileContentValidator(ILogger<BillPaymentFileContentValidator> logger)
         {
             _logger = logger;
         }
@@ -29,8 +29,8 @@ namespace FileUploadAndValidation.FileServices
 
             var headerRow = new Row();
             var uploadResult = new UploadResult();
-            IEnumerable<BillPayment> billPayments = new List<BillPayment>();
-            IEnumerable<BillPayment> failedItemTypeValidationBills = new List<BillPayment>();
+            IEnumerable<RowDetail> billPayments = new List<RowDetail>();
+            IEnumerable<RowDetail> failedItemTypeValidationBills = new List<RowDetail>();
 
             try
             {
@@ -65,35 +65,24 @@ namespace FileUploadAndValidation.FileServices
 
                 if (uploadResult.ValidRows.Count() > 0 || uploadResult.ValidRows.Any())
                 {
-                    billPayments = uploadResult.ValidRows.Select(r => new BillPayment
-                    {
-                        RowNumber = r.RowNumber,
-                        Amount = double.Parse(r.Amount),
-                        ProductCode = r.ProductCode,
-                        ItemCode = r.ItemCode,
-                        CustomerId = r.CustomerId,
-                        BatchId = uploadResult.BatchId,
-                        CreatedDate = dateTimeNow.ToString()
-                    });
-
-                    var productCodeList = billPayments.Select(s => s.ProductCode).ToArray();
+                    var productCodeList = uploadResult.ValidRows.Select(s => s.ProductCode).ToArray();
 
                     string firstItem = productCodeList[0];
 
                     if (!string.Equals(firstItem, request.ProductCode, StringComparison.InvariantCultureIgnoreCase))
-                        throw new AppException($"Expected file ProductCode to be {request.ProductCode}, but found {firstItem}!.");
+                        throw new AppException($"Expected file Product Code to be {request.ProductCode}, but found {firstItem}!.");
 
                     bool allEqual = productCodeList.Skip(1)
                       .All(s => string.Equals(firstItem, s, StringComparison.InvariantCultureIgnoreCase));
 
                     if (!allEqual)
-                        throw new AppException("ProductCode should have same value for all records");
+                        throw new AppException("Product Code should have same value for all records");
 
                     if (request.ItemType
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentId.ToLower()))
                     {
-                        failedItemTypeValidationBills = billPayments
+                        failedItemTypeValidationBills = uploadResult.ValidRows
                             ?.GroupBy(b => new { b.CustomerId })
                             .Where(g => g.Count() > 1)
                             .SelectMany(r => r);
@@ -124,7 +113,7 @@ namespace FileUploadAndValidation.FileServices
                         .ToLower()
                         .Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
                     {
-                        failedItemTypeValidationBills = billPayments
+                        failedItemTypeValidationBills = uploadResult.ValidRows
                             ?.GroupBy(b => new { b.ItemCode, b.CustomerId })
                             .Where(g => g.Count() > 1)
                             .SelectMany(r => r);
@@ -151,23 +140,15 @@ namespace FileUploadAndValidation.FileServices
                             });
                     }
 
-                    billPayments = billPayments
+                    uploadResult.ValidRows = uploadResult.ValidRows
                         .Where(b => !failedItemTypeValidationBills.Any(n => n.RowNumber == b.RowNumber))
-                        .Select(r => r);
-
-                    uploadResult.ValidRows = billPayments.Select(r => new RowDetail
-                    {
-                        RowNumber = r.RowNumber,
-                        Amount = r.Amount.ToString(),
-                        ProductCode = r.ProductCode,
-                        ItemCode = r.ItemCode,
-                        CustomerId = r.CustomerId
-                    }).ToList();
+                        .Select(r => r).ToList();
 
                 }
 
-                var failedBillPayments = uploadResult.Failures.Select(f =>
-                    new FailedBillPayment
+                uploadResult.Failures = uploadResult.Failures.Select(f => new Failure 
+                { 
+                    Row = new RowDetail
                     {
                         Amount = f.Row.Amount,
                         CreatedDate = dateTimeNow.ToString(),
@@ -175,14 +156,13 @@ namespace FileUploadAndValidation.FileServices
                         ItemCode = f.Row.ItemCode,
                         ProductCode = f.Row.ProductCode,
                         RowNumber = f.Row.RowNumber,
-                        Error = ConstructValidationError(f)
+                        Error = GenericHelpers.ConstructValidationError(f)
                     }
-                );
+                }).ToList();
 
                 if (uploadResult.ValidRows.Count() == 0)
                     throw new AppException("All records are invalid");
 
-                
                 return uploadResult;
             }
             catch (AppException appEx)
@@ -195,11 +175,11 @@ namespace FileUploadAndValidation.FileServices
             {
                 _logger.LogError("Error occured while uploading bill payment file with error message {ex.message} | {ex.StackTrace}", exception.Message, exception.StackTrace);
                 uploadResult.ErrorMessage = exception.Message;
-                throw new AppException(exception.Message, (int)HttpStatusCode.InternalServerError, uploadResult);
+                throw new AppException(exception.Message, 400, uploadResult);
             }
         }
 
-        public async Task<ValidateRowsResult<RowDetail>> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
+        public async Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
         {
 
             var validRows = new List<RowDetail>();
@@ -224,7 +204,7 @@ namespace FileUploadAndValidation.FileServices
                     failures.Add(validateRowModel.Failure);
             }
 
-            return new ValidateRowsResult<RowDetail> { Failures = failures, ValidRows = validRows };
+            return new ValidateRowsResult { Failures = failures, ValidRows = validRows };
         }
 
         private async Task<ValidateRowModel> ValidateRow(Row row, ColumnContract[] columnContracts)
@@ -257,25 +237,7 @@ namespace FileUploadAndValidation.FileServices
             return await Task.FromResult(new ValidateRowModel { IsValid = isValid, Failure = failure });
         }
 
-        private string ConstructValidationError(Failure failure)
-        {
-            var result = new StringBuilder();
-            for (int i = 0; i < failure.ColumnValidationErrors.Count(); i++)
-            {
-                result.Append($"{failure.ColumnValidationErrors[i].PropertyName}: {failure.ColumnValidationErrors[i].ErrorMessage}");
-
-                if (failure.ColumnValidationErrors[i] != null)
-                    result.Append(", ");
-            }
-
-            return result.ToString();
-        }
-
-
+       
     }
 
-    public interface IFileContentValidator
-    {
-        Task<UploadResult> Validate(FileUploadRequest uploadRequest, IEnumerable<Row> rows);
-    }
 }

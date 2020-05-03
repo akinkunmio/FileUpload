@@ -30,6 +30,9 @@ namespace FileUploadAndValidation.Models
         public int DataStore { get; set; }
         public string Url { get; set; }
         public string BatchId { get; set; }
+        public string BusinessTin { get; set; }
+        public string ItemType { get; set; }
+        public string ContentType { get; set; }
     }
 
    

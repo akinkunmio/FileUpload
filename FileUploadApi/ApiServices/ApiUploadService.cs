@@ -17,37 +17,23 @@ using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Repository;
 using FileUploadApi.Controllers;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace FileUploadApi.ApiServices
 {
     public class ApiUploadService : IApiUploadService
     {
-        private readonly IFileReader _txtFileReader;
-        private readonly IFileReader _csvFileReader;
-        private readonly IFileReader _xlsxFileReader;
-        private readonly IFileReader _xlsFileReader;
-        private readonly IFileService _firsService;
-        private readonly IFileService _autoPayService;
-        private readonly IFileService _bulkBillPaymentService;
-        private readonly IFileService _bulkSmsService;
         private readonly INasRepository _nasRepository;
         private readonly IDbRepository _dbRepository;
+        private readonly ILogger<ApiUploadService> _logger;
 
-        public ApiUploadService(Func<FileReaderTypeEnum, IFileReader> fileReader,
-            Func<FileServiceTypeEnum, IFileService> fileService, 
-            INasRepository nasRepository,
-            IDbRepository dbRepository)
+        public ApiUploadService( INasRepository nasRepository,
+            IDbRepository dbRepository,
+            ILogger<ApiUploadService> logger)
         {
-            _txtFileReader = fileReader(FileReaderTypeEnum.TXT);
-            _csvFileReader = fileReader(FileReaderTypeEnum.CSV);
-            _xlsxFileReader = fileReader(FileReaderTypeEnum.XLSX);
-            _xlsFileReader = fileReader(FileReaderTypeEnum.XLS);
-            _firsService = fileService(FileServiceTypeEnum.Firs);
-            _autoPayService = fileService(FileServiceTypeEnum.AutoPay);
-            _bulkSmsService = fileService(FileServiceTypeEnum.SMS);
-            _bulkBillPaymentService = fileService(FileServiceTypeEnum.BillPayment);
             _nasRepository = nasRepository;
             _dbRepository = dbRepository;
+            _logger = logger;
         }
 
         public async Task<BatchFileSummaryDto> GetFileSummary(string batchId)
@@ -65,33 +51,127 @@ namespace FileUploadApi.ApiServices
         {
             ArgumentGuard.NotNullOrWhiteSpace(userId, nameof(userId));
 
-            var batchFileSummariesDto = new PagedData<BatchFileSummaryDto>();
-
-            batchFileSummariesDto = await _bulkBillPaymentService.GetUserUploadSummaries(userId, paginationFilter);
-
-            return batchFileSummariesDto;
-        }
-        public async Task<PagedData<BillPaymentRowStatus>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
-        {
-            ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
-            ArgumentGuard.NotDefault(pagination.PageNumber, nameof(pagination.PageNumber));
-            ArgumentGuard.NotDefault(pagination.PageSize, nameof(pagination.PageSize));
-
-            var billPaymentStatuses = new PagedData<BillPaymentRowStatus>();
-
+            var userFileSummaries = new PagedData<BatchFileSummary>();
+            var pagedData = new PagedData<BatchFileSummaryDto>();
             try
             {
-                billPaymentStatuses = await _bulkBillPaymentService.GetBillPaymentResults(batchId, pagination);
+                userFileSummaries = await _dbRepository.GetUploadSummariesByUserId(userId, paginationFilter);
+
+                pagedData.Data = userFileSummaries.Data.Select(u => new BatchFileSummaryDto
+                {
+                    BatchId = u.BatchId,
+                    ContentType = u.ContentType,
+                    ItemType = u.ItemType,
+                    NumOfAllRecords = u.NumOfRecords,
+                    NumOfValidRecords = u.NumOfValidRecords,
+                    Status = u.TransactionStatus,
+                    UploadDate = u.UploadDate,
+                    FileName = GenericHelpers.GetFileNameFromBatchId(u.BatchId)
+                });
+
+                pagedData.TotalRowsCount = userFileSummaries.TotalRowsCount;
+
             }
-            catch (AppException ex)
+            catch (AppException appEx)
             {
-                throw ex;
+                throw appEx;
             }
             catch (Exception ex)
             {
+                _logger.LogError("Error occured while getting user upload summaries with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
-            return billPaymentStatuses;
+
+            return pagedData;
+        }
+
+        public async Task<PagedData<dynamic>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
+        {
+            ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
+            ArgumentGuard.NotNullOrWhiteSpace(pagination.ItemType, nameof(pagination.ItemType));
+
+            var paymentStatuses = new PagedData<dynamic>();
+
+            //IEnumerable<BillPayment> billPayments = new List<BillPayment>();
+            //IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
+            int totalRowCount;
+            double validAmountSum;
+
+            try
+            {
+                var paymentStatus = await _dbRepository.GetPaymentRowStatuses(batchId, pagination);
+
+                totalRowCount = paymentStatus.TotalRowsCount;
+
+                validAmountSum = paymentStatus.ValidAmountSum;
+                
+                if(pagination.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
+                || pagination.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+                paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new BillPaymentRowStatusUntyped
+                {
+                    Amount = s.Amount,
+                    CustomerId = s.CustomerId,
+                    ItemCode = s.ItemCode,
+                    ProductCode = s.ProductCode,
+                    Error = s.Error,
+                    Row = s.RowNumber,
+                    Status = s.RowStatus
+                });
+
+                if (pagination.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+                    paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new FirsWhtRowStatusUntyped
+                    {
+                        BeneficiaryAddress = s.BeneficiaryAddress,
+                        BeneficiaryName = s.BeneficiaryName,
+                        BeneficiaryTin = s.BeneficiaryTin,
+                        ContractAmount = s.ContractAmount,
+                        ContractDate = s.ContractDate,
+                        ContractType = s.ContractType,
+                        WhtRate = s.WhtRate,
+                        WhtAmount = s.WhtAmount,
+                        PeriodCovered = s.PeriodCovered,
+                        InvoiceNumber = s.InvoiceNumber,
+                        Error = s.Error,
+                        Row = s.RowNumber,
+                        Status = s.RowStatus
+                    });
+
+                if (pagination.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+                    paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new FirsWVatRowStatusUntyped
+                    {
+                        ContractorName = s.ContractorName,
+                        ContractorAddress = s.ContractorAddress,
+                        ContractDescription = s.ContractDescription,
+                        ContractorTin = s.ContractorTin,
+                        TransactionDate = s.TransactionDate,
+                        NatureOfTransaction = s.NatureOfTransaction,
+                        InvoiceNumber = s.InvoiceNumber,
+                        TransactionCurrency = s.TransactionCurrency,
+                        CurrencyInvoicedValue = s.CurrencyInvoicedValue,
+                        TransactionInvoicedValue = s.TransactionInvoicedValue,
+                        CurrencyExchangeRate = s.CurrencyExchangeRate,
+                        TaxAccountNumber = s.TaxAccountNumber,
+                        WvatRate = s.WvatRate,
+                        WvatValue = s.WvatValue,
+                        Error = s.Error,
+                        Row = s.RowNumber,
+                        Status = s.RowStatus
+                    });
+
+                if (paymentStatuses.Data.Count() < 1)
+                    throw new AppException($"Upload Batch Id '{batchId}' was not found", (int)HttpStatusCode.NotFound);
+            }
+            catch (AppException appEx)
+            {
+                throw appEx;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error occured while getting bill payment statuses with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                throw new AppException($"An error occured while fetching results for {batchId}!.");
+            }
+
+            return paymentStatuses;
         }
 
         public async Task<UploadResult> UploadFileAsync(UploadOptions uploadOptions, Stream stream)

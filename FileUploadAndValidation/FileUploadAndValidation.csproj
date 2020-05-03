@@ -10,14 +10,17 @@
   <ItemGroup>
     <Compile Remove="Bootstrap\**" />
     <Compile Remove="FileDataExtractor\**" />
+    <Compile Remove="FileServices\**" />
     <Compile Remove="ObjectMappers\**" />
     <Compile Remove="Validations\**" />
     <EmbeddedResource Remove="Bootstrap\**" />
     <EmbeddedResource Remove="FileDataExtractor\**" />
+    <EmbeddedResource Remove="FileServices\**" />
     <EmbeddedResource Remove="ObjectMappers\**" />
     <EmbeddedResource Remove="Validations\**" />
     <None Remove="Bootstrap\**" />
     <None Remove="FileDataExtractor\**" />
+    <None Remove="FileServices\**" />
     <None Remove="ObjectMappers\**" />
     <None Remove="Validations\**" />
   </ItemGroup>
@@ -25,8 +28,7 @@
   <ItemGroup>
     <Compile Remove="Program.cs" />
     <Compile Remove="QueueMessages\IMessage.cs" />
-    <Compile Remove="FileServices\AutoPayFileService.cs" />
-    <Compile Remove="FileServices\BulkSmsFileUploadService.cs" />
+    <Compile Remove="Repository\FirsBatchRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>

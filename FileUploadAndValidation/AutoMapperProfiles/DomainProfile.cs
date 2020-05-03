@@ -11,6 +11,7 @@ namespace FileUploadAndValidation.AutoMapperProfiles
 		public DomainProfile()
 		{
 			CreateMap<RowDetail, BillPayment>();
+				
 		}
 	}
 }
