@@ -30,4 +30,10 @@ namespace FileUploadApi.ApiServices
     {
         Task<UploadResult> UploadFileAsync(IEnumerable<Row> rows, IFileUploadRequest request);
     }
+
+    public interface IBatchFileProcessor<T>
+    {
+        Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, T request);
+    }
+
 }

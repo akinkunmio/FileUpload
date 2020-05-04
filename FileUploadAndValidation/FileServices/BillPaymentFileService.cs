@@ -26,7 +26,7 @@ using static FileUploadAndValidation.Models.UploadResult;
 
 namespace FileUploadApi
 {
-    public class BillPaymentFileService : IFileService<BillPaymentRowStatus>, IFileContentValidator
+    public class BillPaymentFileService : IFileService<BillPaymentRowStatus>//, IFileContentValidator
     {
         private readonly IDbRepository<BillPayment, FailedBillPayment> _dbRepository;
         private readonly INasRepository _nasRepository;
@@ -349,7 +349,7 @@ namespace FileUploadApi
             IEnumerable<BillPayment> billPayments = new List<BillPayment>();
             IEnumerable<BillPaymentRowStatus> billPaymentStatuses = new List<BillPaymentRowStatus>();
             int totalRowCount;
-            double validAmountSum;
+            decimal validAmountSum;
 
             try
             {
@@ -527,11 +527,6 @@ namespace FileUploadApi
             }
 
             return result;
-        }
-
-        public Task<UploadResult> Validate(IEnumerable<Row> rows)
-        {
-            Validate(rows, null);
         }
 
         public bool CanProcess(string contentType)

@@ -26,6 +26,7 @@ using DbUp;
 using System.Reflection;
 using AutoMapper;
 using FileUploadAndValidation.Models;
+using FileUploadAndValidation;
 
 namespace FileUploadApi
 {
@@ -58,15 +59,23 @@ namespace FileUploadApi
             //services.AddScoped<AutoPayFileService>();
             //services.AddScoped<BulkSmsFileService>();
             services.AddScoped<BillPaymentFileService>();
+            services.AddScoped<AutoPayFileContentRemoteValidator>();
+            services.AddScoped<BatchFileSummaryDbRepository>();
 
             //Setup File Content Validators
-            services.AddScoped<IFileContentValidator, BillPaymentFileService>();
+            //services.AddScoped<IFileContentValidator<BillPayment>, BillPaymentFileService>();
 
             //Setup File Readers per file extension
             services.AddScoped<IFileReader, TxtFileReader>();
             services.AddScoped<IFileReader, CsvFileReader>();
             services.AddScoped<IFileReader, XlsFileReader>();
             services.AddScoped<IFileReader, XlsxFileReader>();
+
+            services.AddScoped<IBatchFileProcessor<AutoPayUploadContext>, AutoPayBatchFileProcessor>();
+            services.AddScoped<IFileContentValidator<AutoPayRow>, AutoPayFileContentValidator>();
+
+            //Details tables repositories
+            services.AddScoped<IDetailsDbRepository<AutoPayRow>, AutoPayDetailsDbRepository>();
 
             services.AddAutoMapper(typeof(Startup));
 
@@ -129,7 +138,6 @@ namespace FileUploadApi
 
         private void PerformScriptUpdate()
         {
-            return;
                 var connString = Configuration["ConnectionStrings:UploadServiceConnectionString"];
                 var upgraderTran = DeployChanges.To
                     .SqlDatabase(connString)

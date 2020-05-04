@@ -102,7 +102,7 @@ namespace FileUploadAndValidation.Models
 
         public int TotalRowsCount { get; set; }
 
-        public double ValidAmountSum { get; set; }
+        public decimal ValidAmountSum { get; set; }
     }
 
     public class PagedData<T>
@@ -111,6 +111,6 @@ namespace FileUploadAndValidation.Models
 
         public int TotalRowsCount { get; set; }
 
-        public double TotalAmountSum { get; set; }
+        public decimal TotalAmountSum { get; set; }
     }
 }

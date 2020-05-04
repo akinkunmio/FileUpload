@@ -1,9 +1,7 @@
 ﻿using FileUploadAndValidation.Models;
 using FileUploadApi.Models;
-using FilleUploadCore.FileReaders;
 using FilleUploadCore.UploadManagers;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using FileUploadAndValidation.QueueMessages;
 using FileUploadAndValidation;
@@ -23,11 +21,4 @@ namespace FileUploadApi.Services
 
         Task<PagedData<BatchFileSummaryDto>> GetUserUploadSummaries(string userId, PaginationFilter paginationFilter);
     }
-
-    public interface IFileContentValidator
-    {
-        Task<UploadResult> Validate(IEnumerable<Row> rows);
-        bool CanProcess(string contentType);
-    }
-
 }

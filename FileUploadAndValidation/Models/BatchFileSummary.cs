@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using FileUploadApi.Services;
 
 namespace FileUploadAndValidation.Models
 {
@@ -30,6 +32,16 @@ namespace FileUploadAndValidation.Models
 
         public string NasUserValidationFile { get; set; }
 
-        public double ValidAmountSum { get; set; }
+        public decimal ValidAmountSum { get; set; }
+
+        public void SetResults(ValidationResult<AutoPayRow> finalResult)
+        {
+            int countOfValid = finalResult.ValidRows.Count;
+            int countOfFailed = finalResult.Failures.Count;
+
+            NumOfRecords = countOfFailed + countOfValid;
+            NumOfValidRecords = countOfValid;
+            ValidAmountSum = finalResult.ValidRows.Select(r => r.Amount).Sum();
+        }
     }
 }

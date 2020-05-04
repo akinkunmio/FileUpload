@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 namespace FileUploadApi
 {
-  
+
     public interface IDbRepository<T, V>
     {
         Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, IList<T> billPayments, IList<V> invalidBillPayments, string itemType = null);

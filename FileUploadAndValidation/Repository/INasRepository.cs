@@ -26,14 +26,14 @@ namespace FileUploadAndValidation.Repository
             _appConfig = appConfig;
         }
 
-        public async Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
+        public async Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> records)
         {
             try
             {
                 var fileLocation = _appConfig.NasFolderLocation + @"validate\";
                 var fileName = batchId + "_validate.json";
 
-                string json = JsonConvert.SerializeObject(billPayments);
+                string json = JsonConvert.SerializeObject(records);
 
                 var path = fileLocation + fileName;
 
@@ -53,14 +53,41 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments)
+        public async Task<FileProperty> SaveFileToValidate<T>(string batchId, IEnumerable<T> records)
+        {
+            try
+            {
+                var fileLocation = _appConfig.NasFolderLocation + @"validate\";
+                var fileName = batchId + "_validate.json";
+
+                string json = JsonConvert.SerializeObject(records);
+
+                var path = fileLocation + fileName;
+
+                //File.WriteAllText(path, json);
+                
+                return await Task.FromResult(new FileProperty 
+                { 
+                    BatchId = batchId, 
+                    DataStore = 1,
+                    Url = $"validate/{fileName}"
+                });
+            }
+            catch(Exception ex)
+            {
+                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                throw new AppException($"An error occured while saving file with batch id : {batchId} to NAS for validation");
+            }
+        }
+
+        public async Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> records)
         {
             try
             {
                 var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
                 var fileName = batchId + "_confirmed.json";
 
-                string json = JsonConvert.SerializeObject(billPayments);
+                string json = JsonConvert.SerializeObject(records);
 
                 var path = fileLocation + fileName;
 
@@ -232,9 +259,11 @@ namespace FileUploadAndValidation.Repository
     }
     public interface INasRepository
     {
-        Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> billPayments);
+        Task<FileProperty> SaveFileToValidate<T>(string batchId, IEnumerable<T> records);
 
-        Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> billPayments);
+        Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> records);
+
+        Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> records);
 
         Task<string> SaveRawFile(string batchId, Stream stream, string extension);
 

@@ -23,31 +23,33 @@ namespace FileUploadApi.ApiServices
 {
     public class BatchProcessor : IBatchProcessor
     {
-        private readonly IEnumerable<IFileContentValidator> _fileContentValidators;
+        private readonly IEnumerable<IFileContentValidator<BillPayment>> _fileContentValidators;
         private readonly IBatchRepository _batchRepository;
 
-        public BatchProcessor(IBatchRepository batchRepository, IEnumerable<IFileContentValidator> fileContentValidators)
+        public BatchProcessor(IBatchRepository batchRepository, IEnumerable<IFileContentValidator<BillPayment>> fileContentValidators)
         {
             _batchRepository = batchRepository;
             _fileContentValidators = fileContentValidators;
         }
 
-        public async Task<UploadResult> UploadFileAsync(IEnumerable<Row> rows, IFileUploadRequest request)
+        public async Task<ValidationResult<BillPayment>> UploadFileAsync(IEnumerable<Row> rows, IFileUploadRequest request)
         {
-            ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
+            #region commented for now
+            //ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
 
-            if (!ContentSupported(request.ContentType))
-                throw new AppException("Invalid Content Type specified");
+            //if (!ContentSupported(request.ContentType))
+            //    throw new AppException("Invalid Content Type specified");
 
-            //use either validationtype or contentype name
-            if (request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower())
-                || request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
-                request.ContentType = GenericConstants.Firs;
+            ////use either validationtype or contentype name
+            //if (request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower())
+            //    || request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            //    request.ContentType = GenericConstants.Firs;
+            #endregion
 
             var batchId = GenericHelpers.GenerateBatchId("QTB", DateTime.Now);
-            var _fileContentValidator = _fileContentValidators.FirstOrDefault(r => r.CanProcess(request.ContentType)) ?? throw new AppException("Invalid file content");
-            var uploadResult = await _fileContentValidator.Validate(rows);
-            await _batchRepository.Save(batchId, request, uploadResult.ValidRows, uploadResult.Failures);
+            var fileContentValidator = _fileContentValidators.First();//.FirstOrDefault(r => r.CanProcess(request.ContentType)) ?? throw new AppException("Invalid file content");
+            var uploadResult = await fileContentValidator.Validate(rows);//, request);
+            //await _batchRepository.Save(batchId, request, uploadResult.ValidRows, uploadResult.Failures);
 
             return uploadResult;
         }
@@ -64,6 +66,25 @@ namespace FileUploadApi.ApiServices
             };
 
             return supported.Any(c => c == contentType.ToLower());
+        }
+
+
+        private void Test()
+        {
+            // FILE CONTENT TYPES
+            //autopay
+            //firs
+            //enterprise
+            //bulk-sms
+
+            // var rows = ReadFromFile();
+            // var validationResults = val.Validate(rows);//Rows and error message
+            // db.Save(validationResults); ::: firs, autopay, etc
+        }
+
+        Task<UploadResult> IBatchProcessor.UploadFileAsync(IEnumerable<Row> rows, IFileUploadRequest request)
+        {
+            throw new NotImplementedException();
         }
     }
 }

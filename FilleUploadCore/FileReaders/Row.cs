@@ -6,5 +6,8 @@ namespace FilleUploadCore.FileReaders
     {
         public List<Column> Columns { get; set; }
         public int Index { get; set; }
+
+        public bool IsValid { get; set; }
+        public bool Messages { get; set; }
     }
 }
