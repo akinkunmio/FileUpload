@@ -33,17 +33,35 @@ namespace FileUploadApi.Controllers
         }
 
         [HttpPost("uploadfile/{contentType}/{itemType}")]
-        public async Task<IActionResult> PostBulkUploadPaymentAsync()
+        public async Task<IActionResult> PostBulkUploadPaymentAsync(string contentType, string itemType)
         {
             var uploadResult = new UploadResult();
 
-            var userId = Request.Form["id"].ToString();
-
-            ValidateUserId(userId);
+            //var userId = Request.Form["id"].ToString();
+            var userId = "255";
 
             try
             {
-                await _batchProcessor.UploadFileAsync(Request);
+                ValidateUserId(userId);
+
+                var request = new FileUploadRequest 
+                {
+                    ItemType = itemType,
+                    ContentType =  contentType,
+                    AuthToken = Request.Headers["Authorization"].ToString(),
+                    FileRef = Request.Form.Files.First(),
+                    FileName = Request.Form.Files.First().FileName.Split('.')[0],
+                    FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower(),
+                    UserId = long.Parse(userId),
+                    ProductCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL",
+                    ProductName = /*request.Form["productName"].ToString() ??*/ "AIRTEL",
+                    BusinessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001",
+                    FileSize = Request.Form.Files.First().Length,
+                };
+
+                await _batchProcessor.UploadFileAsync(request);
             }
             catch (AppException ex)
             {

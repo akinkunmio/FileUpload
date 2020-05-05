@@ -26,17 +26,17 @@ namespace FileUploadAndValidation.Models
         public long? UserId { get; set; }
 
         public string ProductCode { get; set; }
-        public IFormFile FileRef { get; private set; }
+        public IFormFile FileRef { get; set; }
         public string ProductName { get; set; }
         public string BusinessTin { get; set; }
 
         public static FileUploadRequest FromRequest(HttpRequest request)
         {
             var file = request.Form.Files.First();
-            var userId = request.Form["id"].ToString() ?? "255";
-            var productCode = request.Form["productCode"].ToString() ?? "DSTV";
-            var productName = request.Form["productName"].ToString() ?? "DSTV";
-            var businessTin = request.Form["businessTin"].ToString() ?? "";
+            var userId = /*request.Form["id"].ToString() ??*/ "255";
+            var productCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL";
+            var productName = /*request.Form["productName"].ToString() ??*/ "AIRTEL";
+            var businessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001";
 
             return new FileUploadRequest
             {

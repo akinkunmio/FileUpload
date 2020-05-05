@@ -51,28 +51,22 @@ namespace FileUploadApi.ApiServices
             _nasRepository = nasRepository;
         }
 
-        public async Task<UploadResult> UploadFileAsync(HttpRequest httpRequest)
+        public async Task<UploadResult> UploadFileAsync(FileUploadRequest request)
         {
-            var request = FileUploadRequest.FromRequest(httpRequest);
-
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
+            ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
 
-            if (!request.ContentType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
-                && !request.ContentType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
-                && !request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower())
-                && !request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            if (!request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
+                && !request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
+                && !request.ItemType.ToLower().Equals(GenericConstants.WVAT.ToLower())
+                && !request.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
                 throw new AppException("Invalid Content Type specified");
 
-            if (request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower())
-                || request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
-                request.ContentType = GenericConstants.Firs;
-
-            if (request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower())
-                || request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            if (request.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
                 ArgumentGuard.NotNullOrWhiteSpace(request.BusinessTin, nameof(request.BusinessTin));
 
             IEnumerable<Row> rows = default;
-            var uploadResult = new UploadResult() { ProductCode = request.ProductCode, ProductName = request.ProductName };
+            var uploadResult = new UploadResult();
 
             var batchId = GenericHelpers.GenerateBatchId(request.FileName, DateTime.Now);
 

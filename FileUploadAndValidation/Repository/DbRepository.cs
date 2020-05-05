@@ -20,9 +20,9 @@ namespace FileUploadAndValidation.Repository
     public class DbRepository : IDbRepository
     {
         private readonly IAppConfig _appConfig;
-        private readonly ILogger<IDbRepository> _logger;
+        private readonly ILogger<DbRepository> _logger;
 
-        public DbRepository(IAppConfig appConfig, ILogger<IDbRepository> logger)
+        public DbRepository(IAppConfig appConfig, ILogger<DbRepository> logger)
         {
             _appConfig = appConfig;
             _logger = logger;
@@ -99,24 +99,24 @@ namespace FileUploadAndValidation.Repository
 
                             if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
                             {
-                                foreach (var firsWht in payments)
+                                foreach (var valid in payments)
                                 {
                                     //create sp sp_insert_valid_firs_wht
                                     await connection.ExecuteAsync(sql: "sp_insert_valid_firs_wht",
                                         param: new
                                         {
-                                            beneficiary_address = firsWht.BeneficiaryAddress,
-                                            beneficiary_name = firsWht.BeneficiaryName,
-                                            beneficiary_tin = firsWht.BeneficiaryTin,
-                                            contract_amount = firsWht.ContractAmount,
-                                            contract_date = firsWht.ContractDate,
-                                            contract_type = firsWht.ContractType,
-                                            wht_rate = firsWht.WhtRate,
-                                            wht_amount = firsWht.WhtAmount,
-                                            period_covered = firsWht.PeriodCovered,
-                                            invoice_number = firsWht.InvoiceNumber,
-                                            created_date = firsWht.CreatedDate,
-                                            row_num = firsWht.RowNumber,
+                                            beneficiary_address = valid.BeneficiaryAddress,
+                                            beneficiary_name = valid.BeneficiaryName,
+                                            beneficiary_tin = valid.BeneficiaryTin,
+                                            contract_amount = valid.ContractAmount,
+                                            contract_date = valid.ContractDate,
+                                            contract_type = valid.ContractType,
+                                            wht_rate = valid.WhtRate,
+                                            wht_amount = valid.WhtAmount,
+                                            period_covered = valid.PeriodCovered,
+                                            invoice_number = valid.InvoiceNumber,
+                                            created_date = valid.CreatedDate,
+                                            row_num = valid.RowNumber,
                                             transactions_summary_Id = transactionSummaryId,
                                             initial_validation_status = "Valid"
                                         },

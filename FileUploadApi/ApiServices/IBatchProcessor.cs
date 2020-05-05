@@ -10,7 +10,7 @@ namespace FileUploadApi.ApiServices
 {
     public interface IBatchProcessor
     {
-        Task<UploadResult> UploadFileAsync(HttpRequest httpRequest);
+        Task<UploadResult> UploadFileAsync(FileUploadRequest httpRequest);
 
         Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, PaginationFilter paginationFilter);
 

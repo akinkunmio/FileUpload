@@ -16,8 +16,7 @@ namespace FileUploadAndValidation.Repository
         private readonly INasRepository _nasRepository;
         private readonly IDbRepository _dbRepository;
 
-        public BatchRepository(IBatchRepository batchRepository,
-            IDbRepository dbRepository,
+        public BatchRepository(IDbRepository dbRepository,
             INasRepository nasRepository,
             IHttpService httpService)
         {
