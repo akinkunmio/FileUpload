@@ -22,13 +22,13 @@ namespace FileUploadAndValidation.FileServices
             _logger = logger;
         }
 
-        public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows)
+        public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
+            ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
             ArgumentGuard.NotNullOrEmpty(rows, nameof(rows));
 
             var headerRow = new Row();
-            var uploadResult = new UploadResult();
             IEnumerable<RowDetail> billPayments = new List<RowDetail>();
             IEnumerable<RowDetail> failedItemTypeValidationBills = new List<RowDetail>();
 

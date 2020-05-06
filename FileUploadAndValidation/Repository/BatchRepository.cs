@@ -38,7 +38,9 @@ namespace FileUploadAndValidation.Repository
                 CustomerFileName = request.FileName,
                 ItemType = request.ItemType,
                 ContentType = request.ContentType,
-                UserId = (long)request.UserId
+                UserId = (long)request.UserId,
+                ProductName = request.ProductName,
+                ProductCode = request.ProductCode
             }, validRows, failures);
 
 

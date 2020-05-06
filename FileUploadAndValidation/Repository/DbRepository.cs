@@ -28,7 +28,7 @@ namespace FileUploadAndValidation.Repository
             _logger = logger;
         }
         
-        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, IList<RowDetail> payments, IList<Failure> invalidPayments, string itemType = null)
+        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, IList<RowDetail> payments, IList<Failure> invalidPayments)
         {
             try
             {
@@ -50,13 +50,15 @@ namespace FileUploadAndValidation.Repository
                                    upload_date = fileDetail.UploadDate,
                                    content_type = fileDetail.ContentType,
                                    nas_raw_file = fileDetail.NasRawFile,
-                                   userid = fileDetail.UserId
+                                   userid = fileDetail.UserId,
+                                   product_code = fileDetail.ProductCode,
+                                   product_name = fileDetail.ProductName
                                },
                                transaction: sqlTransaction,
                                commandType: System.Data.CommandType.StoredProcedure);
 
-                            if (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) 
-                                || itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
+                            if (fileDetail.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) 
+                                || fileDetail.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
                             {
                                 foreach (var billPayment in payments)
                                 {
@@ -97,7 +99,7 @@ namespace FileUploadAndValidation.Repository
                                 }
                             }
 
-                            if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+                            if (fileDetail.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
                             {
                                 foreach (var valid in payments)
                                 {
@@ -152,7 +154,7 @@ namespace FileUploadAndValidation.Repository
                                 }
                             }
 
-                            if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+                            if (fileDetail.ItemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
                             {
                                 foreach (var validWht in payments)
                                 {
@@ -478,7 +480,7 @@ namespace FileUploadAndValidation.Repository
             if (itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
                 || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
             {
-                return @"sp_get_bill_payments_status_by_transactions_summary_id";
+                return @"sp_get_payments_status_by_transactions_summary_id";
             }
             else if(itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
             {

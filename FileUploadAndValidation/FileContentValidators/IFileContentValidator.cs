@@ -10,6 +10,6 @@ namespace FileUploadAndValidation.FileServices
 
     public interface IFileContentValidator
     {
-        Task<UploadResult> Validate(FileUploadRequest uploadRequest, IEnumerable<Row> rows);
+        Task<UploadResult> Validate(FileUploadRequest uploadRequest, IEnumerable<Row> rows, UploadResult uploadResult);
     }
 }

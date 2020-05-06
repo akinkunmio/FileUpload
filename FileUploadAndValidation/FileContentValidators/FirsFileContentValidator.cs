@@ -137,13 +137,12 @@ namespace FileUploadAndValidation.FileServices
             return await Task.FromResult(new ValidateRowModel { IsValid = isValid, Failure = failure });
         }
 
-        public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows)
+        public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
             ArgumentGuard.NotNullOrEmpty(rows, nameof(rows));
 
             var headerRow = new Row();
-            var uploadResult = new UploadResult();
             IEnumerable<RowDetail> firsPayments = new List<RowDetail>();
             IEnumerable<RowDetail> failedItemTypeValidationBills = new List<RowDetail>();
 

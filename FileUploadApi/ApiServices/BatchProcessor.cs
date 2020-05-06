@@ -64,17 +64,15 @@ namespace FileUploadApi.ApiServices
 
             if (request.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
                 ArgumentGuard.NotNullOrWhiteSpace(request.BusinessTin, nameof(request.BusinessTin));
-
-            IEnumerable<Row> rows = default;
             var uploadResult = new UploadResult();
 
             var batchId = GenericHelpers.GenerateBatchId(request.FileName, DateTime.Now);
 
             using (var contentStream = request.FileRef.OpenReadStream())
             {
-                rows = GetRows(request.FileExtension, contentStream);
+                IEnumerable<Row> rows = GetRows(request.FileExtension, contentStream);
 
-                uploadResult = await ValidateFileContentAsync(request, rows);
+                uploadResult = await ValidateFileContentAsync(request, rows, uploadResult);
 
                 await _batchRepository.Save(batchId, request, uploadResult.ValidRows, uploadResult.Failures);
 
@@ -99,14 +97,14 @@ namespace FileUploadApi.ApiServices
             }
         }
 
-        private async Task<UploadResult> ValidateFileContentAsync(FileUploadRequest request, IEnumerable<Row> rows)
+        private async Task<UploadResult> ValidateFileContentAsync(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             switch (request.ContentType.ToLower())
             {
                 case "billpayment":
-                    return await _fileContentValidators.ToArray()[0].Validate(request, rows);
+                    return await _fileContentValidators.ToArray()[0].Validate(request, rows, uploadResult);
                 case "firs":
-                    return await _fileContentValidators.ToArray()[1].Validate(request, rows);
+                    return await _fileContentValidators.ToArray()[1].Validate(request, rows, uploadResult);
                 default:
                     throw new AppException("Content type not supported!.");
             }

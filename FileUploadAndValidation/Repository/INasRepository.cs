@@ -31,7 +31,7 @@ namespace FileUploadAndValidation.Repository
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation + @"validate\";
+                var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
                 var fileName = batchId + "_validate.json";
 
                 dynamic rows = MapToNasToValidateFilePOCO(itemType, rowDetails); 
@@ -39,7 +39,7 @@ namespace FileUploadAndValidation.Repository
 
                 var path = fileLocation + fileName;
 
-                //File.WriteAllText(path, json);
+                File.WriteAllText(path, json);
                 
                 return await Task.FromResult(new FileProperty 
                 { 
@@ -51,7 +51,7 @@ namespace FileUploadAndValidation.Repository
             catch(Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while saving file with batch id : {batchId} to NAS for validation");
+                throw new AppException($"An error occured while saving file to NAS for validation");
             }
         }
 
@@ -264,7 +264,7 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<string> SaveValidationResultFile(string batchId, string itemType, IEnumerable<RowDetail> content)
         {
-            var location = @"../data/uservalidationresult/";
+            var location = _appConfig.NasFolderLocation + @"\uservalidationresult\";
             var fileName = batchId + "_validationresult.csv";
 
             var path = Path.Combine(location, fileName);
@@ -288,7 +288,7 @@ namespace FileUploadAndValidation.Repository
             catch(Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while saving the user file validation result with batch id : {batchId} to NAS ");
+                throw new AppException($"An error occured while saving the user validation result file to NAS ");
             }
 
             return fileName;

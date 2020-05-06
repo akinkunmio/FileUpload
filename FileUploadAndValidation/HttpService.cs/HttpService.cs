@@ -66,7 +66,7 @@ namespace FileUploadAndValidation.UploadServices
             ValidationResponse validateResponse;
             try
             {
-                var requestBody = ConstructValidateRequestString(greaterThanFifty, fileProperty.Url, fileProperty.ItemType, fileProperty.BusinessTin, fileProperty.BatchId);
+                var requestBody = ConstructValidateRequestString(greaterThanFifty, fileProperty.Url, fileProperty.ContentType, fileProperty.BusinessTin, fileProperty.BatchId);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ContentType))
                 {
