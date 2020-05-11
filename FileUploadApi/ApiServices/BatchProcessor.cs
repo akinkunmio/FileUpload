@@ -64,17 +64,23 @@ namespace FileUploadApi.ApiServices
 
             if (request.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
                 ArgumentGuard.NotNullOrWhiteSpace(request.BusinessTin, nameof(request.BusinessTin));
-            var uploadResult = new UploadResult();
+            
+            var uploadResult = new UploadResult
+            { 
+                ProductCode = request.ProductCode, 
+                ProductName = request.ProductName, 
+                FileName = request.FileName 
+            };
 
-            var batchId = GenericHelpers.GenerateBatchId(request.FileName, DateTime.Now);
+            uploadResult.BatchId = GenericHelpers.GenerateBatchId(request.FileName, DateTime.Now);
 
             using (var contentStream = request.FileRef.OpenReadStream())
             {
                 IEnumerable<Row> rows = GetRows(request.FileExtension, contentStream);
 
-                uploadResult = await ValidateFileContentAsync(request, rows, uploadResult);
+                await ValidateFileContentAsync(request, rows, uploadResult);
 
-                await _batchRepository.Save(batchId, request, uploadResult.ValidRows, uploadResult.Failures);
+                await _batchRepository.Save(uploadResult, request);
 
                 return uploadResult;
             }
@@ -126,8 +132,8 @@ namespace FileUploadApi.ApiServices
                 BatchId = batchFileSummary.BatchId,
                 ContentType = batchFileSummary.ContentType,
                 ItemType = batchFileSummary.ItemType,
-                NumOfAllRecords = batchFileSummary.NumOfRecords,
-                NumOfValidRecords = batchFileSummary.NumOfValidRecords,
+                RecordsCount = batchFileSummary.NumOfRecords,
+                ValidRecordsCount = batchFileSummary.NumOfValidRecords,
                 Status = batchFileSummary.TransactionStatus,
                 UploadDate = batchFileSummary.UploadDate
             };
@@ -137,37 +143,28 @@ namespace FileUploadApi.ApiServices
 
         public async Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, PaginationFilter paginationFilter)
         {
-            ArgumentGuard.NotNullOrWhiteSpace(userId, nameof(userId));
-
             var userFileSummaries = new PagedData<BatchFileSummary>();
             var pagedData = new PagedData<BatchFileSummaryDto>();
-            try
-            {
-                userFileSummaries = await _dbRepository.GetUploadSummariesByUserId(userId, paginationFilter);
 
-                pagedData.Data = userFileSummaries.Data.Select(u => new BatchFileSummaryDto
-                {
-                    BatchId = u.BatchId,
-                    ContentType = u.ContentType,
-                    ItemType = u.ItemType,
-                    NumOfAllRecords = u.NumOfRecords,
-                    NumOfValidRecords = u.NumOfValidRecords,
-                    Status = u.TransactionStatus,
-                    UploadDate = u.UploadDate,
-                    FileName = u.FileName ?? GenericHelpers.GetFileNameFromBatchId(u.BatchId)
-                });
+            userFileSummaries = await _dbRepository.GetUploadSummariesByUserId(userId, paginationFilter);
 
-                pagedData.TotalRowsCount = userFileSummaries.TotalRowsCount;
-            }
-            catch (AppException appEx)
+            pagedData.Data = userFileSummaries.Data.Select(u => new BatchFileSummaryDto
             {
-                throw appEx;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error occured while getting user upload summaries with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw ex;
-            }
+                BatchId = u.BatchId,
+                ContentType = u.ContentType,
+                ItemType = u.ItemType,
+                RecordsCount = u.NumOfRecords,
+                ValidRecordsCount = u.NumOfValidRecords,
+                InvalidRecordsCount = u.NumOfRecords - u.NumOfValidRecords,
+                Status = u.TransactionStatus,
+                UploadDate = u.UploadDate,
+                FileName = u.NameOfFile ?? GenericHelpers.GetFileNameFromBatchId(u.BatchId),
+                ValidAmountSum = u.ValidAmountSum,
+                ProductCode = u.ProductCode,
+                ProductName = u.ProductName,
+            });
+
+            pagedData.TotalRowsCount = userFileSummaries.TotalRowsCount;
 
             return pagedData;
         }
@@ -175,29 +172,27 @@ namespace FileUploadApi.ApiServices
         public async Task<PagedData<dynamic>> GetBillPaymentsStatus(string batchId, PaginationFilter pagination)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
-            ArgumentGuard.NotNullOrWhiteSpace(pagination.ItemType, nameof(pagination.ItemType));
-            ArgumentGuard.NotNullOrWhiteSpace(pagination.ContentType, nameof(pagination.ContentType));
-
+            
             var paymentStatuses = new PagedData<dynamic>();
 
-            //IEnumerable<BillPayment> billPayments = new List<BillPayment>();
-            //IEnumerable<BillPaymentRowStatus> billPaymentStatuses = default;
-            //int totalRowCount;
-            //double validAmountSum;
             try
             {
                 var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
                 var paymentStatus = await _dbRepository.GetPaymentRowStatuses(batchId, pagination);
 
-                paymentStatuses.TotalRowsCount = paymentStatus.TotalRowsCount;
-                paymentStatuses.TotalAmountSum = paymentStatus.ValidAmountSum;
-                paymentStatuses.ProductCode = fileSummary.ProductCode ?? "";
-                paymentStatuses.ProductName = fileSummary.ProductName ??  "";
-                paymentStatuses.FileName = fileSummary.FileName ?? GenericHelpers.GetFileNameFromBatchId(batchId);
+                paymentStatuses.TotalRowsCount = fileSummary.NumOfRecords;
+                paymentStatuses.TotalAmountSum = fileSummary.ValidAmountSum;
+                paymentStatuses.ProductCode = fileSummary.ProductCode;
+                paymentStatuses.ProductName = fileSummary.ProductName;
+                paymentStatuses.ItemType = fileSummary.ItemType;
+                paymentStatuses.ContentType = fileSummary.ContentType;
+                paymentStatuses.InvalidCount = fileSummary.NumOfRecords - fileSummary.NumOfValidRecords;
+                paymentStatuses.ValidRowCount = fileSummary.NumOfValidRecords;
+                paymentStatuses.FileName = fileSummary.NameOfFile;
 
-                if (pagination.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
-                || pagination.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
+                || fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
                     paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new BillPaymentRowStatusUntyped
                     {
                         Amount = s.Amount,
@@ -205,11 +200,11 @@ namespace FileUploadApi.ApiServices
                         ItemCode = s.ItemCode,
                         ProductCode = s.ProductCode,
                         Error = s.Error,
-                        Row = s.RowNumber,
+                        Row = s.RowNum,
                         Status = s.RowStatus
                     });
 
-                if (pagination.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.WHT))
                     paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new FirsWhtRowStatusUntyped
                     {
                         BeneficiaryAddress = s.BeneficiaryAddress,
@@ -223,11 +218,11 @@ namespace FileUploadApi.ApiServices
                         PeriodCovered = s.PeriodCovered,
                         InvoiceNumber = s.InvoiceNumber,
                         Error = s.Error,
-                        Row = s.RowNumber,
+                        Row = s.RowNum,
                         Status = s.RowStatus
                     });
 
-                if (pagination.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.WVAT))
                     paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new FirsWVatRowStatusUntyped
                     {
                         ContractorName = s.ContractorName,
@@ -245,12 +240,12 @@ namespace FileUploadApi.ApiServices
                         WvatRate = s.WvatRate,
                         WvatValue = s.WvatValue,
                         Error = s.Error,
-                        Row = s.RowNumber,
+                        Row = s.RowNum,
                         Status = s.RowStatus
                     });
 
                 if (paymentStatuses.Data.Count() < 1)
-                    throw new AppException($"Upload Batch Id '{batchId}' was not found", (int)HttpStatusCode.NotFound);
+                    throw new AppException($"No result found for Batch Id '{batchId}'", (int)HttpStatusCode.NotFound);
             }
             catch (AppException appEx)
             {
@@ -268,82 +263,63 @@ namespace FileUploadApi.ApiServices
         public async Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
         {
             ConfirmedBillResponse result;
-            try
-            {
-                var confirmedBillPayments = await _dbRepository.GetConfirmedBillPayments(batchId);
 
-                if (confirmedBillPayments.Count() < 0 || !confirmedBillPayments.Any())
-                    throw new AppException($"Records awaiting payment initiation not found for batch Id: {batchId}", (int)HttpStatusCode.NotFound);
+            var confirmedBillPayments = await _dbRepository.GetConfirmedBillPayments(batchId);
 
-                var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, initiatePaymentOptions.ItemType, confirmedBillPayments);
+            if (confirmedBillPayments.Count() <= 0 || !confirmedBillPayments.Any())
+                throw new AppException($"Records awaiting payment initiation not found for batch Id: {batchId}", (int)HttpStatusCode.NotFound);
 
-                var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
+            var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, initiatePaymentOptions.ItemType, confirmedBillPayments);
 
-                fileProperty.ContentType = fileSummary.ContentType;
-                fileProperty.ItemType = fileSummary.ItemType;
+            var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
-                result = await _httpService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
+            fileProperty.ContentType = fileSummary.ContentType;
+            fileProperty.ItemType = fileSummary.ItemType;
 
-                await _dbRepository.UpdateBillPaymentInitiation(batchId);
-            }
-            catch (AppException appEx)
-            {
-                throw appEx;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error occured while while initiating payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("An error occured while initiating payment");
-            }
+            result = await _httpService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
+
+            await _dbRepository.UpdateBillPaymentInitiation(batchId);
 
             return result;
         }
 
-        public async Task<string> GetFileTemplateContentAsync(string itemType, MemoryStream outputStream)
+        public async Task<FileTemplateModel> GetFileTemplateContentAsync(string contentType, string itemType, MemoryStream outputStream)
         {
-            string templateFileName;
+            var result = new FileTemplateModel();
 
-            try
-            {
-                switch (itemType.ToLower())
-                {
-                    case "billpayment":
-                        templateFileName = GenericConstants.BillPaymentTxtTemplate;
-                        break;
-                    case "wht":
-                        templateFileName = GenericConstants.BillPaymentCsvTemplate;
-                        break;
-                    case "wvat":
-                        templateFileName = GenericConstants.BillPaymentXlsxTemplate;
-                        break;
-                    default:
-                        throw new AppException("File type not supported!.");
-                }
-                return await _nasRepository.GetTemplateFileContentAsync(templateFileName, outputStream);
-            }
-            catch (AppException ex)
-            {
-                throw ex;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.WHT))
+                result.FileName = GenericConstants.FirsWhtCsvTemplate;
+
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.WHT))
+                result.FileName = GenericConstants.FirsWvatCsvTemplate;
+
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment))
+                result.FileName = GenericConstants.BillPaymentCsvTemplate;
+
+            result.FilePath = await _nasRepository.GetTemplateFileContentAsync(result.FileName, outputStream);
+
+            return result;
         }
 
-        public async Task<string> GetFileValidationResultAsync(string batchId, MemoryStream outputStream)
+        public async Task<FileValidationResultModel> GetFileValidationResultAsync(string batchId, MemoryStream outputStream)
         {
-            var batchFileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
+            var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
-            if (batchFileSummary == null)
+            if (fileSummary == null)
                 throw new AppException($"Batch Upload Summary for BatchId: {batchId} not found", (int)HttpStatusCode.NotFound);
 
-            if (string.IsNullOrWhiteSpace(batchFileSummary.NasUserValidationFile))
+            if (string.IsNullOrWhiteSpace(fileSummary.NasUserValidationFile))
                 throw new AppException($"Validation file not found for batch with Id : {batchId}", (int)HttpStatusCode.NotFound);
 
-            await _nasRepository.GetUserValidationResultAsync(batchFileSummary.NasUserValidationFile, outputStream);
+            await _nasRepository.GetUserValidationResultAsync(fileSummary.NasUserValidationFile, outputStream);
 
-            return batchFileSummary.NasUserValidationFile;
+            return new FileValidationResultModel 
+            { 
+                NasValidationFileName = fileSummary.NasUserValidationFile, 
+                RawFileName = fileSummary.NameOfFile 
+            };
         }
 
     }

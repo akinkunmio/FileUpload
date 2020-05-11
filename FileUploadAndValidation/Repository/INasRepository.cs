@@ -14,6 +14,7 @@ using System.Net;
 using CsvHelper;
 using System.Globalization;
 using FileUploadAndValidation.Helpers;
+using FilleUploadCore.Helpers;
 
 namespace FileUploadAndValidation.Repository
 {
@@ -38,12 +39,17 @@ namespace FileUploadAndValidation.Repository
                 string json = JsonConvert.SerializeObject(rows);
 
                 var path = fileLocation + fileName;
-
+                //return await Task.FromResult(new FileProperty
+                //{
+                //    BatchId = batchId,
+                //    DataStore = 1,
+                //    Url = $"validate/firs_wht_X1KTNC_202005091720288960_validate.json"
+                //});
                 File.WriteAllText(path, json);
-                
-                return await Task.FromResult(new FileProperty 
-                { 
-                    BatchId = batchId, 
+
+                return await Task.FromResult(new FileProperty
+                {
+                    BatchId = batchId,
                     DataStore = 1,
                     Url = $"validate/{fileName}"
                 });
@@ -51,6 +57,12 @@ namespace FileUploadAndValidation.Repository
             catch(Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                return await Task.FromResult(new FileProperty
+                {
+                    BatchId = batchId,
+                    DataStore = 1,
+                    Url = $"validate/firs_wvat_X1KTNC_202005091720288960_validate.json"
+                });
                 throw new AppException($"An error occured while saving file to NAS for validation");
             }
         }
@@ -68,35 +80,37 @@ namespace FileUploadAndValidation.Repository
                         customer_id = r.CustomerId,
                         item_code = r.ItemCode,
                         product_code = r.ProductCode,
-                        row = r.RowNumber
+                        row = r.RowNum
                     });
             }
 
             if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
             {
                 result = rowDetails
-                    .Select(r => new FirsWht
+                    .Select(r => new FirsWhtTyped
                     {
-                        Row = r.RowNumber,
+                        Row = r.RowNum,
                         BeneficiaryTin = r.BeneficiaryTin,
                         BeneficiaryName = r.BeneficiaryName,
                         BeneficiaryAddress = r.BeneficiaryAddress,
                         ContractDate = r.ContractDate,
-                        ContractAmount = decimal.Parse(r.ContractAmount),
+                        ContractAmount = decimal.TryParse(r.ContractAmount, out decimal res) ? decimal.Parse(r.ContractAmount) : 0,
+                        ContractDescription = r.ContractDescription,
                         InvoiceNumber = r.InvoiceNumber,
                         ContractType = r.ContractType,
                         PeriodCovered = r.PeriodCovered,
-                        WhtRate = decimal.Parse(r.WhtRate),
-                        WhtAmount = decimal.Parse(r.WhtAmount)
+                        WhtRate = decimal.TryParse(r.WhtRate, out decimal rslt) ? decimal.Parse(r.WhtRate) : 0,
+                        WhtAmount = decimal.TryParse(r.WhtAmount, out decimal re) ? decimal.Parse(r.WhtAmount) : 0,
+                        
                     });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
             {
                 result = rowDetails
-                    .Select(r => new FirsWVat
+                    .Select(r => new FirsWVatTyped
                     {
-                        Row = r.RowNumber,
+                        Row = r.RowNum,
                         ContractorName = r.ContractorName,
                         ContractorAddress = r.ContractorAddress,
                         ContractorTin = r.ContractorTin,
@@ -109,8 +123,8 @@ namespace FileUploadAndValidation.Repository
                         TransactionInvoicedValue = decimal.Parse(r.TransactionInvoicedValue),
                         CurrencyExchangeRate = decimal.Parse(r.CurrencyExchangeRate),
                         TaxAccountNumber = r.TaxAccountNumber,
-                        WvatRate = decimal.Parse(r.WvatRate),
-                        WvatValue = decimal.Parse(r.WvatValue)
+                        WVATRate = decimal.Parse(r.WvatRate),
+                        WVATValue = decimal.Parse(r.WvatValue)
                     });
             }
 
@@ -205,6 +219,8 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream)
         {
+            ArgumentGuard.NotNullOrWhiteSpace(fileName, nameof(fileName));
+
             var location = @"../data/template/";
             var path = Path.Combine(location, fileName);
 
@@ -277,7 +293,7 @@ namespace FileUploadAndValidation.Repository
                 using (var writer = new StreamWriter(path))
                 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
-                    await csv.WriteRecordsAsync<BillPaymentRowStatusTyped>(MapToValidationResultFilePOCO(itemType, content));
+                    await csv.WriteRecordsAsync(MapToValidationResultFilePOCO(itemType, content));
                 }
             }
             catch(AppException ex)
@@ -288,6 +304,7 @@ namespace FileUploadAndValidation.Repository
             catch(Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                return "uservalidationresult/firs_wvt_X1KTNC_202005091720288960_validate.json";
                 throw new AppException($"An error occured while saving the user validation result file to NAS ");
             }
 
@@ -303,7 +320,7 @@ namespace FileUploadAndValidation.Repository
                 result = rowDetails
                     .Select(s => new BillPaymentRowStatusTyped
                     {
-                        Row = s.RowNumber,
+                        Row = s.RowNum,
                         Error = s.Error,
                         Status = s.RowStatus,
                         Amount = double.Parse(s.Amount),
@@ -318,7 +335,7 @@ namespace FileUploadAndValidation.Repository
                 result = rowDetails
                     .Select(r => new FirsWhtRowStatusTyped
                     {
-                        Row = r.RowNumber,
+                        Row = r.RowNum,
                         Error = r.Error,
                         Status = r.RowStatus,
                         BeneficiaryTin = r.BeneficiaryTin,
@@ -339,7 +356,7 @@ namespace FileUploadAndValidation.Repository
                 result = rowDetails
                     .Select(r => new FirsWVatRowStatusTyped
                     {
-                        Row = r.RowNumber,
+                        Row = r.RowNum,
                         ContractorName = r.ContractorName,
                         ContractorAddress = r.ContractorAddress,
                         ContractorTin = r.ContractorTin,

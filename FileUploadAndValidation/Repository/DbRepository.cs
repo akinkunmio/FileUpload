@@ -52,7 +52,8 @@ namespace FileUploadAndValidation.Repository
                                    nas_raw_file = fileDetail.NasRawFile,
                                    userid = fileDetail.UserId,
                                    product_code = fileDetail.ProductCode,
-                                   product_name = fileDetail.ProductName
+                                   product_name = fileDetail.ProductName,
+                                   file_name = fileDetail.CustomerFileName
                                },
                                transaction: sqlTransaction,
                                commandType: System.Data.CommandType.StoredProcedure);
@@ -70,7 +71,7 @@ namespace FileUploadAndValidation.Repository
                                             customer_id = billPayment.CustomerId,
                                             amount = billPayment.Amount,
                                             created_date = billPayment.CreatedDate,
-                                            row_num = billPayment.RowNumber,
+                                            row_num = billPayment.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
                                             initial_validation_status = "Valid"
                                         },
@@ -87,7 +88,7 @@ namespace FileUploadAndValidation.Repository
                                             item_code = invalid.Row.ItemCode,
                                             customer_id = invalid.Row.CustomerId,
                                             amount = invalid.Row.Amount,
-                                            row_num = invalid.Row.RowNumber,
+                                            row_num = invalid.Row.RowNum,
                                             row_status = "Invalid",
                                             created_date = invalid.Row.CreatedDate,
                                             transactions_summary_Id = transactionSummaryId,
@@ -111,6 +112,7 @@ namespace FileUploadAndValidation.Repository
                                             beneficiary_name = valid.BeneficiaryName,
                                             beneficiary_tin = valid.BeneficiaryTin,
                                             contract_amount = valid.ContractAmount,
+                                            contract_description = valid.ContractDescription,
                                             contract_date = valid.ContractDate,
                                             contract_type = valid.ContractType,
                                             wht_rate = valid.WhtRate,
@@ -118,7 +120,7 @@ namespace FileUploadAndValidation.Repository
                                             period_covered = valid.PeriodCovered,
                                             invoice_number = valid.InvoiceNumber,
                                             created_date = valid.CreatedDate,
-                                            row_num = valid.RowNumber,
+                                            row_num = valid.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
                                             initial_validation_status = "Valid"
                                         },
@@ -136,6 +138,7 @@ namespace FileUploadAndValidation.Repository
                                             beneficiary_name = invalid.Row.BeneficiaryName,
                                             beneficiary_tin = invalid.Row.BeneficiaryTin,
                                             contract_amount = invalid.Row.ContractAmount,
+                                            contract_description = invalid.Row.ContractDescription,
                                             contract_date = invalid.Row.ContractDate,
                                             contract_type = invalid.Row.ContractType,
                                             wht_rate = invalid.Row.WhtRate,
@@ -144,7 +147,7 @@ namespace FileUploadAndValidation.Repository
                                             invoice_number = invalid.Row.InvoiceNumber,
                                             row_status = "Invalid",
                                             created_date = invalid.Row.CreatedDate,
-                                            row_num = invalid.Row.RowNumber,
+                                            row_num = invalid.Row.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
                                             initial_validation_status = "Invalid",
                                             error = invalid.Row.Error
@@ -177,7 +180,7 @@ namespace FileUploadAndValidation.Repository
                                             wvat_rate = validWht.WvatRate,
                                             wvat_value = validWht.WvatValue,
                                             created_date = validWht.CreatedDate,
-                                            row_num = validWht.RowNumber,
+                                            row_num = validWht.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
                                             initial_validation_status = "Valid"
                                         },
@@ -206,7 +209,7 @@ namespace FileUploadAndValidation.Repository
                                             wvat_rate = invalidWvat.Row.WvatRate,
                                             wvat_value = invalidWvat.Row.WvatValue,
                                             created_date = invalidWvat.Row.CreatedDate,
-                                            row_num = invalidWvat.Row.RowNumber,
+                                            row_num = invalidWvat.Row.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
                                             row_status = "Invalid",
                                             initial_validation_status = "Invalid",
@@ -231,7 +234,7 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogError("Error occured while inserting payment items in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                throw new AppException("An error occured while querying the DB");
             }
         }
 
@@ -261,7 +264,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Update Successful Upload operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    throw new AppException("An error occured while querying the DB");
                 }
             }
         }
@@ -291,7 +294,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    throw new AppException("An error occured while querying the DB");
                 }
             }
         }
@@ -316,7 +319,9 @@ namespace FileUploadAndValidation.Repository
                     if (results == null)
                         throw new AppException($"No file has been uploaded by user!.", (int)HttpStatusCode.NotFound);
 
-                    result.Data = results.Skip((paginationFilter.PageNumber - 1) * paginationFilter.PageSize).Take(paginationFilter.PageSize);
+                    result.Data = results
+                                    .Skip((paginationFilter.PageNumber - 1) * paginationFilter.PageSize)
+                                    .Take(paginationFilter.PageSize);
 
                     result.TotalRowsCount = results.Count();
 
@@ -329,7 +334,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    throw new AppException("An error occured while querying the DB");
                 }
             }
         }
@@ -359,7 +364,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    throw new AppException("An error occured while querying the DB");
                 }
             }
         }
@@ -398,7 +403,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    throw new AppException("An error occured while querying the DB");
                 }
             }
         }
@@ -440,7 +445,7 @@ namespace FileUploadAndValidation.Repository
                     IEnumerable<RowDetail> result = new List<RowDetail>();
 
                     result = await sqlConnection.QueryAsync<RowDetail>(
-                       sql: GetSPForGetStatusBySummaryId(pagination.ItemType),
+                       sql: GetSPForGetStatusBySummaryId(summary.ItemType),
                        param: new
                        {
                            transactions_summary_id = summaryId,
@@ -456,10 +461,6 @@ namespace FileUploadAndValidation.Repository
                     return new RowStatusDtoObject 
                     { 
                         RowStatusDto = result, 
-                        TotalRowsCount = summary.NumOfRecords, 
-                        InvalidRowCount = summary.NumOfRecords - summary.NumOfValidRecords, 
-                        ValidRowCount = summary.NumOfValidRecords, 
-                        ValidAmountSum = summary.ValidAmountSum 
                     };
                 }
                 catch(AppException ex)
@@ -470,7 +471,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    throw new AppException("An error occured while querying the DB");
                 }
             }
         }
@@ -516,7 +517,7 @@ namespace FileUploadAndValidation.Repository
                         });
 
                     var valids = updateBillPayments.RowStatuses?.Where(v => v.Status.ToLower().Equals("valid"));
-                    var totalAmount = rowStatusDto.RowStatusDto?.Where(r => valids.Any(v => v.Row == r.RowNumber)).Select(s => decimal.Parse(s.Amount)).Sum();
+                    var totalAmount = rowStatusDto.RowStatusDto?.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.Amount)).Sum();
 
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
@@ -584,7 +585,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Update Bill Payment Validation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    throw new AppException("An error occured while querying the DB");
                 }
             }
         }
@@ -598,11 +599,11 @@ namespace FileUploadAndValidation.Repository
             }
             else if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
             {
-                return @"sp_update_wht_payments_detail";
+                return @"sp_update_firs_wht_payments_detail";
             }
             else if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
             {
-                return @"sp_update_wvat_payments_detail";
+                return @"sp_update_firs_wvat_payments_detail";
             }
             else return "";
         }
@@ -616,16 +617,15 @@ namespace FileUploadAndValidation.Repository
             }
             else if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
             {
-                return @"sp_update_wht_payments_detail_enterprise_error";
+                return @"sp_update_firs_wht_detail_enterprise_error";
             }
             else if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
             {
-                return @"sp_update_wvat_payments_detail_enterprise_error";
+                return @"sp_update_firs_wvat_detail_enterprise_error";
             }
             else return "";
         }
 
-      
         public async Task UpdateBillPaymentInitiation(string batchId)
         {
             using (var connection = new SqlConnection(_appConfig.UploadServiceConnectionString))
@@ -657,7 +657,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Update Bill Payment Initiation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    throw new AppException("An error occured while querying the DB");
                 }
             }
         }

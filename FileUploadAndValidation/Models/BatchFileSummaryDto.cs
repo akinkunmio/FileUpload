@@ -11,9 +11,9 @@ namespace FileUploadApi.Models
 
         public string UploadDate { get; set; }
 
-        public int NumOfAllRecords { get; set; }
+        public int RecordsCount { get; set; }
 
-        public int NumOfValidRecords { get; set; }
+        public int ValidRecordsCount { get; set; }
 
         public string Status { get; set; }
 
@@ -22,5 +22,9 @@ namespace FileUploadApi.Models
         public string ContentType { get; set; }
 
         public string FileName { get; set; }
+        public decimal ValidAmountSum { get; set; }
+        public int InvalidRecordsCount { get; set; }
+        public string ProductCode { get; set; }
+        public string ProductName { get; set; }
     }
 }

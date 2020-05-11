@@ -92,7 +92,7 @@ namespace FileUploadAndValidation.FileServices
                             {
                                 Row = new RowDetail
                                 {
-                                    RowNumber = nonDistinct.RowNumber,
+                                    RowNum = nonDistinct.RowNum,
                                     CustomerId = nonDistinct.CustomerId,
                                     ItemCode = nonDistinct.ItemCode,
                                     ProductCode = nonDistinct.ProductCode,
@@ -123,7 +123,7 @@ namespace FileUploadAndValidation.FileServices
                             {
                                 Row = new RowDetail
                                 {
-                                    RowNumber = nonDistinct.RowNumber,
+                                    RowNum = nonDistinct.RowNum,
                                     CustomerId = nonDistinct.CustomerId,
                                     ItemCode = nonDistinct.ItemCode,
                                     ProductCode = nonDistinct.ProductCode,
@@ -141,7 +141,7 @@ namespace FileUploadAndValidation.FileServices
                     }
 
                     uploadResult.ValidRows = uploadResult.ValidRows
-                        .Where(b => !failedItemTypeValidationBills.Any(n => n.RowNumber == b.RowNumber))
+                        .Where(b => !failedItemTypeValidationBills.Any(n => n.RowNum == b.RowNum))
                         .Select(r => r).ToList();
 
                 }
@@ -155,7 +155,7 @@ namespace FileUploadAndValidation.FileServices
                         CustomerId = f.Row.CustomerId,
                         ItemCode = f.Row.ItemCode,
                         ProductCode = f.Row.ProductCode,
-                        RowNumber = f.Row.RowNumber,
+                        RowNum = f.Row.RowNum,
                         Error = GenericHelpers.ConstructValidationError(f)
                     }
                 }).ToList();
@@ -193,7 +193,7 @@ namespace FileUploadAndValidation.FileServices
                 if (validateRowModel.IsValid)
                     validRows.Add(new RowDetail
                     {
-                        RowNumber = row.Index,
+                        RowNum = row.Index,
                         ProductCode = row.Columns[0].Value,
                         ItemCode = row.Columns[1].Value,
                         CustomerId = row.Columns[2].Value,
@@ -209,32 +209,30 @@ namespace FileUploadAndValidation.FileServices
 
         private async Task<ValidateRowModel> ValidateRow(Row row, ColumnContract[] columnContracts)
         {
-            var isValid = true;
-
-            var validationErrors = GenericHelpers.ValidateRowCell(row, columnContracts, isValid);
+            var validationErrorsResult = GenericHelpers.ValidateRowCell(row, columnContracts);
 
             var failure = new Failure();
 
             var rowDetail = new RowDetail
             {
-                RowNumber = row.Index,
+                RowNum = row.Index,
                 ProductCode = row.Columns[0].Value,
                 ItemCode = row.Columns[1].Value,
                 CustomerId = row.Columns[2].Value,
                 Amount = row.Columns[3].Value
             };
 
-            if (validationErrors.Count() > 0)
+            if (validationErrorsResult.ValidationErrors.Count() > 0)
             {
                 failure =
                     new Failure
                     {
-                        ColumnValidationErrors = validationErrors,
+                        ColumnValidationErrors = validationErrorsResult.ValidationErrors,
                         Row = rowDetail
                     };
             }
 
-            return await Task.FromResult(new ValidateRowModel { IsValid = isValid, Failure = failure });
+            return await Task.FromResult(new ValidateRowModel { IsValid = validationErrorsResult.Validity, Failure = failure });
         }
 
        

@@ -10,6 +10,8 @@ namespace FileUploadAndValidation.Helpers
 {
     public static class GenericHelpers
     {
+        private static bool isValid;
+
         public static void ValidateHeaderRow(Row headerRow, ColumnContract[] columnContracts)
         {
             if (headerRow == null)
@@ -42,9 +44,10 @@ namespace FileUploadAndValidation.Helpers
             return result.ToString();
         }
 
-        public static List<ValidationError> ValidateRowCell(Row row, ColumnContract[] columnContracts, bool isValid)
+        public static ValidateRowResult ValidateRowCell(Row row, ColumnContract[] columnContracts)
         {
             var validationErrors = new List<ValidationError>();
+            bool isValid = true;
 
             for (var i = 0; i < columnContracts.Length; i++)
             {
@@ -96,7 +99,7 @@ namespace FileUploadAndValidation.Helpers
                 }
             }
 
-            return validationErrors;
+            return new ValidateRowResult { ValidationErrors = validationErrors, Validity = isValid };
         }
 
         public static Dictionary<string, Type> ColumnDataTypes()
@@ -114,7 +117,8 @@ namespace FileUploadAndValidation.Helpers
 
         public static string GenerateBatchId(string fileName, DateTime date)
         {
-            return fileName + "_" + RandomString() + "_" + date.ToString("yyyyMMddHHmmssffff");
+            //return fileName + "_" + RandomString() + "_" + date.ToString("yyyyMMddHHmmssffff");
+            return "firs_wvat_X1KTNC_202005091720288960";
         }
         
         public static string GetFileNameFromBatchId(string batchId)
@@ -130,5 +134,11 @@ namespace FileUploadAndValidation.Helpers
             return new string(Enumerable.Repeat(chars, 6)
                 .Select(s => s[new Random().Next(s.Length)]).ToArray());
         }
+    }
+
+    public class ValidateRowResult
+    {
+        public List<ValidationError> ValidationErrors { get; set; }
+        public bool Validity { get; set; }
     }
 }

@@ -18,8 +18,8 @@ namespace FileUploadApi.ApiServices
 
         Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
 
-        Task<string> GetFileValidationResultAsync(string batchId, MemoryStream outputStream);
+        Task<FileValidationResultModel> GetFileValidationResultAsync(string batchId, MemoryStream outputStream);
 
-        Task<string> GetFileTemplateContentAsync(string itemType, MemoryStream outputStream);
+        Task<FileTemplateModel> GetFileTemplateContentAsync(string contentType, string itemType, MemoryStream outputStream);
     }
 }

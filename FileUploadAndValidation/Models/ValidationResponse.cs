@@ -8,7 +8,7 @@ namespace FileUploadAndValidation.Models
     {
         public string ResponseCode { get; set; }
         public string ResponseDescription { get; set; }
-        public ValidationData Data { get; set; }
+        public ValidationData ResponseData { get; set; }
     }
 
     public class ValidationData

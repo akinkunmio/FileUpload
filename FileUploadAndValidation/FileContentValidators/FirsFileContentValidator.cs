@@ -34,44 +34,47 @@ namespace FileUploadAndValidation.FileServices
             {
                 validateRowModel = await ValidateRow(validationType, row, columnContracts);
 
-                if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+                if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WHT))
                     validRows.Add(new RowDetail
                     {
-                        RowNumber = row.Index,
+                        RowNum = row.Index,
                         BeneficiaryTin = row.Columns[0].Value,
                         BeneficiaryName = row.Columns[1].Value,
                         BeneficiaryAddress = row.Columns[2].Value,
                         ContractDate = row.Columns[3].Value,
-                        ContractAmount = row.Columns[4].Value,
-                        InvoiceNumber = row.Columns[5].Value,
+                        ContractDescription = row.Columns[4].Value,
+                        ContractAmount = row.Columns[5].Value,
                         ContractType = row.Columns[6].Value,
                         PeriodCovered = row.Columns[7].Value,
-                        WhtRate = row.Columns[8].Value,
-                        WhtAmount = row.Columns[9].Value
+                        InvoiceNumber = row.Columns[8].Value,
+                        WhtRate = row.Columns[9].Value,
+                        WhtAmount = row.Columns[10].Value
                     });
-                else if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+                else if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WVAT))
                 {
                     validRows.Add(new RowDetail
                     {
-                        RowNumber = row.Index,
+                        RowNum = row.Index,
                         ContractorName = row.Columns[0].Value,
                         ContractorAddress = row.Columns[1].Value,
                         ContractorTin = row.Columns[2].Value,
                         ContractDescription = row.Columns[3].Value,
-                        TransactionDate = row.Columns[4].Value,
-                        NatureOfTransaction = row.Columns[5].Value,
+                        NatureOfTransaction = row.Columns[4].Value,
+                        TransactionDate = row.Columns[5].Value,
                         InvoiceNumber = row.Columns[6].Value,
                         TransactionCurrency = row.Columns[7].Value,
                         CurrencyInvoicedValue = row.Columns[8].Value,
-                        TransactionInvoicedValue = row.Columns[9].Value,
-                        CurrencyExchangeRate = row.Columns[10].Value,
-                        TaxAccountNumber = row.Columns[11].Value,
-                        WvatRate = row.Columns[12].Value,
-                        WvatValue = row.Columns[13].Value
+                        CurrencyExchangeRate = row.Columns[9].Value,
+                        TransactionInvoicedValue = row.Columns[10].Value,
+                        WvatRate = row.Columns[11].Value,
+                        WvatValue = row.Columns[12].Value,
+                        TaxAccountNumber = row.Columns[13].Value
                     });
                 }
 
-                if (validateRowModel.Failure != null && validateRowModel.Failure.ColumnValidationErrors != null && validateRowModel.Failure.ColumnValidationErrors.Any())
+                if (validateRowModel.Failure != null 
+                    && validateRowModel.Failure.ColumnValidationErrors != null 
+                    && validateRowModel.Failure.ColumnValidationErrors.Any())
                     failures.Add(validateRowModel.Failure);
             }
 
@@ -80,9 +83,7 @@ namespace FileUploadAndValidation.FileServices
 
         private async Task<ValidateRowModel> ValidateRow(string validationType, Row row, ColumnContract[] columnContracts)
         {
-            var isValid = true;
-
-            var validationErrors = GenericHelpers.ValidateRowCell(row, columnContracts, isValid);
+            var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
 
             var failure = new Failure();
             var rowDetail = new RowDetail();
@@ -90,7 +91,7 @@ namespace FileUploadAndValidation.FileServices
             if (validationType.ToLower().Equals(GenericConstants.WHT.ToLower()))
                 rowDetail = new RowDetail
                 {
-                    RowNumber = row.Index,
+                    RowNum = row.Index,
                     BeneficiaryTin = row.Columns[0].Value,
                     BeneficiaryName = row.Columns[1].Value,
                     BeneficiaryAddress = row.Columns[2].Value,
@@ -106,7 +107,7 @@ namespace FileUploadAndValidation.FileServices
             {
                 rowDetail = new RowDetail
                 {
-                    RowNumber = row.Index,
+                    RowNum = row.Index,
                     ContractorName = row.Columns[0].Value,
                     ContractorAddress = row.Columns[1].Value,
                     ContractorTin = row.Columns[2].Value,
@@ -124,17 +125,17 @@ namespace FileUploadAndValidation.FileServices
                 };
             }
 
-            if (validationErrors.Count() > 0)
+            if (validationResult.ValidationErrors.Count() > 0)
             {
                 failure =
                     new Failure
                     {
-                        ColumnValidationErrors = validationErrors,
+                        ColumnValidationErrors = validationResult.ValidationErrors,
                         Row = rowDetail
                     };
             }
 
-            return await Task.FromResult(new ValidateRowModel { IsValid = isValid, Failure = failure });
+            return await Task.FromResult(new ValidateRowModel { IsValid = validationResult.Validity, Failure = failure });
         }
 
         public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
@@ -175,9 +176,11 @@ namespace FileUploadAndValidation.FileServices
                 var dateTimeNow = DateTime.Now;
 
                 if (uploadResult.ValidRows.Count() == 0)
-                    throw new AppException("All records are invalid");
+                    throw new AppException("All records are invalid", 400, uploadResult);
 
-                if (uploadResult.ValidRows.Count() > 0 || uploadResult.ValidRows.Any() || request.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+                if (uploadResult.ValidRows.Count() > 0 
+                    && uploadResult.ValidRows.Any() 
+                    && request.ItemType.ToLower().Equals(GenericConstants.WHT))
                 {
                     
                     failedItemTypeValidationBills = uploadResult.ValidRows
@@ -190,10 +193,11 @@ namespace FileUploadAndValidation.FileServices
                         {
                             Row = new RowDetail
                             {
-                                RowNumber = nonDistinct.RowNumber,
+                                RowNum = nonDistinct.RowNum,
                                 BeneficiaryAddress = nonDistinct.BeneficiaryAddress,
                                 BeneficiaryName = nonDistinct.BeneficiaryName,
                                 BeneficiaryTin = nonDistinct.BeneficiaryTin,
+                                ContractDescription = nonDistinct.ContractDescription,
                                 ContractAmount = nonDistinct.ContractAmount,
                                 ContractDate = nonDistinct.ContractDate,
                                 ContractType = nonDistinct.ContractType,
@@ -214,7 +218,9 @@ namespace FileUploadAndValidation.FileServices
                         });
                 }
 
-                if (uploadResult.ValidRows.Count() > 0 || uploadResult.ValidRows.Any() || request.ItemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+                if (uploadResult.ValidRows.Count() > 0 
+                    && uploadResult.ValidRows.Any() 
+                    && request.ItemType.ToLower().Equals(GenericConstants.WVAT))
                 {
                     failedItemTypeValidationBills = uploadResult.ValidRows
                          ?.GroupBy(b => new { b.ContractorTin })
@@ -226,7 +232,7 @@ namespace FileUploadAndValidation.FileServices
                         {
                             Row = new RowDetail
                             {
-                                RowNumber = nonDistinct.RowNumber,
+                                RowNum = nonDistinct.RowNum,
                                 ContractDescription = nonDistinct.ContractDescription,
                                 ContractorAddress = nonDistinct.ContractorAddress,
                                 ContractorTin = nonDistinct.ContractorTin,
@@ -255,7 +261,7 @@ namespace FileUploadAndValidation.FileServices
                 }
 
                 uploadResult.ValidRows = uploadResult.ValidRows
-                        .Where(b => !failedItemTypeValidationBills.Any(n => n.RowNumber == b.RowNumber))
+                        .Where(b => !failedItemTypeValidationBills.Any(n => n.RowNum == b.RowNum))
                         .Select(r => r).ToList();
 
                 foreach(var failure in uploadResult.Failures)
@@ -264,7 +270,7 @@ namespace FileUploadAndValidation.FileServices
                 }
 
                 if (uploadResult.ValidRows.Count() == 0)
-                    throw new AppException("All records are invalid");
+                    throw new AppException("All records are invalid", 400, uploadResult);
 
                 return uploadResult;
             }

@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using MimeMapping;
 using FilleUploadCore.FileReaders;
+using System.Collections.Generic;
+using AutoMapper;
 
 namespace FileUploadApi.Controllers
 {
@@ -26,7 +28,8 @@ namespace FileUploadApi.Controllers
         private readonly ILogger<UploadController> _logger;
 
 
-        public UploadController(IBatchProcessor batchProcessor, ILogger<UploadController> logger)
+        public UploadController(IBatchProcessor batchProcessor, 
+            ILogger<UploadController> logger)
         {
             _logger = logger;
             _batchProcessor = batchProcessor;
@@ -37,17 +40,16 @@ namespace FileUploadApi.Controllers
         {
             var uploadResult = new UploadResult();
 
-            //var userId = Request.Form["id"].ToString();
-            var userId = "255";
+            var userId = /*Request.Form["id"].ToString()*/ "255";
 
             try
             {
                 ValidateUserId(userId);
 
-                var request = new FileUploadRequest 
+                var request = new FileUploadRequest
                 {
                     ItemType = itemType,
-                    ContentType =  contentType,
+                    ContentType = contentType,
                     AuthToken = Request.Headers["Authorization"].ToString(),
                     FileRef = Request.Form.Files.First(),
                     FileName = Request.Form.Files.First().FileName.Split('.')[0],
@@ -55,13 +57,13 @@ namespace FileUploadApi.Controllers
                                     .Replace(".", string.Empty)
                                     .ToLower(),
                     UserId = long.Parse(userId),
-                    ProductCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL",
-                    ProductName = /*request.Form["productName"].ToString() ??*/ "AIRTEL",
-                    BusinessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001",
+                    ProductCode = Request.Form["productCode"].ToString() /*?? "AIRTEL"*/,
+                    ProductName = Request.Form["productName"].ToString() /*?? "AIRTEL"*/,
+                    BusinessTin = /*Request.Form["businessTin"].ToString() ??*/ "00771252-0001",
                     FileSize = Request.Form.Files.First().Length,
                 };
 
-                await _batchProcessor.UploadFileAsync(request);
+                uploadResult = await _batchProcessor.UploadFileAsync(request);
             }
             catch (AppException ex)
             {
@@ -70,9 +72,7 @@ namespace FileUploadApi.Controllers
                 var result = new ObjectResult(new { ex.Message })
                 {
                     StatusCode = ex.StatusCode,
-                    Value = uploadResult
                 };
-                uploadResult.ErrorMessage = ex.Message;
 
                 return result;
             }
@@ -80,28 +80,97 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Unexpected Error occured during Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!."});
+                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
             }
 
-            return Ok(uploadResult);
+            return Ok(new ResponseResult
+            {
+                BatchId = uploadResult.BatchId,
+                ValidRows = uploadResult.ValidRows.Select(row => RowMarshaller(row, contentType, itemType)).ToList(),
+                Failures = uploadResult.Failures.Select(a => new ResponseResult.FailedValidation
+                {
+                    ColumnValidationErrors = a.ColumnValidationErrors,
+                    Row = RowMarshaller(a.Row, contentType, itemType)
+                }).ToList(),
+                ErrorMessage = uploadResult.ErrorMessage,
+                FileName = uploadResult.FileName,
+                ProductCode = uploadResult.ProductCode,
+                ProductName = uploadResult.ProductName,
+                RowsCount = uploadResult.RowsCount
+            });
         }
+
+        private dynamic RowMarshaller(RowDetail r, string contentType, string itemType)
+        {
+            dynamic result = default;
+            
+                if (contentType.ToLower().Equals(GenericConstants.Firs)
+                    && itemType.ToLower().Equals(GenericConstants.WHT))
+                    result = new FirsWhtUntyped 
+                    { 
+                        Row = r.RowNum,
+                        BeneficiaryAddress = r.BeneficiaryAddress,
+                        BeneficiaryName = r.BeneficiaryName,
+                        BeneficiaryTin = r.BeneficiaryTin,
+                        ContractAmount = r.ContractAmount,
+                        ContractDate = r.ContractDate,
+                        ContractDescription = r.ContractDescription,
+                        ContractType = r.ContractType,
+                        InvoiceNumber = r.InvoiceNumber,
+                        PeriodCovered = r.PeriodCovered,
+                        WhtAmount = r.WhtAmount,
+                        WhtRate = r.WhtRate
+                    };
+
+                if (contentType.ToLower().Equals(GenericConstants.Firs)
+                    && itemType.ToLower().Equals(GenericConstants.WVAT))
+                    result = new FirsWVatUntyped
+                    {
+                        Row = r.RowNum,
+                        ContractorAddress = r.ContractorAddress,
+                        ContractorName = r.ContractorName,
+                        ContractorTin = r.ContractorTin,
+                        CurrencyExchangeRate = r.CurrencyExchangeRate,
+                        CurrencyInvoicedValue = r.CurrencyInvoicedValue,
+                        ContractDescription = r.ContractDescription,
+                        NatureOfTransaction = r.NatureOfTransaction,
+                        InvoiceNumber = r.InvoiceNumber,
+                        TaxAccountNumber = r.TaxAccountNumber,
+                        TransactionCurrency = r.TransactionCurrency,
+                        TransactionDate = r.TransactionDate,
+                        TransactionInvoicedValue = r.TransactionInvoicedValue,
+                        WvatRate = r.WvatRate,
+                        WvatValue = r.WvatValue
+                    }; 
+
+                if (contentType.ToLower().Equals(GenericConstants.BillPayment)
+                    && (itemType.ToLower().Equals(GenericConstants.BillPaymentId) || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
+                    result = new BillPaymentUntyped
+                    {
+                        RowNumber = r.RowNum,
+                        Amount = r.Amount,
+                        CustomerId = r.CustomerId,
+                        ItemCode = r.ItemCode,
+                        ProductCode = r.ProductCode
+                    };
+            
+            return result;
+        }
+
 
         [HttpGet("{batchId}/status")]
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
             var paginationFilter =
-               new PaginationFilter(pagination.PageSize, 
-               pagination.PageNumber, 
-               pagination.Status, 
-               pagination.ContentType, 
-               pagination.ItemType);
+               new PaginationFilter(pagination.PageSize,
+               pagination.PageNumber,
+               pagination.Status);
 
             var response = new PagedResponse<dynamic>()
             {
                 PageSize = pagination.PageSize,
                 PageNumber = pagination.PageNumber,
-                ItemType = pagination.ItemType,
-                ContentType = pagination.ContentType,
+                Status = pagination.Status.ToString()
             };
 
             try
@@ -115,6 +184,10 @@ namespace FileUploadApi.Controllers
                 response.ProductCode = result.ProductCode;
                 response.FileName = result.FileName;
                 response.BatchId = batchId;
+                response.ItemType = result.ItemType;
+                response.ContentType = result.ContentType;
+                response.ValidCount = result.ValidRowCount;
+                response.InvalidCount = result.InvalidCount;
             }
             catch (AppException ex)
             {
@@ -125,8 +198,6 @@ namespace FileUploadApi.Controllers
                 var result = new ObjectResult(new { ex.Message })
                 {
                     StatusCode = ex.StatusCode,
-
-                    Value = response
                 };
 
                 return result;
@@ -135,46 +206,11 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest("Unknown error occured. Please retry!. |" + ex.Message);
+                return BadRequest("Unknown error occured. Please retry!");
             }
 
             return Ok(response);
         }
-
-        //[HttpGet("{batchId}/summary")]
-        //public async Task<IActionResult> GetUploadFileSummary(string batchId)
-        //{
-        //    var response = new ResponseModel();
-
-        //    try
-        //    {
-        //        response.Data = await _batchProcessor.GetFileSummary(batchId);
-        //    }
-        //    catch (AppException ex)
-        //    {
-        //        _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
-
-        //        response.Error = ex.Message;
-        //        var result = new ObjectResult(response)
-        //        {
-        //            StatusCode = ex.StatusCode
-        //        };
-
-        //        return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-
-        //        response.Error = "Unknown error occured. Please retry!.";
-        //        var result = new ObjectResult(response);
-
-        //        result.StatusCode = (int)HttpStatusCode.BadRequest;
-        //        return result;
-        //    }
-
-        //    return Ok(response);
-        //}
 
         [HttpPost("{batchId}/authorize")]
         public async Task<IActionResult> InitiateTransactionsApprovalAsync(string batchId, [FromBody] InitiatePaymentRequest request)
@@ -230,20 +266,18 @@ namespace FileUploadApi.Controllers
             return Ok(response);
         }
 
-        [HttpGet("template/{extension}/download")]
-        public async Task<IActionResult> GetTemplate(string extension)
+        [HttpGet("template/{contentType}/{itemType}/download")]
+        public async Task<IActionResult> GetTemplate(string contentType, string itemType)
         {
             try
             {
                 var outputStream = new MemoryStream();
 
-                var filePath = await _batchProcessor.GetFileTemplateContentAsync(extension, outputStream);
-
-                var contentType = MimeUtility.GetMimeMapping(filePath);
+                var templateDetail = await _batchProcessor.GetFileTemplateContentAsync(contentType, itemType, outputStream);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
-                return File(outputStream, contentType, GenericConstants.BillPaymentTemplate + "." + extension);
+                return File(outputStream, contentType, templateDetail.FileName);
             }
             catch (AppException ex)
             {
@@ -274,24 +308,21 @@ namespace FileUploadApi.Controllers
 
             if (!success)
             {
-                throw new AppException($"Invalid value '{id}' passed!.");
+                throw new AppException($"Invalid value '{id}' passed for 'id'!.");
             }
         }
 
         [HttpPost("user/uploads")]
-        public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] PaginationQuery pagination)
+        public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] SummaryPaginationQuery pagination)
         {
             var paginationFilter =
                 new PaginationFilter 
                 { 
                     PageSize = pagination.PageSize, 
-                    PageNumber = pagination.PageNumber,
-                    ContentType = pagination.ContentType,
-                    ItemType = pagination.ItemType,
-                    Status = pagination.Status
+                    PageNumber = pagination.PageNumber
                 };
 
-            var response = new PagedResponse<BatchFileSummaryDto>()
+            var response = new SummaryPagedResponse<BatchFileSummaryDto>()
             {
                 PageSize = paginationFilter.PageSize,
                 PageNumber = paginationFilter.PageNumber
@@ -309,10 +340,9 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
 
-                response.Error = ex.Message;
-                var result = new ObjectResult(response)
+                var result = new ObjectResult(new { ex.Message })
                 {
-                    StatusCode = ex.StatusCode
+                    StatusCode = ex.StatusCode,
                 };
 
                 return result;
@@ -320,12 +350,7 @@ namespace FileUploadApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-
-                response.Error = "Unknown error occured. Please retry!.";
-                var result = new ObjectResult(response);
-
-                result.StatusCode = (int)HttpStatusCode.BadRequest;
-                return result;
+                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
             }
 
             return Ok(response);
@@ -338,13 +363,13 @@ namespace FileUploadApi.Controllers
             {
                 var outputStream = new MemoryStream();
 
-                var fileName = await _batchProcessor.GetFileValidationResultAsync(batchId, outputStream);
+                var resultModel = await _batchProcessor.GetFileValidationResultAsync(batchId, outputStream);
 
-                var contentType = MimeUtility.GetMimeMapping(fileName);
+                var contentType = MimeUtility.GetMimeMapping(resultModel.NasValidationFileName);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
-                return File(outputStream, contentType, GenericConstants.ValidationResultFile);
+                return File(outputStream, contentType, resultModel.RawFileName+'_'+GenericConstants.ValidationResultFile);
             }
             catch (AppException ex)
             {

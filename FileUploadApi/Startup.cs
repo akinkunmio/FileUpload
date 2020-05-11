@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -23,8 +22,6 @@ using MassTransit;
 using GreenPipes;
 using DbUp;
 using System.Reflection;
-using AutoMapper;
-using FileUploadAndValidation.Models;
 using FileUploadAndValidation.FileServices;
 
 namespace FileUploadApi
@@ -60,7 +57,6 @@ namespace FileUploadApi
             services.AddScoped<IDbRepository, DbRepository>();
             services.AddScoped<INasRepository, NasRepository>();
 
-            services.AddAutoMapper(typeof(Startup));
 
             services.AddHealthChecks();
             services.AddSwaggerGen(config =>
