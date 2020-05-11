@@ -68,7 +68,6 @@ namespace FileUploadAndValidation.QueueServices
 
                 var fileName = await _nasRepository.SaveValidationResultFile(batchId, fileSummary.ItemType, validationResult.RowStatusDto);
 
-                //check for zero valid item and update with required status
                 await _dbRepository.UpdateUploadSuccess(batchId, fileName);
             }
             catch (AppException ex)

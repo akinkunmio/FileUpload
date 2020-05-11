@@ -40,7 +40,7 @@ namespace FileUploadApi.Controllers
         {
             var uploadResult = new UploadResult();
 
-            var userId = /*Request.Form["id"].ToString()*/ "255";
+            var userId = Request.Form["id"].ToString() /*"255"*/;
 
             try
             {
@@ -59,7 +59,7 @@ namespace FileUploadApi.Controllers
                     UserId = long.Parse(userId),
                     ProductCode = Request.Form["productCode"].ToString() /*?? "AIRTEL"*/,
                     ProductName = Request.Form["productName"].ToString() /*?? "AIRTEL"*/,
-                    BusinessTin = /*Request.Form["businessTin"].ToString() ??*/ "00771252-0001",
+                    BusinessTin = Request.Form["businessTin"].ToString() /*?? "00771252-0001"*/,
                     FileSize = Request.Form.Files.First().Length,
                 };
 
