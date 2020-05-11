@@ -39,12 +39,7 @@ namespace FileUploadAndValidation.Repository
                 string json = JsonConvert.SerializeObject(rows);
 
                 var path = fileLocation + fileName;
-                //return await Task.FromResult(new FileProperty
-                //{
-                //    BatchId = batchId,
-                //    DataStore = 1,
-                //    Url = $"validate/firs_wht_X1KTNC_202005091720288960_validate.json"
-                //});
+               
                 File.WriteAllText(path, json);
 
                 return await Task.FromResult(new FileProperty
@@ -71,16 +66,17 @@ namespace FileUploadAndValidation.Repository
         {
             dynamic result = default;
 
-            if(itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) || itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
+            if(itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) 
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
             {
                 result = rowDetails
                     .Select(r => new NasBillPaymentDto
                     {
-                        amount = decimal.Parse(r.Amount),
-                        customer_id = r.CustomerId,
-                        item_code = r.ItemCode,
-                        product_code = r.ProductCode,
-                        row = r.RowNum
+                        Amount = decimal.Parse(r.Amount),
+                        CustomerId = r.CustomerId,
+                        ItemCode = r.ItemCode,
+                        ProductCode = r.ProductCode,
+                        Row = r.RowNum
                     });
             }
 
@@ -94,14 +90,13 @@ namespace FileUploadAndValidation.Repository
                         BeneficiaryName = r.BeneficiaryName,
                         BeneficiaryAddress = r.BeneficiaryAddress,
                         ContractDate = r.ContractDate,
-                        ContractAmount = decimal.TryParse(r.ContractAmount, out decimal res) ? decimal.Parse(r.ContractAmount) : 0,
+                        ContractAmount = decimal.Parse(r.ContractAmount),
                         ContractDescription = r.ContractDescription,
                         InvoiceNumber = r.InvoiceNumber,
                         ContractType = r.ContractType,
                         PeriodCovered = r.PeriodCovered,
-                        WhtRate = decimal.TryParse(r.WhtRate, out decimal rslt) ? decimal.Parse(r.WhtRate) : 0,
-                        WhtAmount = decimal.TryParse(r.WhtAmount, out decimal re) ? decimal.Parse(r.WhtAmount) : 0,
-                        
+                        WhtRate =decimal.Parse(r.WhtRate),
+                        WhtAmount = decimal.Parse(r.WhtAmount),
                     });
             }
 

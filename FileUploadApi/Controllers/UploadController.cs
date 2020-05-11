@@ -67,7 +67,7 @@ namespace FileUploadApi.Controllers
             }
             catch (AppException ex)
             {
-                _logger.LogError("Could not successfully conclude the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
                 var result = new ObjectResult(new { ex.Message })
                 {
@@ -78,7 +78,7 @@ namespace FileUploadApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Unexpected Error occured during Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
                 return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
             }
@@ -144,7 +144,8 @@ namespace FileUploadApi.Controllers
                     }; 
 
                 if (contentType.ToLower().Equals(GenericConstants.BillPayment)
-                    && (itemType.ToLower().Equals(GenericConstants.BillPaymentId) || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
+                    && (itemType.ToLower().Equals(GenericConstants.BillPaymentId) 
+                    || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
                     result = new BillPaymentUntyped
                     {
                         RowNumber = r.RowNum,
@@ -338,7 +339,7 @@ namespace FileUploadApi.Controllers
             }
             catch (AppException ex)
             {
-                _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+                _logger.LogError("An Error occured  {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
                 var result = new ObjectResult(new { ex.Message })
                 {
@@ -349,7 +350,7 @@ namespace FileUploadApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
             }
 
@@ -373,7 +374,7 @@ namespace FileUploadApi.Controllers
             }
             catch (AppException ex)
             {
-                _logger.LogError("An Error occured during the Template Download File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+                _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
                 var result = new ObjectResult(new { ex.Message })
                 {
@@ -384,13 +385,8 @@ namespace FileUploadApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Error occured during the Template Download File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-
-                var result = new ObjectResult("Unknown error occured. Please retry!.")
-                {
-                    StatusCode = (int)HttpStatusCode.BadRequest
-                };
-                return result;
+                _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
             }
         }
     }
