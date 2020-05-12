@@ -55,6 +55,7 @@ namespace FileUploadApi.ApiServices
         {
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
+            ArgumentGuard.NotNullOrWhiteSpace(request.AuthToken, nameof(request.AuthToken));
 
             if (!request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
                 && !request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())

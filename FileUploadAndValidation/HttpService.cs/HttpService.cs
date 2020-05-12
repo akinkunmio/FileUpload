@@ -86,7 +86,8 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    throw new AppException("Bad Request", (int)HttpStatusCode.BadRequest);
+                    validateResponse = JsonConvert.DeserializeObject<ValidationResponse>(responseResult);
+                    throw new AppException($"{validateResponse.ResponseDescription}", (int)HttpStatusCode.BadRequest);
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
