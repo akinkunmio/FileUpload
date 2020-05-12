@@ -16,14 +16,13 @@ using System.Web;
 
 namespace FileUploadAndValidation.UploadServices
 {
-    public class BillPaymentHttpService : IBillPaymentService
+    public class HttpService : IHttpService
     {
         private readonly HttpClient _httpClient;
-        private readonly IAppConfig _appConfig;
-        private readonly ILogger<BillPaymentHttpService> _logger;
-        public BillPaymentHttpService(HttpClient httpClient, IAppConfig appConfig, ILogger<BillPaymentHttpService> logger)
+        private readonly ILogger<HttpService> _logger;
+
+        public HttpService(HttpClient httpClient, IAppConfig appConfig, ILogger<HttpService> logger)
         {
-            _appConfig = appConfig;
             _logger = logger;
             _httpClient = httpClient;
 
@@ -35,17 +34,41 @@ namespace FileUploadAndValidation.UploadServices
             _httpClient.Timeout = new TimeSpan(0, 0, 1, 0, 0);
         }
 
+        private string GetValidateUrl(string contentType)
+        {
+            string result = "";
+
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
+                result = GenericConstants.ValidateBillPaymentUrl;
+
+            else if(contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+                result = GenericConstants.ValidateFirsUrl;
+
+            return result;
+        }
+
+        private string GetInitiatePaymentUrl(string contentType)
+        {
+            string result = "";
+
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
+                result = GenericConstants.InitiateBillPaymentUrl;
+
+            else if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+                result = GenericConstants.InitiateFirPaymentUrl;
+
+            return result;
+
+        }
+
         public async Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
         {
             ValidationResponse validateResponse;
             try
             {
-                var requestBody =
-                    greaterThanFifty
-                    ? CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url, fileProperty.BatchId)
-                    : CheckGreaterFiftyRecords(greaterThanFifty, fileProperty.Url);
+                var requestBody = ConstructValidateRequestString(greaterThanFifty, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin);
 
-                var request = new HttpRequestMessage(HttpMethod.Post, $"/qbtrans/api/v1/payments/bills/validate")
+                var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ContentType))
                 {
                     Content = new StringContent(requestBody, Encoding.UTF8, "application/json")
                 };
@@ -63,11 +86,11 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    throw new AppException("Made a bad request while trying to perform bill payment validation", (int)HttpStatusCode.BadRequest);
+                    throw new AppException("Bad Request", (int)HttpStatusCode.BadRequest);
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new AppException("Unauthorized to perform  bill payment validation", (int)HttpStatusCode.Unauthorized);
+                    throw new AppException("Unauthorized", (int)HttpStatusCode.Unauthorized);
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
@@ -82,47 +105,90 @@ namespace FileUploadAndValidation.UploadServices
             }
             catch(AppException ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
-                throw new AppException("Error occured while performing bill payment validation"+ex.Message, (int)HttpStatusCode.InternalServerError);
+                _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                throw new AppException("Error occured while performing bill payment validation"+ex.Message);
             }
         }
 
-        private string CheckGreaterFiftyRecords(bool check, string url, string batchId = null)
+        private string ConstructValidateRequestString(bool check, string url, string contentType, string itemType = null, string businessTin = null, string batchId = null)
         {
-            return check 
-                ?
+            string result = "";
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
+                result =  check ?
                 JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
                     DataStoreUrl = url,
                     BatchId = batchId
                 })
-                : 
+                :
                 JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
                     DataStoreUrl = url
                 });
+
+            if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+                result = JsonConvert.SerializeObject(new
+                {
+                    DataStore = 1,
+                    DataStoreUrl = url,
+                    TaxTypeCode = itemType.ToLower(),
+                    BusinessTin = businessTin
+                });
+
+            return result;
+        }
+
+        private string ConstructConfirmedRequestString(InitiatePaymentOptions initiatePaymentOptions, FileProperty fileProperty)
+        {
+            string result = "";
+
+            if (fileProperty.ContentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
+                result = JsonConvert.SerializeObject(new
+                {
+                    BusinessId = initiatePaymentOptions.BusinessId,
+                    UserId = initiatePaymentOptions.UserId,
+                    ApprovalConfigId = initiatePaymentOptions.ApprovalConfigId,
+                    UserName = initiatePaymentOptions.UserName,
+                    DataStore = 1,
+                    DataStoreUrl = fileProperty.Url
+                });
+
+            if (fileProperty.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+                result = JsonConvert.SerializeObject(new
+                {
+                    TaxTypeId = initiatePaymentOptions.TaxTypeId,
+                    TaxTypeName = initiatePaymentOptions.TaxTypeName,
+                    ProductId = initiatePaymentOptions.ProductId,
+                    CurrencyCode = initiatePaymentOptions.CurrencyCode,
+                    TaxTypeCode = fileProperty.ItemType.ToUpper(),
+                    ProductCode  = fileProperty.ContentType.ToUpper(),
+                    CustomerNumber = initiatePaymentOptions.BusinessTin,
+                    IsScheduleTaxType = true,
+                    BusinessId = initiatePaymentOptions.BusinessId,
+                    UserId = initiatePaymentOptions.UserId,
+                    ApprovalConfigId = initiatePaymentOptions.ApprovalConfigId,
+                    UserName = initiatePaymentOptions.UserName,
+                    DataStore = 1,
+                    DataStoreUrl = fileProperty.Url
+                });
+
+            return result;
         }
 
         public async Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
         {
             try
             {
-                var req = JsonConvert.SerializeObject(new
-                {
-                    BusinessId = initiatePaymentOptions.BusinessId,
-                    UserId = initiatePaymentOptions.UserId,
-                    ApprovalConfigId = initiatePaymentOptions.ApprovalConfigId,
-                    UserName = initiatePaymentOptions.UserName
-                });
+                var req = ConstructConfirmedRequestString(initiatePaymentOptions, fileProperty);
 
-                var request = new HttpRequestMessage(HttpMethod.Post, $"/qbtrans/api/v1/payments/bills/initiate-payment?dataStore=1&Url={fileProperty.Url}")
+                var request = new HttpRequestMessage(HttpMethod.Post, GetInitiatePaymentUrl(fileProperty.ContentType))
                 {
                     Content = new StringContent(req, Encoding.UTF8, "application/json")
                 };
@@ -166,14 +232,13 @@ namespace FileUploadAndValidation.UploadServices
             catch (Exception ex)
             {
                 _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("Unknown error occured while initiating Bill Payment Initiation"+ex.Message, (int)HttpStatusCode.InternalServerError);
+                throw new AppException("Unknown error occured while initiating Bill Payment Initiation"+ex.Message);
             }
 
         }
-
     }
 
-    public interface IBillPaymentService
+    public interface IHttpService
     {
         Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty);
 

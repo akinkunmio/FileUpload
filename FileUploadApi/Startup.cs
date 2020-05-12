@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using Swashbuckle.AspNetCore.Swagger;
-using FileUploadApi.Services;
 using FileUploadAndValidation.FileReaders;
 using FileUploadAndValidation.FileReaderImpl;
 using FilleUploadCore.FileReaders;
@@ -24,6 +22,7 @@ using MassTransit;
 using GreenPipes;
 using DbUp;
 using System.Reflection;
+using FileUploadAndValidation.FileServices;
 
 namespace FileUploadApi
 {
@@ -41,58 +40,23 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            //services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
-            //services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
+            services.AddScoped<IFileReader, TxtFileReader>();
+            services.AddScoped<IFileReader, CsvFileReader>();
+            services.AddScoped<IFileReader, XlsFileReader>();
+            services.AddScoped<IFileReader, XlsxFileReader>();
+
+            services.AddScoped<IFileContentValidator, BillPaymentFileContentValidator>();
+            services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
+
+            services.AddScoped<IBatchRepository, BatchRepository>();
+            services.AddScoped<IBatchProcessor, BatchProcessor>();
 
             services.AddSingleton<IAppConfig, AppConfig>();
-            services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
-            services.AddScoped<IBillPaymentDbRepository, BillPaymentRepository>();
-            services.AddScoped<INasRepository, NasRepository>();
-            services.AddScoped<IApiUploadService, ApiUploadService>();
-
-            //services.AddScoped<FirsWhtFileService>();
-            //services.AddScoped<AutoPayFileService>();
-            //services.AddScoped<BulkSmsFileService>();
-            services.AddScoped<BulkBillPaymentFileService>();
-
-            services.AddTransient<Func<FileServiceTypeEnum, IFileService>>(serviceProvider => key => 
-            {
-                switch (key)
-                {
-                    //case FileServiceTypeEnum.FirsWht:
-                    //    return serviceProvider.GetService<FirsWhtFileService>();
-                    //case FileServiceTypeEnum.AutoPay:
-                    //    return serviceProvider.GetService<AutoPayFileService>();
-                    //case FileServiceTypeEnum.BulkSMS:
-                    //    return serviceProvider.GetService<BulkSmsFileService>();
-                    case FileServiceTypeEnum.BulkBillPayment:
-                        return serviceProvider.GetService<BulkBillPaymentFileService>();
-                    default:
-                        return null;
-                }
-            });
-
-            services.AddScoped<TxtFileReader>();
-            services.AddScoped<CsvFileReader>();
-            services.AddScoped<XlsFileReader>();
-            services.AddScoped<XlsxFileReader>();
+            services.AddHttpClient<IHttpService, HttpService>();
             
-            services.AddTransient<Func<FileReaderTypeEnum, IFileReader>>(serviceProvider => key =>
-            {
-                switch (key)
-                {
-                    case FileReaderTypeEnum.TXT:
-                        return serviceProvider.GetService<TxtFileReader>();
-                    case FileReaderTypeEnum.CSV:
-                        return serviceProvider.GetService<CsvFileReader>();
-                    case FileReaderTypeEnum.XLS:
-                        return serviceProvider.GetService<XlsFileReader>();
-                    case FileReaderTypeEnum.XLSX:
-                        return serviceProvider.GetService<XlsxFileReader>();
-                    default:
-                        return null;
-                }
-            });
+            services.AddScoped<IDbRepository, DbRepository>();
+            services.AddScoped<INasRepository, NasRepository>();
+
 
             services.AddHealthChecks();
             services.AddSwaggerGen(config =>
@@ -153,21 +117,21 @@ namespace FileUploadApi
 
         private void PerformScriptUpdate()
         {
-                var connString = Configuration["ConnectionStrings:UploadServiceConnectionString"];
-                var upgraderTran = DeployChanges.To
-                    .SqlDatabase(connString)
-                    .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly(),
-                        name => name.StartsWith("FileUploadApi.Scripts"))
-                    .LogToConsole()
-                    .Build();
+            var connString = Configuration["ConnectionStrings:UploadServiceConnectionString"];
+            var upgraderTran = DeployChanges.To
+                .SqlDatabase(connString)
+                .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly(),
+                    name => name.StartsWith("FileUploadApi.Scripts"))
+                .LogToConsole()
+                .Build();
 
-                var resultEnt = upgraderTran.PerformUpgrade();
-                if (!resultEnt.Successful)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(resultEnt.Error);
-                    Console.ResetColor();
-                }
+            var resultEnt = upgraderTran.PerformUpgrade();
+            if (!resultEnt.Successful)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(resultEnt.Error);
+                Console.ResetColor();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

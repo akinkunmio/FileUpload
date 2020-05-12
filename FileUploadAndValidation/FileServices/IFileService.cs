@@ -13,19 +13,17 @@ namespace FileUploadApi.Services
 {
     public interface IFileService
     {
-        Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts);
-
-        Task<UploadResult> Upload(UploadOptions uploadOptions, IEnumerable<Row> rows, UploadResult uploadResult);
-
-        Task<PagedData<BillPaymentRowStatus>> GetBillPaymentResults(string batchId, PaginationFilter pagination);
+        Task<PagedData<dynamic>> GetPaymentResults(string batchId, PaginationFilter pagination);
 
         Task<BatchFileSummaryDto> GetBatchUploadSummary(string batchId);
 
-        Task UpdateStatusFromQueue(BillPaymentValidateMessage queueMessage);
+        Task UpdateStatusFromQueue(PaymentValidateMessage queueMessage);
 
         Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
 
         Task<PagedData<BatchFileSummaryDto>> GetUserUploadSummaries(string userId, PaginationFilter paginationFilter);
     }
-   
+
+    
+
 }

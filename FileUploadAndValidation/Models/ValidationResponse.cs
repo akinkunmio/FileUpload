@@ -8,7 +8,7 @@ namespace FileUploadAndValidation.Models
     {
         public string ResponseCode { get; set; }
         public string ResponseDescription { get; set; }
-        public ValidationData Data { get; set; }
+        public ValidationData ResponseData { get; set; }
     }
 
     public class ValidationData
@@ -30,6 +30,9 @@ namespace FileUploadAndValidation.Models
         public int DataStore { get; set; }
         public string Url { get; set; }
         public string BatchId { get; set; }
+        public string BusinessTin { get; set; }
+        public string ItemType { get; set; }
+        public string ContentType { get; set; }
     }
 
    

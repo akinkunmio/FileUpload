@@ -8,7 +8,7 @@ namespace FileUploadApi
     {
         public void Apply(Operation operation, OperationFilterContext context)
         {
-            if (operation.OperationId == nameof(BillPaymentUploadController.PostBulkBillPaymentAsync))
+            if (operation.OperationId == nameof(UploadController.PostBulkUploadPaymentAsync))
             {
                 operation.Parameters.Add(new NonBodyParameter
                 {

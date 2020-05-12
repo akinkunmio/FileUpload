@@ -13,6 +13,9 @@ namespace FileUploadAndValidation.Models
         public string UserName { get; set; }
 
         public long ApprovalConfigId { get; set; }
-
+        public string BusinessTin { get; set; }
+        public string TaxTypeId { get; set; }
+        public string TaxTypeName { get; set; }
+        public string ProductId { get; set; }
     }
 }

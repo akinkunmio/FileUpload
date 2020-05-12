@@ -39,3 +39,4 @@ msbuild.wrn
 /UnitTests/FileUploadAndValidationTests/BulkBillPaymentFileServiceTests.cs
 /UnitTests/FileUploadAndValidationTests/BillPaymentHttpUnitTest.cs
 /FileUploadAndValidation.fpr
+/FileUploadAndValidation/Repository/FirsBatchRepository.cs

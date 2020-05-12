@@ -29,5 +29,13 @@ namespace FileUploadAndValidation.Models
         public string ContentType { get; set; }
 
         public string NasUserValidationFile { get; set; }
+
+        public decimal ValidAmountSum { get; set; }
+
+        public string ProductName { get; set; }
+
+        public string ProductCode { get; set; }
+
+        public string NameOfFile { get; set; }
     }
 }

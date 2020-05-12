@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.QueueMessages
 {
-    public class BillPaymentValidateMessage
+    public class PaymentValidateMessage
     {
-        public BillPaymentValidateMessage(string batchId, string resultLocation, DateTime createdAt)
+        public PaymentValidateMessage(string batchId, string resultLocation, DateTime createdAt)
         {
             BatchId = batchId;
             ResultLocation = resultLocation;
