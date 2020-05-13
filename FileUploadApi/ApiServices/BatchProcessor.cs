@@ -293,7 +293,7 @@ namespace FileUploadApi.ApiServices
                 result.FileName = GenericConstants.FirsWhtCsvTemplate;
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && itemType.ToLower().Equals(GenericConstants.WHT))
+                && itemType.ToLower().Equals(GenericConstants.WVAT))
                 result.FileName = GenericConstants.FirsWvatCsvTemplate;
 
             if (contentType.ToLower().Equals(GenericConstants.BillPayment))
