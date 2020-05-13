@@ -284,24 +284,24 @@ namespace FileUploadApi.ApiServices
             return result;
         }
 
-        public async Task<FileTemplateModel> GetFileTemplateContentAsync(string contentType, string itemType, MemoryStream outputStream)
+        public async Task<string> GetFileTemplateContentAsync(string contentType, string itemType, MemoryStream outputStream)
         {
-            var result = new FileTemplateModel();
+            string fileName = default;
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && itemType.ToLower().Equals(GenericConstants.WHT))
-                result.FileName = GenericConstants.FirsWhtCsvTemplate;
+                fileName = GenericConstants.FirsWhtCsvTemplate;
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && itemType.ToLower().Equals(GenericConstants.WVAT))
-                result.FileName = GenericConstants.FirsWvatCsvTemplate;
+                fileName = GenericConstants.FirsWvatCsvTemplate;
 
             if (contentType.ToLower().Equals(GenericConstants.BillPayment))
-                result.FileName = GenericConstants.BillPaymentCsvTemplate;
+                fileName = GenericConstants.BillPaymentCsvTemplate;
 
-            result.FilePath = await _nasRepository.GetTemplateFileContentAsync(result.FileName, outputStream);
+           await _nasRepository.GetTemplateFileContentAsync(fileName, outputStream);
 
-            return result;
+            return fileName;
         }
 
         public async Task<FileValidationResultModel> GetFileValidationResultAsync(string batchId, MemoryStream outputStream)

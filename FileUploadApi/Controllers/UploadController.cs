@@ -274,11 +274,11 @@ namespace FileUploadApi.Controllers
             {
                 var outputStream = new MemoryStream();
 
-                var templateDetail = await _batchProcessor.GetFileTemplateContentAsync(contentType, itemType, outputStream);
+                var fileName = await _batchProcessor.GetFileTemplateContentAsync(contentType, itemType, outputStream);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
-                return File(outputStream, contentType, templateDetail.FileName);
+                return File(outputStream, contentType, fileName);
             }
             catch (AppException ex)
             {

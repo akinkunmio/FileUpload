@@ -20,6 +20,6 @@ namespace FileUploadApi.ApiServices
 
         Task<FileValidationResultModel> GetFileValidationResultAsync(string batchId, MemoryStream outputStream);
 
-        Task<FileTemplateModel> GetFileTemplateContentAsync(string contentType, string itemType, MemoryStream outputStream);
+        Task<string> GetFileTemplateContentAsync(string contentType, string itemType, MemoryStream outputStream);
     }
 }

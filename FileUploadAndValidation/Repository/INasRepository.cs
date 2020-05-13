@@ -214,7 +214,7 @@ namespace FileUploadAndValidation.Repository
             return result?.AsEnumerable();
         }
 
-        public async Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream)
+        public async Task GetTemplateFileContentAsync(string fileName, MemoryStream outputStream)
         {
             ArgumentGuard.NotNullOrWhiteSpace(fileName, nameof(fileName));
 
@@ -229,7 +229,6 @@ namespace FileUploadAndValidation.Repository
                     {
                        await fsSource.CopyToAsync(outputStream);
                     }
-                    return path;
                 }
                 else
                     throw new AppException($"Template file not found at {path}", (int)HttpStatusCode.NotFound);
@@ -385,7 +384,7 @@ namespace FileUploadAndValidation.Repository
 
         Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(PaymentValidateMessage queueMessage);
 
-        Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream);
+        Task GetTemplateFileContentAsync(string fileName, MemoryStream outputStream);
 
         Task<string> SaveValidationResultFile(string batchId, string itemType, IEnumerable<RowDetail> content);
 
