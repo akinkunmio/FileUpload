@@ -34,7 +34,7 @@ namespace FileUploadAndValidation.Helpers
         public static string BillPaymentXlsxTemplate = "BillPaymentXlsxTemplate.xlsx";
         public static string BillPaymentTemplate = "BillPaymentTemplate";
         public static string ValidationResultFile = "ValidationResult.csv";
-        public static string FirsWhtCsvTemplate = "FirsWVATCsvTemplate.csv";
-        public static string FirsWvatCsvTemplate = "FirsWhtCsvTemplate.csv";
+        public static string FirsWhtCsvTemplate = "FirsWhtCsvTemplate.csv";
+        public static string FirsWvatCsvTemplate = "FirsWVATCsvTemplate.csv";
     }
 }

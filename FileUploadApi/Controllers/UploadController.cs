@@ -388,7 +388,7 @@ namespace FileUploadApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
+                return BadRequest(new { errorMessage = "Unknown error occured.!." });
             }
         }
     }
