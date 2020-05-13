@@ -286,18 +286,24 @@ namespace FileUploadApi.ApiServices
 
         public async Task<string> GetFileTemplateContentAsync(string contentType, string itemType, MemoryStream outputStream)
         {
-            string fileName = default;
+            string fileName;
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && itemType.ToLower().Equals(GenericConstants.WHT))
+            {
                 fileName = GenericConstants.FirsWhtCsvTemplate;
-
-            if (contentType.ToLower().Equals(GenericConstants.Firs)
+            }
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && itemType.ToLower().Equals(GenericConstants.WVAT))
+            {
                 fileName = GenericConstants.FirsWvatCsvTemplate;
-
-            if (contentType.ToLower().Equals(GenericConstants.BillPayment))
+            }
+            else if (contentType.ToLower().Equals(GenericConstants.BillPayment))
+            {
                 fileName = GenericConstants.BillPaymentCsvTemplate;
+            }
+            else
+                throw new AppException("Template not found");
 
            await _nasRepository.GetTemplateFileContentAsync(fileName, outputStream);
 
