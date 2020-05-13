@@ -305,7 +305,7 @@ namespace FileUploadApi.ApiServices
             else
                 throw new AppException("Template not found");
 
-           await _nasRepository.GetTemplateFileContentAsync(fileName, outputStream);
+            await _nasRepository.GetTemplateFileContentAsync(fileName, outputStream);
 
             return fileName;
         }

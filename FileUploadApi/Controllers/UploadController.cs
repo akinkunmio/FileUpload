@@ -275,10 +275,12 @@ namespace FileUploadApi.Controllers
                 var outputStream = new MemoryStream();
 
                 var fileName = await _batchProcessor.GetFileTemplateContentAsync(contentType, itemType, outputStream);
+                
+                var extension = MimeUtility.GetMimeMapping(fileName);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
-                return File(outputStream, contentType, fileName);
+                return File(outputStream, extension, fileName);
             }
             catch (AppException ex)
             {
