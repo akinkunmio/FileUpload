@@ -35,7 +35,7 @@ namespace FileUploadAndValidation.Helpers
             dynamic result = default;
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && itemType.ToLower().Equals(GenericConstants.WHT))
+                && itemType.ToLower().Equals(GenericConstants.Wht))
                 result = new FirsWhtUntyped
                 {
                     Row = r.RowNum,
@@ -53,7 +53,7 @@ namespace FileUploadAndValidation.Helpers
                 };
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && itemType.ToLower().Equals(GenericConstants.WVAT))
+                && itemType.ToLower().Equals(GenericConstants.Wvat))
                 result = new FirsWVatUntyped
                 {
                     Row = r.RowNum,

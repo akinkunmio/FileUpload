@@ -122,7 +122,7 @@ namespace FileUploadApi.ApiServices
                         Status = s.RowStatus
                     });
 
-                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.WHT))
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Wht))
                     paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new FirsWhtRowStatusUntyped
                     {
                         BeneficiaryAddress = s.BeneficiaryAddress,
@@ -140,7 +140,7 @@ namespace FileUploadApi.ApiServices
                         Status = s.RowStatus
                     });
 
-                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.WVAT))
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Wvat))
                     paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new FirsWVatRowStatusUntyped
                     {
                         ContractorName = s.ContractorName,
@@ -206,12 +206,12 @@ namespace FileUploadApi.ApiServices
             string fileName;
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && itemType.ToLower().Equals(GenericConstants.WHT))
+                && itemType.ToLower().Equals(GenericConstants.Wht))
             {
                 fileName = GenericConstants.FirsWhtCsvTemplate;
             }
             else if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && itemType.ToLower().Equals(GenericConstants.WVAT))
+                && itemType.ToLower().Equals(GenericConstants.Wvat))
             {
                 fileName = GenericConstants.FirsWvatCsvTemplate;
             }

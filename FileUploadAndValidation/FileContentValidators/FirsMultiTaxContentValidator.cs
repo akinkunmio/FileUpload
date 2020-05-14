@@ -33,7 +33,7 @@ namespace FileUploadAndValidation.FileContentValidators
             {
                 validateRowModel = await ValidateRow(validationType, row, columnContracts);
 
-                if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WHT))
+                if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.Wht))
                     validRows.Add(new RowDetail
                     {
                         RowNum = row.Index,
@@ -49,7 +49,7 @@ namespace FileUploadAndValidation.FileContentValidators
                         WhtRate = row.Columns[9].Value,
                         WhtAmount = row.Columns[10].Value
                     });
-                else if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WVAT))
+                else if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.Wvat))
                 {
                     validRows.Add(new RowDetail
                     {
@@ -80,14 +80,18 @@ namespace FileUploadAndValidation.FileContentValidators
             return new ValidateRowsResult { Failures = failures, ValidRows = validRows };
         }
 
-        private async Task<ValidateRowModel> ValidateRow(string validationType, Row row, ColumnContract[] columnContracts)
+        private async Task<ValidateRowModel> ValidateRow(string authority, Row row)
         {
-            var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
-
             var failure = new Failure();
             var rowDetail = new RowDetail();
 
-            if (validationType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            var rowTaxType = row.Columns[28].Value;
+
+            var columnContracts = MapTaxTypesToColumnContracts(authority,rowTaxType);
+              
+            var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
+
+            if (validationType.ToLower().Equals(GenericConstants.Wht.ToLower()))
                 rowDetail = new RowDetail
                 {
                     RowNum = row.Index,
@@ -102,7 +106,7 @@ namespace FileUploadAndValidation.FileContentValidators
                     WhtRate = row.Columns[8].Value,
                     WhtAmount = row.Columns[9].Value
                 };
-            else if (validationType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            else if (validationType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
             {
                 rowDetail = new RowDetail
                 {
@@ -137,6 +141,30 @@ namespace FileUploadAndValidation.FileContentValidators
             return await Task.FromResult(new ValidateRowModel { IsValid = validationResult.Validity, Failure = failure });
         }
 
+        private ColumnContract[] MapTaxTypesToColumnContracts(string authority, string taxType)
+        {
+            ColumnContract[] columnContracts = default;
+
+            if (authority.ToLower().Equals(GenericConstants.Firs))
+            {
+                if (!string.IsNullOrWhiteSpace(taxType)
+                   && taxType.ToLower().Equals(GenericConstants.Wht))
+                    columnContracts = ContentTypeColumnContract.FirsMultiTaxWht();
+
+                if (!string.IsNullOrWhiteSpace(taxType)
+                    && taxType.ToLower().Equals(GenericConstants.Wvat))
+                    columnContracts = ContentTypeColumnContract.FirsMultiTaxWht();
+
+                if (!string.IsNullOrWhiteSpace(taxType)
+                   && (taxType.ToLower().Equals(GenericConstants.Vat)
+                   || taxType.ToLower().Equals(GenericConstants.PreOpLevy)
+                   || taxType.ToLower().Equals(GenericConstants.Cit)
+                   || taxType.ToLower().Equals(GenericConstants.Edt)))
+                    columnContracts = ContentTypeColumnContract.FirsMultiTaxOther();
+            }
+
+            return columnContracts;
+        }
         public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
@@ -157,13 +185,7 @@ namespace FileUploadAndValidation.FileContentValidators
 
                 var columnContract = new ColumnContract[] { };
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.WHT))
-                    columnContract = ContentTypeColumnContract.FirsWHT();
-
-                if (request.ItemType.ToLower().Equals(GenericConstants.WVAT))
-                    columnContract = ContentTypeColumnContract.FirsWVAT();
-
-                GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+                GenericHelpers.ValidateHeaderRow(headerRow, ContentTypeColumnContract.FirsMultiTaxWht());
 
                 var contentRows = rows.Skip(1);
 
@@ -179,7 +201,7 @@ namespace FileUploadAndValidation.FileContentValidators
 
                 if (uploadResult.ValidRows.Count() > 0
                     && uploadResult.ValidRows.Any()
-                    && request.ItemType.ToLower().Equals(GenericConstants.WHT))
+                    && request.ItemType.ToLower().Equals(GenericConstants.Wht))
                 {
 
                     failedItemTypeValidationBills = uploadResult.ValidRows
@@ -219,7 +241,7 @@ namespace FileUploadAndValidation.FileContentValidators
 
                 if (uploadResult.ValidRows.Count() > 0
                     && uploadResult.ValidRows.Any()
-                    && request.ItemType.ToLower().Equals(GenericConstants.WVAT))
+                    && request.ItemType.ToLower().Equals(GenericConstants.Wvat))
                 {
                     failedItemTypeValidationBills = uploadResult.ValidRows
                          ?.GroupBy(b => new { b.ContractorTin })

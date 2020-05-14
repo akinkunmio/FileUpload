@@ -81,7 +81,7 @@ namespace FileUploadAndValidation.Repository
                     });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
             {
                 result = rowDetails
                     .Select(r => new FirsWhtTyped
@@ -101,7 +101,7 @@ namespace FileUploadAndValidation.Repository
                     });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
             {
                 result = rowDetails
                     .Select(r => new FirsWVatTyped
@@ -326,7 +326,7 @@ namespace FileUploadAndValidation.Repository
                     });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
             {
                 result = rowDetails
                     .Select(r => new FirsWhtRowStatusTyped
@@ -347,7 +347,7 @@ namespace FileUploadAndValidation.Repository
                     });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
             {
                 result = rowDetails
                     .Select(r => new FirsWVatRowStatusTyped

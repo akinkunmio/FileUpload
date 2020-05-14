@@ -32,7 +32,7 @@ namespace FileUploadAndValidation.FileServices
             {
                 validateRowModel = await ValidateRow(validationType, row, columnContracts);
 
-                if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WHT))
+                if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.Wht))
                     validRows.Add(new RowDetail
                     {
                         RowNum = row.Index,
@@ -48,7 +48,7 @@ namespace FileUploadAndValidation.FileServices
                         WhtRate = row.Columns[9].Value,
                         WhtAmount = row.Columns[10].Value
                     });
-                else if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.WVAT))
+                else if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.Wvat))
                 {
                     validRows.Add(new RowDetail
                     {
@@ -86,7 +86,7 @@ namespace FileUploadAndValidation.FileServices
             var failure = new Failure();
             var rowDetail = new RowDetail();
 
-            if (validationType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            if (validationType.ToLower().Equals(GenericConstants.Wht.ToLower()))
                 rowDetail = new RowDetail
                 {
                     RowNum = row.Index,
@@ -101,7 +101,7 @@ namespace FileUploadAndValidation.FileServices
                     WhtRate = row.Columns[8].Value,
                     WhtAmount = row.Columns[9].Value
                 };
-            else if (validationType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            else if (validationType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
             {
                 rowDetail = new RowDetail
                 {
@@ -156,11 +156,11 @@ namespace FileUploadAndValidation.FileServices
 
                 var columnContract = new ColumnContract[] { };
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
-                    columnContract = ContentTypeColumnContract.FirsWHT();
+                if (request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
+                    columnContract = ContentTypeColumnContract.FirsWht();
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
-                    columnContract = ContentTypeColumnContract.FirsWVAT();
+                if (request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
+                    columnContract = ContentTypeColumnContract.FirsWvat();
 
                 GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
 
@@ -178,7 +178,7 @@ namespace FileUploadAndValidation.FileServices
 
                 if (uploadResult.ValidRows.Count() > 0 
                     && uploadResult.ValidRows.Any() 
-                    && request.ItemType.ToLower().Equals(GenericConstants.WHT))
+                    && request.ItemType.ToLower().Equals(GenericConstants.Wht))
                 {
                     
                     failedItemTypeValidationBills = uploadResult.ValidRows
@@ -218,7 +218,7 @@ namespace FileUploadAndValidation.FileServices
 
                 if (uploadResult.ValidRows.Count() > 0 
                     && uploadResult.ValidRows.Any() 
-                    && request.ItemType.ToLower().Equals(GenericConstants.WVAT))
+                    && request.ItemType.ToLower().Equals(GenericConstants.Wvat))
                 {
                     failedItemTypeValidationBills = uploadResult.ValidRows
                          ?.GroupBy(b => new { b.ContractorTin })

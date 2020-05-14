@@ -102,7 +102,7 @@ namespace FileUploadAndValidation.Repository
                             }
 
                             if (fileDetail.ContentType.ToLower().Equals(GenericConstants.Firs)
-                                && fileDetail.ItemType.ToLower().Equals(GenericConstants.WHT))
+                                && fileDetail.ItemType.ToLower().Equals(GenericConstants.Wht))
                             {
                                 foreach (var valid in payments)
                                 {
@@ -158,7 +158,7 @@ namespace FileUploadAndValidation.Repository
                             }
 
                             if (fileDetail.ContentType.ToLower().Equals(GenericConstants.Firs)
-                                && fileDetail.ItemType.ToLower().Equals(GenericConstants.WVAT))
+                                && fileDetail.ItemType.ToLower().Equals(GenericConstants.Wvat))
                             {
                                 foreach (var validWht in payments)
                                 {
@@ -504,11 +504,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_confirmed_bill_payments_by_transactions_summary_id";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
             {
                 return @"sp_get_confirmed_firs_wht_by_transactions_summary_id";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
             {
                 return @"sp_get_confirmed_firs_wvat_by_transactions_summary_id";
             }
@@ -572,11 +572,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_payments_status_by_transactions_summary_id";
             }
-            else if(itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            else if(itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
             {
                 return @"sp_get_firs_wht_payments_status_by_transactions_summary_id";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
             {
                 return @"sp_get_firs_wvat_payments_status_by_transactions_summary_id";
             }
@@ -692,11 +692,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_bill_payments_detail";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
             {
                 return @"sp_update_firs_wht_payments_detail";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
             {
                 return @"sp_update_firs_wvat_payments_detail";
             }
@@ -710,11 +710,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_bill_payments_detail_enterprise_error";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
             {
                 return @"sp_update_firs_wht_detail_enterprise_error";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
             {
                 return @"sp_update_firs_wvat_detail_enterprise_error";
             }

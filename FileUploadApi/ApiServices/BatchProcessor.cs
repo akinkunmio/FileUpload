@@ -36,8 +36,8 @@ namespace FileUploadApi.ApiServices
 
             if (!request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
                 && !request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
-                && !request.ItemType.ToLower().Equals(GenericConstants.WVAT.ToLower())
-                && !request.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+                && !request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
+                && !request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
                 throw new AppException("Invalid Content Type specified");
 
             if (request.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))

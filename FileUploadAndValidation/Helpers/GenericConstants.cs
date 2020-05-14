@@ -13,16 +13,28 @@ namespace FileUploadAndValidation.Helpers
 
         public const string BillPaymentIdPlusItem = "billpaymentid+item";
         public const string BillPaymentId = "billpaymentid";
-        public const string WHT = "wht";
-        public const string WVAT = "wvat";
-        public const string FirsPayee = "payee";
+        public const string FirsWht = "firswht";
+        public const string FirsWvat = "firswvat";
+        public const string FirsPayee = "firspayee";
+        public const string Payee = "payee";
+        public const string Wht = "wht";
+        public const string Wvat = "wvat";
+        public const string Cit = "cit";
+        public const string Edt = "edt";
+        public const string PreOpLevy = "pre-op levy";
+        public const string Vat = "vat";
+
+
         public const string Autopay = "autopay";
         public const string Sms = "sms";
         public const string BillPayment = "billpayment";
+        public const string MultiTax = "multitax";
+       
         public const string Firs = "firs";
-        public static string MultiTax = "multitax";
-        public static string Lirs = "lirs";
-        public static string FCTirs = "fct-irs";
+        public const string Lirs = "lirs";
+        public const string FCTirs = "fct-irs";
+
+
 
         public const string ValidateBillPaymentUrl = "/qbtrans/api/v1/payments/bills/validate";
         public const string ValidateFirsUrl = "/qbtrans/api/v1/payments/firs/validate";
