@@ -1,6 +1,6 @@
-﻿using FileUploadAndValidation.Helpers;
+﻿using FileUploadAndValidation.FileServices;
+using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
-using FileUploadApi;
 using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
 using FilleUploadCore.Helpers;
@@ -11,16 +11,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileUploadAndValidation.FileServices
+namespace FileUploadAndValidation.FileContentValidators
 {
-    public class FirsFileContentValidator : IFileContentValidator
+    public class FirsMultiTaxContentValidator : IFileContentValidator
     {
-        private readonly ILogger<FirsFileContentValidator> _logger;
+        private readonly ILogger<FirsMultiTaxContentValidator> _logger;
 
-        public FirsFileContentValidator(ILogger<FirsFileContentValidator> logger)
+        public FirsMultiTaxContentValidator(ILogger<FirsMultiTaxContentValidator> logger)
         {
             _logger = logger;
         }
+
         private async Task<ValidateRowsResult> ValidateContent(string validationType, IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
         {
             var validRows = new List<RowDetail>();
@@ -70,8 +71,8 @@ namespace FileUploadAndValidation.FileServices
                     });
                 }
 
-                if (validateRowModel.Failure != null 
-                    && validateRowModel.Failure.ColumnValidationErrors != null 
+                if (validateRowModel.Failure != null
+                    && validateRowModel.Failure.ColumnValidationErrors != null
                     && validateRowModel.Failure.ColumnValidationErrors.Any())
                     failures.Add(validateRowModel.Failure);
             }
@@ -156,10 +157,10 @@ namespace FileUploadAndValidation.FileServices
 
                 var columnContract = new ColumnContract[] { };
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.WHT.ToLower()))
+                if (request.ItemType.ToLower().Equals(GenericConstants.WHT))
                     columnContract = ContentTypeColumnContract.FirsWHT();
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
+                if (request.ItemType.ToLower().Equals(GenericConstants.WVAT))
                     columnContract = ContentTypeColumnContract.FirsWVAT();
 
                 GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
@@ -176,11 +177,11 @@ namespace FileUploadAndValidation.FileServices
                 if (uploadResult.ValidRows.Count() == 0)
                     throw new AppException("All records are invalid", 400, uploadResult);
 
-                if (uploadResult.ValidRows.Count() > 0 
-                    && uploadResult.ValidRows.Any() 
+                if (uploadResult.ValidRows.Count() > 0
+                    && uploadResult.ValidRows.Any()
                     && request.ItemType.ToLower().Equals(GenericConstants.WHT))
                 {
-                    
+
                     failedItemTypeValidationBills = uploadResult.ValidRows
                           ?.GroupBy(b => new { b.BeneficiaryTin })
                           .Where(g => g.Count() > 1)
@@ -216,8 +217,8 @@ namespace FileUploadAndValidation.FileServices
                         });
                 }
 
-                if (uploadResult.ValidRows.Count() > 0 
-                    && uploadResult.ValidRows.Any() 
+                if (uploadResult.ValidRows.Count() > 0
+                    && uploadResult.ValidRows.Any()
                     && request.ItemType.ToLower().Equals(GenericConstants.WVAT))
                 {
                     failedItemTypeValidationBills = uploadResult.ValidRows
@@ -262,7 +263,7 @@ namespace FileUploadAndValidation.FileServices
                         .Where(b => !failedItemTypeValidationBills.Any(n => n.RowNum == b.RowNum))
                         .Select(r => r).ToList();
 
-                foreach(var failure in uploadResult.Failures)
+                foreach (var failure in uploadResult.Failures)
                 {
                     failure.Row.Error = GenericHelpers.ConstructValidationError(failure);
                 }
@@ -285,5 +286,5 @@ namespace FileUploadAndValidation.FileServices
                 throw new AppException(exception.Message, 400, uploadResult);
             }
         }
-    } 
+    }
 }

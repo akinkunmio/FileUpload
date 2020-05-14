@@ -17,7 +17,7 @@ namespace FileUploadApi
 
         Task<long> GetBatchUploadSummaryId(string batchId);
 
-        Task<IEnumerable<RowDetail>> GetConfirmedBillPayments(string batchId);
+        Task<IEnumerable<RowDetail>> GetConfirmedPayments(string batchId);
 
         Task UpdateBillPaymentInitiation(string batchId);
 

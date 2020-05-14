@@ -20,6 +20,9 @@ namespace FileUploadAndValidation.Helpers
         public const string Sms = "sms";
         public const string BillPayment = "billpayment";
         public const string Firs = "firs";
+        public static string MultiTax = "multitax";
+        public static string Lirs = "lirs";
+        public static string FCTirs = "fct-irs";
 
         public const string ValidateBillPaymentUrl = "/qbtrans/api/v1/payments/bills/validate";
         public const string ValidateFirsUrl = "/qbtrans/api/v1/payments/firs/validate";

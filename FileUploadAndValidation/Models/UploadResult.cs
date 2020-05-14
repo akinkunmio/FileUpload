@@ -27,6 +27,7 @@ namespace FileUploadAndValidation.Models
         public string ProductCode { get; set; }
 
         public string ProductName { get; set; }
+
         public string FileName { get; set; }
     }
 
@@ -45,6 +46,28 @@ namespace FileUploadAndValidation.Models
         public string ProductCode { get; set; }
 
         public string ProductName { get; set; }
+
+        public string FileName { get; set; }
+
+        public class FailedValidation
+        {
+            public dynamic Row { get; set; }
+
+            public IList<ValidationError> ColumnValidationErrors { get; set; }
+        }
+    }
+
+    public class MultiTaxResponseResult
+    {
+        public string ErrorMessage { get; set; }
+
+        public string BatchId { get; set; }
+
+        public List<dynamic> ValidRows { get; set; }
+
+        public List<FailedValidation> Failures { get; set; }
+
+        public int RowsCount { get; set; }
 
         public string FileName { get; set; }
 
@@ -88,6 +111,8 @@ namespace FileUploadAndValidation.Models
         public string BeneficiaryAddress { get; set; }
 
         public string ContractDate { get; set; }
+       
+        public string ContractDescription { get; set; }
 
         public string ContractAmount { get; set; }
 
@@ -107,8 +132,6 @@ namespace FileUploadAndValidation.Models
 
         public string ContractorTin { get; set; }
 
-        public string ContractDescription { get; set; }
-
         public string TransactionDate { get; set; }
 
         public string NatureOfTransaction { get; set; }
@@ -127,6 +150,11 @@ namespace FileUploadAndValidation.Models
 
         public string WvatValue { get; set; }
 
+        public string TaxType { get; set; }
+
+        public string DocumentNumber { get; set; }
+
+        public string Comment { get; internal set; }
     }
 
     //public class RowdDetailUtyped

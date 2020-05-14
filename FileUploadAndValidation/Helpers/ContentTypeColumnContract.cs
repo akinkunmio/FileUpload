@@ -28,7 +28,7 @@ namespace FileUploadAndValidation.Helpers
             };
         }
 
-        public static ColumnContract[] WVAT()
+        public static ColumnContract[] FirsWVAT()
         {
             return new[]
            {
@@ -49,7 +49,7 @@ namespace FileUploadAndValidation.Helpers
             };
         }
 
-        public static ColumnContract[] WHT()
+        public static ColumnContract[] FirsWHT()
         {
             return new[]
             {

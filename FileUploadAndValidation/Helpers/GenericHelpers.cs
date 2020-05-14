@@ -30,6 +30,64 @@ namespace FileUploadAndValidation.Helpers
             }
         }
 
+        public static dynamic RowMarshaller(RowDetail r, string contentType, string itemType)
+        {
+            dynamic result = default;
+
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.WHT))
+                result = new FirsWhtUntyped
+                {
+                    Row = r.RowNum,
+                    BeneficiaryAddress = r.BeneficiaryAddress,
+                    BeneficiaryName = r.BeneficiaryName,
+                    BeneficiaryTin = r.BeneficiaryTin,
+                    ContractAmount = r.ContractAmount,
+                    ContractDate = r.ContractDate,
+                    ContractDescription = r.ContractDescription,
+                    ContractType = r.ContractType,
+                    InvoiceNumber = r.InvoiceNumber,
+                    PeriodCovered = r.PeriodCovered,
+                    WhtAmount = r.WhtAmount,
+                    WhtRate = r.WhtRate
+                };
+
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.WVAT))
+                result = new FirsWVatUntyped
+                {
+                    Row = r.RowNum,
+                    ContractorAddress = r.ContractorAddress,
+                    ContractorName = r.ContractorName,
+                    ContractorTin = r.ContractorTin,
+                    CurrencyExchangeRate = r.CurrencyExchangeRate,
+                    CurrencyInvoicedValue = r.CurrencyInvoicedValue,
+                    ContractDescription = r.ContractDescription,
+                    NatureOfTransaction = r.NatureOfTransaction,
+                    InvoiceNumber = r.InvoiceNumber,
+                    TaxAccountNumber = r.TaxAccountNumber,
+                    TransactionCurrency = r.TransactionCurrency,
+                    TransactionDate = r.TransactionDate,
+                    TransactionInvoicedValue = r.TransactionInvoicedValue,
+                    WvatRate = r.WvatRate,
+                    WvatValue = r.WvatValue
+                };
+
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment)
+                && (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
+                result = new BillPaymentUntyped
+                {
+                    RowNumber = r.RowNum,
+                    Amount = r.Amount,
+                    CustomerId = r.CustomerId,
+                    ItemCode = r.ItemCode,
+                    ProductCode = r.ProductCode
+                };
+
+            return result;
+        }
+
         public static string ConstructValidationError(Failure failure)
         {
             var result = new StringBuilder();
