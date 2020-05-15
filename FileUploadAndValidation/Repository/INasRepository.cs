@@ -27,30 +27,28 @@ namespace FileUploadAndValidation.Repository
             _logger = logger;
             _appConfig = appConfig;
         }
-      
-        public async Task<FileProperty> SaveFileToValidate(string batchId, string itemType, IEnumerable<RowDetail> rowDetails)
+
+        public async Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
         {
             try
             {
                 //var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
                 var fileLocation = @"../data/validate/";
                 var fileName = batchId + "_validate.json";
-
-                dynamic rows = MapToNasToValidateFilePOCO(itemType, rowDetails); 
-                string json = JsonConvert.SerializeObject(rows);
-
                 var path = fileLocation + fileName;
-               
-                File.WriteAllText(path, json);
 
-                return await Task.FromResult(new FileProperty
+                string jsonString = JsonConvert.SerializeObject(GenericHelpers.GetValidateFileNasContent(contentType, itemType, rowDetails));
+
+                await File.WriteAllTextAsync(path, jsonString);
+
+                return new FileProperty
                 {
                     BatchId = batchId,
                     DataStore = 1,
                     Url = $"validate/{fileName}"
-                });
+                };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 //return await Task.FromResult(new FileProperty
@@ -63,71 +61,9 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        private dynamic MapToNasToValidateFilePOCO(string itemType, IEnumerable<RowDetail> rowDetails)
-        {
-            dynamic result = default;
+      
 
-            if(itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) 
-                || itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
-            {
-                result = rowDetails
-                    .Select(r => new NasBillPaymentDto
-                    {
-                        Amount = decimal.Parse(r.Amount),
-                        CustomerId = r.CustomerId,
-                        ItemCode = r.ItemCode,
-                        ProductCode = r.ProductCode,
-                        Row = r.RowNum
-                    });
-            }
-
-            if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
-            {
-                result = rowDetails
-                    .Select(r => new FirsWhtTyped
-                    {
-                        Row = r.RowNum,
-                        BeneficiaryTin = r.BeneficiaryTin,
-                        BeneficiaryName = r.BeneficiaryName,
-                        BeneficiaryAddress = r.BeneficiaryAddress,
-                        ContractDate = r.ContractDate,
-                        ContractAmount = decimal.Parse(r.ContractAmount),
-                        ContractDescription = r.ContractDescription,
-                        InvoiceNumber = r.InvoiceNumber,
-                        ContractType = r.ContractType,
-                        PeriodCovered = r.PeriodCovered,
-                        WhtRate =decimal.Parse(r.WhtRate),
-                        WhtAmount = decimal.Parse(r.WhtAmount),
-                    });
-            }
-
-            if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
-            {
-                result = rowDetails
-                    .Select(r => new FirsWVatTyped
-                    {
-                        Row = r.RowNum,
-                        ContractorName = r.ContractorName,
-                        ContractorAddress = r.ContractorAddress,
-                        ContractorTin = r.ContractorTin,
-                        ContractDescription = r.ContractDescription,
-                        TransactionDate = r.TransactionDate,
-                        NatureOfTransaction = r.NatureOfTransaction,
-                        InvoiceNumber = r.InvoiceNumber,
-                        TransactionCurrency = r.TransactionCurrency,
-                        CurrencyInvoicedValue = decimal.Parse(r.CurrencyInvoicedValue),
-                        TransactionInvoicedValue = decimal.Parse(r.TransactionInvoicedValue),
-                        CurrencyExchangeRate = decimal.Parse(r.CurrencyExchangeRate),
-                        TaxAccountNumber = r.TaxAccountNumber,
-                        WVATRate = decimal.Parse(r.WvatRate),
-                        WVATValue = decimal.Parse(r.WvatValue)
-                    });
-            }
-
-            return result;
-        }
-
-        public async Task<FileProperty> SaveFileToConfirmed(string batchId, string itemType, IEnumerable<RowDetail> rowDetails)
+        public async Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
         {
             try
             {
@@ -135,7 +71,7 @@ namespace FileUploadAndValidation.Repository
                 var fileLocation = @"../data/raw/";
                 var fileName = batchId + "_confirmed.json";
 
-                string json = JsonConvert.SerializeObject(MapToNasToValidateFilePOCO(itemType, rowDetails));
+                string json = JsonConvert.SerializeObject(GenericHelpers.GetValidateFileNasContent(contentType, itemType, rowDetails));
 
                 var path = fileLocation + fileName;
 
@@ -189,7 +125,7 @@ namespace FileUploadAndValidation.Repository
             //var path = location + queueMessage.ResultLocation;
 
             var path = Path.Combine(location, queueMessage.ResultLocation);
-         
+
             try
             {
                 if (File.Exists(path))
@@ -200,7 +136,7 @@ namespace FileUploadAndValidation.Repository
                 else
                     throw new AppException($"Validation file not found at {path}", (int)HttpStatusCode.NotFound);
             }
-            catch(AppException ex)
+            catch (AppException ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
@@ -227,13 +163,13 @@ namespace FileUploadAndValidation.Repository
                 {
                     using (FileStream fsSource = new FileStream(path, FileMode.Open, FileAccess.Read))
                     {
-                       await fsSource.CopyToAsync(outputStream);
+                        await fsSource.CopyToAsync(outputStream);
                     }
                 }
                 else
                     throw new AppException($"Template file not found at {path}", (int)HttpStatusCode.NotFound);
             }
-            catch(AppException ex)
+            catch (AppException ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
@@ -292,15 +228,15 @@ namespace FileUploadAndValidation.Repository
                     await csv.WriteRecordsAsync(MapToValidationResultFilePOCO(itemType, content));
                 }
             }
-            catch(AppException ex)
+            catch (AppException ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-               // return "uservalidationresult/firs_wvt_X1KTNC_202005091720288960_validate.json";
+                // return "uservalidationresult/firs_wvt_X1KTNC_202005091720288960_validate.json";
                 throw new AppException($"An error occured while saving the user validation result file to NAS ");
             }
 
@@ -376,9 +312,9 @@ namespace FileUploadAndValidation.Repository
     }
     public interface INasRepository
     {
-        Task<FileProperty> SaveFileToValidate(string batchId, string itemType, IEnumerable<RowDetail> rowDetails);
+        Task<FileProperty> SaveFileToValidate(string batchId,string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
 
-        Task<FileProperty> SaveFileToConfirmed(string batchId, string itemType, IEnumerable<RowDetail> rowDetails);
+        Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
 
         Task<string> SaveRawFile(string batchId, Stream stream, string extension);
 

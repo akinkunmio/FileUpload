@@ -19,11 +19,11 @@ namespace FileUploadApi.ApiServices
         private readonly IEnumerable<IFileContentValidator> _fileContentValidators;
         private readonly IEnumerable<IFileReader> _fileReaders;
 
-        public BatchProcessor(IBatchRepository batchRepository,
+        public BatchProcessor(IEnumerable<IBatchRepository> batchRepositories,
             IEnumerable<IFileContentValidator> fileContentValidators,
             IEnumerable<IFileReader> fileReaders)
         {
-            _batchRepository = batchRepository;
+            _batchRepository = batchRepositories.ToArray()[0];
             _fileContentValidators = fileContentValidators;
             _fileReaders = fileReaders;
         }
@@ -60,23 +60,7 @@ namespace FileUploadApi.ApiServices
 
                 await _batchRepository.Save(uploadResult, request);
 
-                return new ResponseResult
-                {
-                    BatchId = uploadResult.BatchId,
-                    ValidRows = uploadResult.ValidRows
-                                        .Select(row => GenericHelpers.RowMarshaller(row, request.ContentType, request.ItemType))
-                                        .ToList(),
-                    Failures = uploadResult.Failures.Select(a => new ResponseResult.FailedValidation
-                    {
-                        ColumnValidationErrors = a.ColumnValidationErrors,
-                        Row = GenericHelpers.RowMarshaller(a.Row, request.ContentType, request.ItemType)
-                    }).ToList(),
-                    ErrorMessage = uploadResult.ErrorMessage,
-                    FileName = uploadResult.FileName,
-                    ProductCode = uploadResult.ProductCode,
-                    ProductName = uploadResult.ProductName,
-                    RowsCount = uploadResult.RowsCount
-                };
+                return ResponseResult.CreateResponseResult(uploadResult, request.ContentType, request.ItemType);
             }
         }
 
@@ -97,14 +81,16 @@ namespace FileUploadApi.ApiServices
             }
         }
 
-        private async Task<UploadResult> ValidateFileContentAsync(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
+        private async Task ValidateFileContentAsync(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             switch (request.ContentType.ToLower())
             {
                 case "billpayment":
-                    return await _fileContentValidators.ToArray()[0].Validate(request, rows, uploadResult);
+                    await _fileContentValidators.ToArray()[0].Validate(request, rows, uploadResult);
+                    break;
                 case "firs":
-                    return await _fileContentValidators.ToArray()[1].Validate(request, rows, uploadResult);
+                    await _fileContentValidators.ToArray()[1].Validate(request, rows, uploadResult);
+                    break;
                 default:
                     throw new AppException("Content type not supported!.");
             }

@@ -4,19 +4,18 @@ using FileUploadAndValidation.UploadServices;
 using FileUploadApi;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.Repository
 {
-    public class BatchRepository : IBatchRepository
+    public class MultiTaxBatchRepository : IBatchRepository
     {
         private readonly IHttpService _httpService;
         private readonly INasRepository _nasRepository;
         private readonly IDbRepository _dbRepository;
 
-        public BatchRepository(IDbRepository dbRepository,
+        public MultiTaxBatchRepository(IDbRepository dbRepository,
             INasRepository nasRepository,
             IHttpService httpService)
         {
@@ -29,7 +28,7 @@ namespace FileUploadAndValidation.Repository
         {
 
             var totalNoOfRows = uploadResult.ValidRows.Count + uploadResult.Failures.Count;
-         
+
             await _dbRepository.InsertAllUploadRecords(new UploadSummaryDto
             {
                 BatchId = uploadResult.BatchId,
@@ -58,7 +57,7 @@ namespace FileUploadAndValidation.Repository
             if (validationResponse.ResponseData.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.ResponseData.Results.Any() && validationResponse.ResponseData.ResultMode.ToLower().Equals("json"))
             {
                 var entValidatedRecordsCount = validationResponse.ResponseData.Results.Where(v => v.Status.ToLower().Equals("valid")).Count();
-                
+
                 await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
                 {
                     BatchId = uploadResult.BatchId,
@@ -69,7 +68,7 @@ namespace FileUploadAndValidation.Repository
                     RowStatuses = validationResponse.ResponseData.Results,
                 });
 
-                RowStatusDtoObject validationResult = await _dbRepository.GetPaymentRowStatuses(uploadResult.BatchId, 
+                RowStatusDtoObject validationResult = await _dbRepository.GetPaymentRowStatuses(uploadResult.BatchId,
                     new PaginationFilter
                     {
                         PageSize = totalNoOfRows,
@@ -83,8 +82,5 @@ namespace FileUploadAndValidation.Repository
                 await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
             }
         }
-
     }
-    
-
 }

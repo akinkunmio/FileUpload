@@ -32,7 +32,7 @@ namespace FileUploadAndValidation.FileServices
             {
                 validateRowModel = await ValidateRow(validationType, row, columnContracts);
 
-                if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.Wht))
+                if (validateRowModel.Valid && validationType.ToLower().Equals(GenericConstants.Wht))
                     validRows.Add(new RowDetail
                     {
                         RowNum = row.Index,
@@ -48,7 +48,7 @@ namespace FileUploadAndValidation.FileServices
                         WhtRate = row.Columns[9].Value,
                         WhtAmount = row.Columns[10].Value
                     });
-                else if (validateRowModel.IsValid && validationType.ToLower().Equals(GenericConstants.Wvat))
+                else if (validateRowModel.Valid && validationType.ToLower().Equals(GenericConstants.Wvat))
                 {
                     validRows.Add(new RowDetail
                     {
@@ -81,7 +81,7 @@ namespace FileUploadAndValidation.FileServices
 
         private async Task<ValidateRowModel> ValidateRow(string validationType, Row row, ColumnContract[] columnContracts)
         {
-            var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
+            var validationResult = GenericHelpers.  ValidateRowCell(row, columnContracts);
 
             var failure = new Failure();
             var rowDetail = new RowDetail();
@@ -133,7 +133,7 @@ namespace FileUploadAndValidation.FileServices
                     };
             }
 
-            return await Task.FromResult(new ValidateRowModel { IsValid = validationResult.Validity, Failure = failure });
+            return await Task.FromResult(new ValidateRowModel { Valid = validationResult.Validity, Failure = failure });
         }
 
         public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)

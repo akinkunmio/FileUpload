@@ -73,7 +73,8 @@ namespace FileUploadAndValidation.FileServices
                         throw new AppException($"Expected file Product Code to be {request.ProductCode}, but found {firstItem}!.");
 
                     bool allEqual = productCodeList.Skip(1)
-                      .All(s => string.Equals(firstItem, s, StringComparison.InvariantCultureIgnoreCase));
+                                                    .All(s => string
+                                                    .Equals(firstItem, s, StringComparison.InvariantCultureIgnoreCase));
 
                     if (!allEqual)
                         throw new AppException("Product Code should have same value for all records");
@@ -190,7 +191,7 @@ namespace FileUploadAndValidation.FileServices
             {
                 validateRowModel = await ValidateRow(row, columnContracts);
 
-                if (validateRowModel.IsValid)
+                if (validateRowModel.Valid)
                     validRows.Add(new RowDetail
                     {
                         RowNum = row.Index,
@@ -232,7 +233,7 @@ namespace FileUploadAndValidation.FileServices
                     };
             }
 
-            return await Task.FromResult(new ValidateRowModel { IsValid = validationErrorsResult.Validity, Failure = failure });
+            return await Task.FromResult(new ValidateRowModel { Valid = validationErrorsResult.Validity, Failure = failure });
         }
 
        

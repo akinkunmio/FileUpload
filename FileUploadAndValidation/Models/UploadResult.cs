@@ -1,6 +1,8 @@
-﻿using FilleUploadCore.Exceptions;
+﻿using FileUploadAndValidation.Helpers;
+using FilleUploadCore.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace FileUploadAndValidation.Models
@@ -55,6 +57,25 @@ namespace FileUploadAndValidation.Models
 
             public IList<ValidationError> ColumnValidationErrors { get; set; }
         }
+
+        public static ResponseResult CreateResponseResult(UploadResult uploadResult, string contentType, string itemType)
+        {
+            return new ResponseResult
+            {
+                BatchId = uploadResult.BatchId,
+                ValidRows = uploadResult.ValidRows
+                                        .Select(row => GenericHelpers.RowMarshaller(row, contentType, itemType))
+                                        .ToList(),
+                Failures = uploadResult.Failures.Select(a => new ResponseResult.FailedValidation
+                {
+                    ColumnValidationErrors = a.ColumnValidationErrors,
+                    Row = GenericHelpers.RowMarshaller(a.Row, contentType, itemType)
+                }).ToList(),
+                ErrorMessage = uploadResult.ErrorMessage,
+                FileName = uploadResult.FileName,
+                RowsCount = uploadResult.RowsCount
+            };
+        }
     }
 
     public class MultiTaxResponseResult
@@ -88,6 +109,8 @@ namespace FileUploadAndValidation.Models
 
     public class RowDetail
     {
+        public string PayerTin { get; set; }
+
         public int RowNum { get; set; }
 
         public string RowStatus { get; set; }

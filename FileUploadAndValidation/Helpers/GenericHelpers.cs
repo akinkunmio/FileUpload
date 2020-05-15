@@ -102,6 +102,198 @@ namespace FileUploadAndValidation.Helpers
             return result.ToString();
         }
 
+        private static dynamic MapToNasValidateObject(string contentType, string itemType, RowDetail r)
+        {
+            dynamic result = default;
+
+            if (contentType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
+                && (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())))
+            {
+                result = new NasBillPaymentDto
+                {
+                    Amount = decimal.Parse(r.Amount),
+                    CustomerId = r.CustomerId,
+                    ItemCode = r.ItemCode,
+                    ProductCode = r.ProductCode,
+                    Row = r.RowNum
+                };
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower())
+                && contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+            {
+                result = new FirsWhtTyped
+                {
+                    Row = r.RowNum,
+                    BeneficiaryTin = r.BeneficiaryTin,
+                    BeneficiaryName = r.BeneficiaryName,
+                    BeneficiaryAddress = r.BeneficiaryAddress,
+                    ContractDate = r.ContractDate,
+                    ContractAmount = decimal.Parse(r.ContractAmount),
+                    ContractDescription = r.ContractDescription,
+                    InvoiceNumber = r.InvoiceNumber,
+                    ContractType = r.ContractType,
+                    PeriodCovered = r.PeriodCovered,
+                    WhtRate = decimal.Parse(r.WhtRate),
+                    WhtAmount = decimal.Parse(r.WhtAmount),
+                    PayerTin = r.PayerTin
+                };
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
+                && contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+            {
+                result = new FirsWVatTyped
+                {
+                    Row = r.RowNum,
+                    ContractorName = r.ContractorName,
+                    ContractorAddress = r.ContractorAddress,
+                    ContractorTin = r.ContractorTin,
+                    ContractDescription = r.ContractDescription,
+                    TransactionDate = r.TransactionDate,
+                    NatureOfTransaction = r.NatureOfTransaction,
+                    InvoiceNumber = r.InvoiceNumber,
+                    TransactionCurrency = r.TransactionCurrency,
+                    CurrencyInvoicedValue = decimal.Parse(r.CurrencyInvoicedValue),
+                    TransactionInvoicedValue = decimal.Parse(r.TransactionInvoicedValue),
+                    CurrencyExchangeRate = decimal.Parse(r.CurrencyExchangeRate),
+                    TaxAccountNumber = r.TaxAccountNumber,
+                    WVATRate = decimal.Parse(r.WvatRate),
+                    WVATValue = decimal.Parse(r.WvatValue),
+                    PayerTin = r.PayerTin
+                };
+            }
+
+            if ((itemType.ToLower().Equals(GenericConstants.Cit)
+                || itemType.ToLower().Equals(GenericConstants.Edt)
+                || itemType.ToLower().Equals(GenericConstants.PreOpLevy)
+                || itemType.ToLower().Equals(GenericConstants.Vat))
+               && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                result = new FirsOtherTax
+                {
+                    Row = r.RowNum,
+                    PayerTin = r.PayerTin,
+                    Amount = r.Amount,
+                    Comment = r.Comment,
+                    DocumentNumber = r.DocumentNumber,
+                };
+            }
+
+            return result;
+        }
+
+        public static List<ValidateFileNasModel> GetValidateFileNasContent(string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
+        {
+            var result = new List<ValidateFileNasModel>();
+
+            if (itemType.ToLower().Equals(GenericConstants.MultiTax))
+            {
+                var whtRows = rowDetails
+                    .Where(r => r.TaxType.ToLower()
+                    .Equals(GenericConstants.Wht))
+                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wht, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Wht,
+                    Taxes = whtRows
+                });
+
+                var citRows = rowDetails
+                    .Where(r => r.TaxType.ToLower()
+                    .Equals(GenericConstants.Cit))
+                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Cit, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Cit,
+                    Taxes = citRows
+                });
+
+                var edtRows = rowDetails
+                   .Where(r => r.TaxType.ToLower()
+                   .Equals(GenericConstants.Edt))
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Edt, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Edt,
+                    Taxes = edtRows
+                });
+
+                var preOpLevyRows = rowDetails
+                   .Where(r => r.TaxType.ToLower()
+                   .Equals(GenericConstants.PreOpLevy))
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.PreOpLevy, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.PreOpLevy,
+                    Taxes = preOpLevyRows
+                });
+
+                var vatRows = rowDetails
+                  .Where(r => r.TaxType.ToLower()
+                  .Equals(GenericConstants.Vat))
+                  .Select(s => MapToNasValidateObject(contentType, GenericConstants.Vat, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Vat,
+                    Taxes = preOpLevyRows
+                });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Wht))
+            {
+                var whtRows = rowDetails
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wht, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Wht,
+                    Taxes = whtRows
+                });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Wvat))
+            {
+                var whtRows = rowDetails
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wvat, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Wvat,
+                    Taxes = whtRows
+                });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
+            {
+                var whtRows = rowDetails
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wvat, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Wvat,
+                    Taxes = whtRows
+                });
+            }
+
+            return result;
+        }
+
         public static ValidateRowResult ValidateRowCell(Row row, ColumnContract[] columnContracts)
         {
             var validationErrors = new List<ValidationError>();

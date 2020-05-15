@@ -9,6 +9,8 @@ namespace FileUploadAndValidation.Models
 {
     public class FileUploadRequest
     {
+        public bool ValidateHeaderRow { get; set; }
+
         public string AuthToken { get; set; }
 
         public string ContentType { get; set; }
