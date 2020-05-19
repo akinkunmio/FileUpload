@@ -492,7 +492,7 @@ namespace FileUploadAndValidation.Repository
             
         }
 
-        public async Task<RowStatusDtoObject> GetPaymentRowStatuses(string batchId, PaginationFilter pagination)
+        public async Task<IEnumerable<RowDetail>> GetPaymentRowStatuses(string batchId, PaginationFilter pagination)
         {
             using (var sqlConnection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {
@@ -507,10 +507,10 @@ namespace FileUploadAndValidation.Repository
                    
                     BatchFileSummary summary = await GetBatchUploadSummary(batchId);
                   
-                    IEnumerable<RowDetail> result = new List<RowDetail>();
+                    IEnumerable<RowDetail> result;
 
                     result = await sqlConnection.QueryAsync<RowDetail>(
-                       sql: GetSPForGetStatusBySummaryId(summary.ItemType),
+                       sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
                        param: new
                        {
                            transactions_summary_id = summaryId,
@@ -523,10 +523,7 @@ namespace FileUploadAndValidation.Repository
                     if (result == null)
                         throw new AppException($"No records found for file with batchId '{batchId}'");
 
-                    return new RowStatusDtoObject 
-                    { 
-                        RowStatusDto = result, 
-                    };
+                    return result;
                 }
                 catch(AppException ex)
                 {
@@ -541,25 +538,33 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        private string GetSPForGetStatusBySummaryId(string itemType)
+        private string GetSPForGetStatusBySummaryId(string itemType, string contentType)
         {
-            if (itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
-                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+            if ((itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)) 
+                && contentType.ToLower().Equals(GenericConstants.BillPayment))
             {
                 return @"sp_get_payments_status_by_transactions_summary_id";
             }
-            else if(itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
+            else if(itemType.ToLower().Equals(GenericConstants.Wht)
+                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_get_firs_wht_payments_status_by_transactions_summary_id";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat)
+                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_get_firs_wvat_payments_status_by_transactions_summary_id";
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                 && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                return @"sp_get_firs_multitax_payments_status_by_transactions_summary_id";
             }
             else return "";
         }
 
-        public async Task UpdateValidationResponse(UpdateValidationResponseModel updateBillPayments)
+        public async Task UpdateValidationResponse(UpdateValidationResponseModel updatePayments)
         {
             //get batchfilesummary from db 
             using (var connection = new SqlConnection(_appConfig.UploadServiceConnectionString))
@@ -568,12 +573,12 @@ namespace FileUploadAndValidation.Repository
 
                 try
                 {
-                    var fileSummary = await GetBatchUploadSummary(updateBillPayments.BatchId);
+                    var fileSummary = await GetBatchUploadSummary(updatePayments.BatchId);
 
                     if (fileSummary == null)
-                        throw new AppException($"Upload Batch Id '{updateBillPayments.BatchId}' not found!.", (int)HttpStatusCode.NotFound);
+                        throw new AppException($"Upload Batch Id '{updatePayments.BatchId}' not found!.", (int)HttpStatusCode.NotFound);
 
-                    var rowStatusDto = await GetPaymentRowStatuses(fileSummary.BatchId, 
+                    var rowsStatus = await GetPaymentRowStatuses(fileSummary.BatchId, 
                         new PaginationFilter 
                         { 
                             PageSize = fileSummary.NumOfRecords, 
@@ -581,11 +586,11 @@ namespace FileUploadAndValidation.Repository
                             ItemType = fileSummary.ItemType 
                         });
 
-                    var valids = updateBillPayments.RowStatuses
+                    var valids = updatePayments.RowStatuses
                         .Where(v => v.Status.ToLower()
                         .Equals("valid"));
 
-                    var totalAmount = rowStatusDto.RowStatusDto
+                    var totalAmount = rowsStatus
                         .Where(r => valids.Any(v => v.Row == r.RowNum))
                         .Select(s => decimal.Parse(s.Amount))
                         .Sum();
@@ -599,18 +604,18 @@ namespace FileUploadAndValidation.Repository
                                 param: new
                                 {
                                     batch_id = fileSummary.BatchId,
-                                    num_of_valid_records = updateBillPayments.NumOfValidRecords,
-                                    status = updateBillPayments.Status,
-                                    modified_date = updateBillPayments.ModifiedDate,
-                                    nas_tovalidate_file = updateBillPayments.NasToValidateFile,
+                                    num_of_valid_records = updatePayments.NumOfValidRecords,
+                                    status = updatePayments.Status,
+                                    modified_date = updatePayments.ModifiedDate,
+                                    nas_tovalidate_file = updatePayments.NasToValidateFile,
                                     valid_amount_sum = totalAmount
                                 },
                             commandType: CommandType.StoredProcedure,
                             transaction: sqlTransaction); 
 
-                            if(updateBillPayments.RowStatuses.Count() == 1)
+                            if(updatePayments.RowStatuses.Count() == 1)
                             {
-                                RowValidationStatus status = updateBillPayments.RowStatuses.First();
+                                RowValidationStatus status = updatePayments.RowStatuses.First();
                                 await connection.ExecuteAsync(
                                         sql: GetSPToUpdateEnterpriseError(fileSummary.ItemType, fileSummary.ContentType) /*"sp_update_payments_detail_enterprise_error"*/,
                                         param: new
@@ -623,9 +628,9 @@ namespace FileUploadAndValidation.Repository
                                         transaction: sqlTransaction);
                             }
 
-                            if (updateBillPayments.RowStatuses.Count() > 1)
+                            if (updatePayments.RowStatuses.Count() > 1)
                             {
-                                foreach (var status in updateBillPayments.RowStatuses)
+                                foreach (var status in updatePayments.RowStatuses)
                                 {
                                     await connection.ExecuteAsync(
                                         sql: GetSPToUpdatePaymentDetail(fileSummary.ItemType, fileSummary.ContentType)/*"sp_update_payments_detail"*/,

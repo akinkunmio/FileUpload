@@ -66,7 +66,7 @@ namespace FileUploadAndValidation.Models
                 ValidRows = uploadResult.ValidRows
                                         .Select(row => GenericHelpers.RowMarshaller(row, contentType, itemType))
                                         .ToList(),
-                Failures = uploadResult.Failures.Select(a => new ResponseResult.FailedValidation
+                Failures = uploadResult.Failures.Select(a => new FailedValidation
                 {
                     ColumnValidationErrors = a.ColumnValidationErrors,
                     Row = GenericHelpers.RowMarshaller(a.Row, contentType, itemType)

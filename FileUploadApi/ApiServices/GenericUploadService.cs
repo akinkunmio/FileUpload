@@ -109,8 +109,8 @@ namespace FileUploadApi.ApiServices
                 paymentStatuses.ValidRowCount = fileSummary.NumOfValidRecords;
                 paymentStatuses.FileName = fileSummary.NameOfFile;
 
-                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
-                || fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
                     paymentStatuses.Data = paymentStatus.RowStatusDto
                         .Select(s => new BillPaymentRowStatusUntyped
                         {
@@ -132,6 +132,7 @@ namespace FileUploadApi.ApiServices
                             BeneficiaryTin = s.BeneficiaryTin,
                             ContractAmount = s.ContractAmount,
                             ContractDate = s.ContractDate,
+                            ContractDescription = s.ContractDescription,
                             ContractType = s.ContractType,
                             WhtRate = s.WhtRate,
                             WhtAmount = s.WhtAmount,
@@ -164,6 +165,26 @@ namespace FileUploadApi.ApiServices
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
+
+                if(fileSummary.ItemType.ToLower().Equals(GenericConstants.MultiTax))
+                    paymentStatuses.Data = paymentStatus.RowStatusDto
+                       .Select(s => new
+                       {
+                           s.BeneficiaryAddress,
+                           s.BeneficiaryName,
+                           s.BeneficiaryTin,
+                           s.ContractAmount,
+                           s.ContractDate,
+                           s.ContractDescription,
+                           s.ContractType,
+                           s.WhtRate,
+                           s.WhtAmount,
+                           s.PeriodCovered,
+                           s.InvoiceNumber,
+                           s.Error,
+                           Row = s.RowNum,
+                           Status = s.RowStatus
+                       });
 
                 if (paymentStatuses.Data.Count() < 1)
                     throw new AppException($"No result found for Batch Id '{batchId}'", (int)HttpStatusCode.NotFound);
