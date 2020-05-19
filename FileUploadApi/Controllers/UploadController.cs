@@ -52,24 +52,7 @@ namespace FileUploadApi.Controllers
             {
                 ValidateUserId(userId);
 
-                var request = new FileUploadRequest
-                {
-                    ItemType = itemType,
-                    ContentType = contentType,
-                    AuthToken = Request.Headers["Authorization"].ToString(),
-                    FileRef = Request.Form.Files.First(),
-                    FileName = Request.Form.Files
-                                            .First().FileName
-                                            .Split('.')[0],
-                    FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
-                                        .Replace(".", string.Empty)
-                                        .ToLower(),
-                    UserId = long.Parse(userId),
-                    ProductCode = Request.Form["productCode"].ToString() /*?? "AIRTEL"*/,
-                    ProductName = Request.Form["productName"].ToString() /*?? "AIRTEL"*/,
-                    BusinessTin = Request.Form["businessTin"].ToString() /*?? "00771252-0001"*/,
-                    FileSize = Request.Form.Files.First().Length,
-                };
+                var request = FileUploadRequest.FromRequestForSingle(Request);
 
                 response = await _batchProcessor.UploadFileAsync(request);
             }
@@ -112,13 +95,14 @@ namespace FileUploadApi.Controllers
                     ContentType = authority,
                     AuthToken = Request.Headers["Authorization"].ToString(),
                     FileRef = Request.Form.Files.First(),
-                    FileName = Request.Form.Files.First().FileName.Split('.')[0],
+                    FileName = Request.Form.Files
+                                        .First().FileName
+                                        .Split('.')[0],
                     FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
                                     .Replace(".", string.Empty)
                                     .ToLower(),
                     UserId = long.Parse(userId),
-                    BusinessTin = Request.Form["businessTin"].ToString() /*?? "00771252-0001"*/,
-                    FileSize = Request.Form.Files.First().Length,
+                    FileSize = Request.Form.Files.First().Length
                 };
 
                 response = await _multiTaxProcessor.UploadFileAsync(request);

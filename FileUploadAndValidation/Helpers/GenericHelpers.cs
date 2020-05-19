@@ -95,7 +95,7 @@ namespace FileUploadAndValidation.Helpers
             {
                 result.Append($"{failure.ColumnValidationErrors[i].PropertyName}: {failure.ColumnValidationErrors[i].ErrorMessage}");
 
-                if (failure.ColumnValidationErrors[i] != null)
+                if (failure.ColumnValidationErrors[i+1] != null)
                     result.Append(", ");
             }
 
@@ -106,16 +106,16 @@ namespace FileUploadAndValidation.Helpers
         {
             dynamic result = default;
 
-            if (contentType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
-                && (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
-                || itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())))
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment)
+                && (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentId)))
             {
-                result = new NasBillPaymentDto
+                result = new 
                 {
                     Amount = decimal.Parse(r.Amount),
-                    CustomerId = r.CustomerId,
-                    ItemCode = r.ItemCode,
-                    ProductCode = r.ProductCode,
+                    r.CustomerId,
+                    r.ItemCode,
+                    r.ProductCode,
                     Row = r.RowNum
                 };
             }
@@ -123,45 +123,45 @@ namespace FileUploadAndValidation.Helpers
             if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower())
                 && contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
             {
-                result = new FirsWhtTyped
+                result = new
                 {
                     Row = r.RowNum,
-                    BeneficiaryTin = r.BeneficiaryTin,
-                    BeneficiaryName = r.BeneficiaryName,
-                    BeneficiaryAddress = r.BeneficiaryAddress,
-                    ContractDate = r.ContractDate,
+                    r.BeneficiaryTin,
+                    r.BeneficiaryName,
+                    r.BeneficiaryAddress,
+                    r.ContractDate,
                     ContractAmount = decimal.Parse(r.ContractAmount),
-                    ContractDescription = r.ContractDescription,
-                    InvoiceNumber = r.InvoiceNumber,
-                    ContractType = r.ContractType,
-                    PeriodCovered = r.PeriodCovered,
+                    r.ContractDescription,
+                    r.InvoiceNumber,
+                    r.ContractType,
+                    r.PeriodCovered,
                     WhtRate = decimal.Parse(r.WhtRate),
                     WhtAmount = decimal.Parse(r.WhtAmount),
-                    PayerTin = r.PayerTin
+                    BusinessTin = r.PayerTin
                 };
             }
 
             if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
                 && contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
             {
-                result = new FirsWVatTyped
+                result = new 
                 {
                     Row = r.RowNum,
-                    ContractorName = r.ContractorName,
-                    ContractorAddress = r.ContractorAddress,
-                    ContractorTin = r.ContractorTin,
-                    ContractDescription = r.ContractDescription,
-                    TransactionDate = r.TransactionDate,
-                    NatureOfTransaction = r.NatureOfTransaction,
-                    InvoiceNumber = r.InvoiceNumber,
-                    TransactionCurrency = r.TransactionCurrency,
+                    r.ContractorName,
+                    r.ContractorAddress,
+                    r.ContractorTin,
+                    r.ContractDescription,
+                    r.TransactionDate,
+                    r.NatureOfTransaction,
+                    r.InvoiceNumber,
+                    r.TransactionCurrency,
                     CurrencyInvoicedValue = decimal.Parse(r.CurrencyInvoicedValue),
                     TransactionInvoicedValue = decimal.Parse(r.TransactionInvoicedValue),
                     CurrencyExchangeRate = decimal.Parse(r.CurrencyExchangeRate),
-                    TaxAccountNumber = r.TaxAccountNumber,
+                    r.TaxAccountNumber,
                     WVATRate = decimal.Parse(r.WvatRate),
                     WVATValue = decimal.Parse(r.WvatValue),
-                    PayerTin = r.PayerTin
+                    BusinessTin = r.PayerTin
                 };
             }
 
@@ -171,25 +171,26 @@ namespace FileUploadAndValidation.Helpers
                 || itemType.ToLower().Equals(GenericConstants.Vat))
                && contentType.ToLower().Equals(GenericConstants.Firs))
             {
-                result = new FirsOtherTax
+                result = new 
                 {
                     Row = r.RowNum,
-                    PayerTin = r.PayerTin,
-                    Amount = r.Amount,
-                    Comment = r.Comment,
-                    DocumentNumber = r.DocumentNumber,
+                    CustomerTin = r.PayerTin,
+                    r.Amount,
+                    r.Comment,
+                    r.DocumentNumber,
                 };
             }
 
             return result;
         }
 
-        public static List<ValidateFileNasModel> GetValidateFileNasContent(string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
+        public static dynamic GetValidateFileNasContent(string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
         {
-            var result = new List<ValidateFileNasModel>();
 
             if (itemType.ToLower().Equals(GenericConstants.MultiTax))
             {
+                var result = new List<ValidateFileNasModel>();
+
                 var whtRows = rowDetails
                     .Where(r => r.TaxType.ToLower()
                     .Equals(GenericConstants.Wht))
@@ -249,49 +250,30 @@ namespace FileUploadAndValidation.Helpers
                     TaxType = GenericConstants.Vat,
                     Taxes = preOpLevyRows
                 });
+
+                return result;
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.Wht))
+            else if (itemType.ToLower().Equals(GenericConstants.Wht))
             {
-                var whtRows = rowDetails
+                return rowDetails
                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wht, s));
-
-                result.Add(new ValidateFileNasModel
-                {
-                    Authority = contentType,
-                    TaxType = GenericConstants.Wht,
-                    Taxes = whtRows
-                });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.Wvat))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat))
             {
-                var whtRows = rowDetails
+                return rowDetails
                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wvat, s));
-
-                result.Add(new ValidateFileNasModel
-                {
-                    Authority = contentType,
-                    TaxType = GenericConstants.Wvat,
-                    Taxes = whtRows
-                });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+            else if (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
                 || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
             {
-                var whtRows = rowDetails
-                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wvat, s));
-
-                result.Add(new ValidateFileNasModel
-                {
-                    Authority = contentType,
-                    TaxType = GenericConstants.Wvat,
-                    Taxes = whtRows
-                });
+               return rowDetails
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.BillPaymentId, s));
             }
 
-            return result;
+            return "";
         }
 
         public static ValidateRowResult ValidateRowCell(Row row, ColumnContract[] columnContracts)

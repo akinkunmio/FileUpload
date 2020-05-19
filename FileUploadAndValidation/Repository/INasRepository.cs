@@ -77,12 +77,12 @@ namespace FileUploadAndValidation.Repository
 
                 await File.WriteAllTextAsync(path, json);
 
-                return await Task.FromResult(new FileProperty
+                return new FileProperty
                 {
                     BatchId = batchId,
                     DataStore = 1,
                     Url = $"confirmed/{fileName}"
-                });
+                };
             }
             catch (Exception ex)
             {
@@ -118,7 +118,7 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(PaymentValidateMessage queueMessage)
         {
-            var result = new List<RowValidationStatus>();
+            IEnumerable<RowValidationStatus> result; 
             var location = @"../data/";
             //var location = _appConfig.NasFolderLocation;
 
@@ -131,7 +131,7 @@ namespace FileUploadAndValidation.Repository
                 if (File.Exists(path))
                 {
                     var extractedContent = await System.IO.File.ReadAllTextAsync(path, Encoding.Unicode);
-                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(extractedContent);
+                    result = JsonConvert.DeserializeObject<IEnumerable<RowValidationStatus>>(extractedContent);
                 }
                 else
                     throw new AppException($"Validation file not found at {path}", (int)HttpStatusCode.NotFound);
@@ -147,7 +147,7 @@ namespace FileUploadAndValidation.Repository
                 throw new AppException($"An error occured while extracting File Validation Result with BatchId : {queueMessage.BatchId} to NAS for validation", (int)HttpStatusCode.InternalServerError);
             }
 
-            return result?.AsEnumerable();
+            return result;
         }
 
         public async Task GetTemplateFileContentAsync(string fileName, MemoryStream outputStream)
@@ -210,7 +210,7 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<string> SaveValidationResultFile(string batchId, string itemType, IEnumerable<RowDetail> content)
+        public async Task<string> SaveValidationResultFile(string batchId, string itemType, string contentType, IEnumerable<RowDetail> content)
         {
             var location = _appConfig.NasFolderLocation + @"\uservalidationresult\";
             var fileName = batchId + "_validationresult.csv";
@@ -225,7 +225,7 @@ namespace FileUploadAndValidation.Repository
                 using (var writer = new StreamWriter(path))
                 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
-                    await csv.WriteRecordsAsync(MapToValidationResultFilePOCO(itemType, content));
+                    await csv.WriteRecordsAsync(MapToValidationResultFilePOCO(itemType, contentType, content));
                 }
             }
             catch (AppException ex)
@@ -243,29 +243,31 @@ namespace FileUploadAndValidation.Repository
             return fileName;
         }
 
-        private dynamic MapToValidationResultFilePOCO(string itemType, IEnumerable<RowDetail> rowDetails)
+        private dynamic MapToValidationResultFilePOCO(string itemType, string contentType, IEnumerable<RowDetail> rowDetails)
         {
             dynamic result = default;
 
-            if (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()) || itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
+            if (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem) 
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentId))
             {
                 result = rowDetails
-                    .Select(s => new BillPaymentRowStatusTyped
+                    .Select(s => new
                     {
                         Row = s.RowNum,
-                        Error = s.Error,
+                        s.Error,
                         Status = s.RowStatus,
-                        Amount = double.Parse(s.Amount),
-                        CustomerId = s.CustomerId,
-                        ItemCode = s.ItemCode,
-                        ProductCode = s.ProductCode
+                        s.Amount,
+                        s.CustomerId,
+                        s.ItemCode,
+                        s.ProductCode
                     });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
+            if (itemType.ToLower().Equals(GenericConstants.Wht) 
+                && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails
-                    .Select(r => new FirsWhtRowStatusTyped
+                    .Select(r => new FirsWhtRowStatusUntyped
                     {
                         Row = r.RowNum,
                         Error = r.Error,
@@ -273,22 +275,26 @@ namespace FileUploadAndValidation.Repository
                         BeneficiaryTin = r.BeneficiaryTin,
                         BeneficiaryName = r.BeneficiaryName,
                         BeneficiaryAddress = r.BeneficiaryAddress,
+                        ContractDescription = r.ContractDescription,
                         ContractDate = r.ContractDate,
-                        ContractAmount = decimal.TryParse(r.ContractAmount, out decimal amount) ? decimal.Parse(r.ContractAmount) : default,
+                        ContractAmount = r.ContractAmount,
                         InvoiceNumber = r.InvoiceNumber,
                         ContractType = r.ContractType,
                         PeriodCovered = r.PeriodCovered,
-                        WhtRate = decimal.TryParse(r.WhtRate, out decimal rate) ? decimal.Parse(r.WhtRate) : default,
-                        WhtAmount = decimal.TryParse(r.WhtAmount, out decimal wamount) ? decimal.Parse(r.WhtAmount) : default
+                        WhtRate = r.WhtRate,
+                        WhtAmount = r.WhtAmount
                     });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
+            if (itemType.ToLower().Equals(GenericConstants.Wvat)
+                && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails
-                    .Select(r => new FirsWVatRowStatusTyped
+                    .Select(r => new FirsWVatRowStatusUntyped
                     {
                         Row = r.RowNum,
+                        Error = r.Error,
+                        Status = r.RowStatus,
                         ContractorName = r.ContractorName,
                         ContractorAddress = r.ContractorAddress,
                         ContractorTin = r.ContractorTin,
@@ -297,13 +303,40 @@ namespace FileUploadAndValidation.Repository
                         NatureOfTransaction = r.NatureOfTransaction,
                         InvoiceNumber = r.InvoiceNumber,
                         TransactionCurrency = r.TransactionCurrency,
-                        CurrencyInvoicedValue = decimal.TryParse(r.CurrencyInvoicedValue, out decimal civ) ? decimal.Parse(r.CurrencyInvoicedValue) : default,
-                        TransactionInvoicedValue = decimal.TryParse(r.TransactionInvoicedValue, out decimal tiv) ? decimal.Parse(r.TransactionInvoicedValue) : default,
-                        CurrencyExchangeRate = decimal.TryParse(r.CurrencyExchangeRate, out decimal cer) ? decimal.Parse(r.CurrencyExchangeRate) : default,
+                        CurrencyInvoicedValue = r.CurrencyInvoicedValue,
+                        TransactionInvoicedValue = r.TransactionInvoicedValue,
+                        CurrencyExchangeRate = r.CurrencyExchangeRate,
                         TaxAccountNumber = r.TaxAccountNumber,
-                        WvatRate = decimal.TryParse(r.WvatRate, out decimal wr) ? decimal.Parse(r.WvatRate) : default,
-                        WvatValue = decimal.TryParse(r.WvatValue, out decimal wv) ? decimal.Parse(r.WvatValue) : default
+                        WvatRate = r.WvatRate,
+                        WvatValue = r.WvatValue
                     });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+               && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                result = rowDetails.Select(r => new 
+                { 
+                    Row = r.RowNum,
+                    r.Error,
+                    Status = r.RowStatus,
+                    r.BeneficiaryTin,
+                    r.BeneficiaryName,
+                    r.BeneficiaryAddress,
+                    r.ContractDescription,
+                    r.ContractDate,
+                    r.ContractAmount,
+                    r.InvoiceNumber,
+                    r.ContractType,
+                    r.PeriodCovered,
+                    r.WhtRate,
+                    r.WhtAmount,
+                    r.Amount,
+                    r.Comment,
+                    r.DocumentNumber,
+                    r.PayerTin,
+                    r.TaxType
+                });
             }
 
             return result;
@@ -322,7 +355,7 @@ namespace FileUploadAndValidation.Repository
 
         Task GetTemplateFileContentAsync(string fileName, MemoryStream outputStream);
 
-        Task<string> SaveValidationResultFile(string batchId, string itemType, IEnumerable<RowDetail> content);
+        Task<string> SaveValidationResultFile(string batchId, string itemType, string contentType, IEnumerable<RowDetail> content);
 
         Task GetUserValidationResultAsync(string fileName, MemoryStream outputStream);
     }

@@ -34,17 +34,20 @@ namespace FileUploadAndValidation.UploadServices
             _httpClient.Timeout = new TimeSpan(0, 0, 1, 0, 0);
         }
 
-        private string GetValidateUrl(string contentType)
+        private string GetValidateUrl(string itemType)
         {
-            string result = "";
 
-            if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
-                result = GenericConstants.ValidateBillPaymentUrl;
+            if (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
+                return GenericConstants.ValidateBillPaymentUrl;
 
-            else if(contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
-                result = GenericConstants.ValidateFirsUrl;
+            else if(itemType.ToLower().Equals(GenericConstants.Firs))
+                return GenericConstants.ValidateFirsUrl;
 
-            return result;
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax))
+                return GenericConstants.ValidateMultitaxUrl;
+
+            return "";
         }
 
         private string GetInitiatePaymentUrl(string contentType)
@@ -61,14 +64,14 @@ namespace FileUploadAndValidation.UploadServices
 
         }
 
-        public async Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
+        public async Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
         {
             ValidationResponse validateResponse;
             try
             {
                 var requestBody = ConstructValidateRequestString(greaterThanFifty, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin);
 
-                var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ContentType))
+                var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ItemType))
                 {
                     Content = new StringContent(requestBody, Encoding.UTF8, "application/json")
                 };
@@ -134,7 +137,9 @@ namespace FileUploadAndValidation.UploadServices
                     DataStoreUrl = url
                 });
 
-            if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && (itemType.ToLower().Equals(GenericConstants.Wht)
+                || itemType.ToLower().Equals(GenericConstants.Wvat)))
                 result = JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
@@ -143,10 +148,19 @@ namespace FileUploadAndValidation.UploadServices
                     BusinessTin = businessTin
                 });
 
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+                result = JsonConvert.SerializeObject(new
+                {
+                    DataStore = 1,
+                    DataStoreUrl = url,
+                    BatchId = batchId
+                });
+
             return result;
         }
 
-        private string ConstructConfirmedRequestString(InitiatePaymentOptions initiatePaymentOptions, FileProperty fileProperty)
+        private string ConstructInitiatePaymentRequestString(InitiatePaymentOptions initiatePaymentOptions, FileProperty fileProperty)
         {
             string result = "";
 
@@ -183,11 +197,11 @@ namespace FileUploadAndValidation.UploadServices
             return result;
         }
 
-        public async Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
+        public async Task<ConfirmedBillResponse> InitiatePayment(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
         {
             try
             {
-                var req = ConstructConfirmedRequestString(initiatePaymentOptions, fileProperty);
+                var req = ConstructInitiatePaymentRequestString(initiatePaymentOptions, fileProperty);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, GetInitiatePaymentUrl(fileProperty.ContentType))
                 {
@@ -241,9 +255,9 @@ namespace FileUploadAndValidation.UploadServices
 
     public interface IHttpService
     {
-        Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty);
+        Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty);
 
-        Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
+        Task<ConfirmedBillResponse> InitiatePayment(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
     }
 
     public class ConfirmedBillResponse

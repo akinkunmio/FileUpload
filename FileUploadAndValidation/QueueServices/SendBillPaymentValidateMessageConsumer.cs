@@ -18,7 +18,7 @@ namespace FileUploadAndValidation.QueueServices
 {
     public class SendBillPaymentValidateMessageConsumer : IConsumer<ValidationResponseData>
     {
-        private readonly FileUploadApi.IDbRepository _dbRepository;
+        private readonly IDbRepository _dbRepository;
         private readonly INasRepository _nasRepository;
         private readonly ILogger<SendBillPaymentValidateMessageConsumer> _logger;
 
@@ -49,7 +49,9 @@ namespace FileUploadAndValidation.QueueServices
 
                 _logger.LogInformation("Log information {queueMessage.RequestId} | {queueMessage.ResultLocation} | {queueMessage.CreatedAt}", batchId, queueMessage.ResultLocation, queueMessage.CreatedAt);
 
-                var validRowsCount = validationStatuses.Where(v => v.Status.ToLower().Equals("valid")).Count();
+                var validRowsCount = validationStatuses
+                                                    .Where(v => v.Status.ToLower().Equals("valid"))
+                                                    .Count();
 
                 if (validationStatuses.Count() > 0)
                     await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
@@ -66,7 +68,7 @@ namespace FileUploadAndValidation.QueueServices
                     
                 var validationResult = await _dbRepository.GetPaymentRowStatuses(batchId, new PaginationFilter(validationStatuses.Count(), 1));
 
-                var fileName = await _nasRepository.SaveValidationResultFile(batchId, fileSummary.ItemType, validationResult.RowStatusDto);
+                var fileName = await _nasRepository.SaveValidationResultFile(batchId, fileSummary.ItemType, fileSummary.ContentType, validationResult.RowStatusDto);
 
                 await _dbRepository.UpdateUploadSuccess(batchId, fileName);
             }

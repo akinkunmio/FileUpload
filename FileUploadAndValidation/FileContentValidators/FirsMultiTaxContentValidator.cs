@@ -53,7 +53,7 @@ namespace FileUploadAndValidation.FileContentValidators
             if(authority.ToLower().Equals(GenericConstants.Firs))
                 rowTaxType = row.Columns[15].Value;
 
-            var columnContracts = MapTaxTypesToColumnContracts(authority, rowTaxType);
+            var columnContracts = GetColumnContractByTaxType(authority, rowTaxType);
               
             var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
 
@@ -90,17 +90,15 @@ namespace FileUploadAndValidation.FileContentValidators
                     TaxType = row.Columns[15].Value
                 };
 
+            result.isValid = validationResult.Validity;
+
             if (validationResult.Validity)
             {
-                result.isValid = validationResult.Validity;
-
                 result.Valid = rowDetail;
             }
 
             if (!validationResult.Validity)
             {
-                result.isValid = validationResult.Validity;
-
                 result.Failure = new Failure
                 {
                     ColumnValidationErrors = validationResult.ValidationErrors,
@@ -111,7 +109,7 @@ namespace FileUploadAndValidation.FileContentValidators
             return await Task.FromResult(result);
         }
 
-        private ColumnContract[] MapTaxTypesToColumnContracts(string authority, string taxType)
+        private ColumnContract[] GetColumnContractByTaxType(string authority, string taxType)
         {
             ColumnContract[] columnContracts = default;
 
@@ -150,7 +148,7 @@ namespace FileUploadAndValidation.FileContentValidators
 
                 uploadResult.RowsCount = rows.Count() - 1;
 
-                if (request.ValidateHeaderRow)
+                if (request.HasHeaderRow)
                 {
                     headerRow = rows.First();
 

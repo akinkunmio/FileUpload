@@ -38,6 +38,7 @@ namespace FileUploadAndValidation.Helpers
 
         public const string ValidateBillPaymentUrl = "/qbtrans/api/v1/payments/bills/validate";
         public const string ValidateFirsUrl = "/qbtrans/api/v1/payments/firs/validate";
+        public const string ValidateMultitaxUrl = "/qbtrans/api/v1/payments/hub/firs/validate";
         public const string InitiateBillPaymentUrl = "/qbtrans/api/v1/payments/bills/initiate-payment";
         public const string InitiateFirPaymentUrl = "/qbtrans/api/v1/payments/firs/initiate-payment";
 

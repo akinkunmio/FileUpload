@@ -111,56 +111,59 @@ namespace FileUploadApi.ApiServices
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
                 || fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
-                    paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new BillPaymentRowStatusUntyped
-                    {
-                        Amount = s.Amount,
-                        CustomerId = s.CustomerId,
-                        ItemCode = s.ItemCode,
-                        ProductCode = s.ProductCode,
-                        Error = s.Error,
-                        Row = s.RowNum,
-                        Status = s.RowStatus
-                    });
+                    paymentStatuses.Data = paymentStatus.RowStatusDto
+                        .Select(s => new BillPaymentRowStatusUntyped
+                        {
+                            Amount = s.Amount,
+                            CustomerId = s.CustomerId,
+                            ItemCode = s.ItemCode,
+                            ProductCode = s.ProductCode,
+                            Error = s.Error,
+                            Row = s.RowNum,
+                            Status = s.RowStatus
+                        });
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Wht))
-                    paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new FirsWhtRowStatusUntyped
-                    {
-                        BeneficiaryAddress = s.BeneficiaryAddress,
-                        BeneficiaryName = s.BeneficiaryName,
-                        BeneficiaryTin = s.BeneficiaryTin,
-                        ContractAmount = s.ContractAmount,
-                        ContractDate = s.ContractDate,
-                        ContractType = s.ContractType,
-                        WhtRate = s.WhtRate,
-                        WhtAmount = s.WhtAmount,
-                        PeriodCovered = s.PeriodCovered,
-                        InvoiceNumber = s.InvoiceNumber,
-                        Error = s.Error,
-                        Row = s.RowNum,
-                        Status = s.RowStatus
-                    });
+                    paymentStatuses.Data = paymentStatus.RowStatusDto
+                        .Select(s => new FirsWhtRowStatusUntyped
+                        {
+                            BeneficiaryAddress = s.BeneficiaryAddress,
+                            BeneficiaryName = s.BeneficiaryName,
+                            BeneficiaryTin = s.BeneficiaryTin,
+                            ContractAmount = s.ContractAmount,
+                            ContractDate = s.ContractDate,
+                            ContractType = s.ContractType,
+                            WhtRate = s.WhtRate,
+                            WhtAmount = s.WhtAmount,
+                            PeriodCovered = s.PeriodCovered,
+                            InvoiceNumber = s.InvoiceNumber,
+                            Error = s.Error,
+                            Row = s.RowNum,
+                            Status = s.RowStatus
+                        });
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Wvat))
-                    paymentStatuses.Data = paymentStatus.RowStatusDto.Select(s => new FirsWVatRowStatusUntyped
-                    {
-                        ContractorName = s.ContractorName,
-                        ContractorAddress = s.ContractorAddress,
-                        ContractDescription = s.ContractDescription,
-                        ContractorTin = s.ContractorTin,
-                        TransactionDate = s.TransactionDate,
-                        NatureOfTransaction = s.NatureOfTransaction,
-                        InvoiceNumber = s.InvoiceNumber,
-                        TransactionCurrency = s.TransactionCurrency,
-                        CurrencyInvoicedValue = s.CurrencyInvoicedValue,
-                        TransactionInvoicedValue = s.TransactionInvoicedValue,
-                        CurrencyExchangeRate = s.CurrencyExchangeRate,
-                        TaxAccountNumber = s.TaxAccountNumber,
-                        WvatRate = s.WvatRate,
-                        WvatValue = s.WvatValue,
-                        Error = s.Error,
-                        Row = s.RowNum,
-                        Status = s.RowStatus
-                    });
+                    paymentStatuses.Data = paymentStatus.RowStatusDto
+                        .Select(s => new FirsWVatRowStatusUntyped
+                        {
+                            ContractorName = s.ContractorName,
+                            ContractorAddress = s.ContractorAddress,
+                            ContractDescription = s.ContractDescription,
+                            ContractorTin = s.ContractorTin,
+                            TransactionDate = s.TransactionDate,
+                            NatureOfTransaction = s.NatureOfTransaction,
+                            InvoiceNumber = s.InvoiceNumber,
+                            TransactionCurrency = s.TransactionCurrency,
+                            CurrencyInvoicedValue = s.CurrencyInvoicedValue,
+                            TransactionInvoicedValue = s.TransactionInvoicedValue,
+                            CurrencyExchangeRate = s.CurrencyExchangeRate,
+                            TaxAccountNumber = s.TaxAccountNumber,
+                            WvatRate = s.WvatRate,
+                            WvatValue = s.WvatValue,
+                            Error = s.Error,
+                            Row = s.RowNum,
+                            Status = s.RowStatus
+                        });
 
                 if (paymentStatuses.Data.Count() < 1)
                     throw new AppException($"No result found for Batch Id '{batchId}'", (int)HttpStatusCode.NotFound);
@@ -194,7 +197,7 @@ namespace FileUploadApi.ApiServices
             fileProperty.ContentType = fileSummary.ContentType;
             fileProperty.ItemType = fileSummary.ItemType;
 
-            result = await _httpService.ConfirmedBillRecords(fileProperty, initiatePaymentOptions);
+            result = await _httpService.InitiatePayment(fileProperty, initiatePaymentOptions);
 
             await _dbRepository.UpdateBillPaymentInitiation(batchId);
 

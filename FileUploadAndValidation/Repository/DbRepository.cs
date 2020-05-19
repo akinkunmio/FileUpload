@@ -612,7 +612,7 @@ namespace FileUploadAndValidation.Repository
                             {
                                 RowValidationStatus status = updateBillPayments.RowStatuses.First();
                                 await connection.ExecuteAsync(
-                                        sql: GetSPToUpdateEnterpriseError(fileSummary.ItemType) /*"sp_update_payments_detail_enterprise_error"*/,
+                                        sql: GetSPToUpdateEnterpriseError(fileSummary.ItemType, fileSummary.ContentType) /*"sp_update_payments_detail_enterprise_error"*/,
                                         param: new
                                         {
                                             transactions_summary_id = summaryId,
@@ -628,7 +628,7 @@ namespace FileUploadAndValidation.Repository
                                 foreach (var status in updateBillPayments.RowStatuses)
                                 {
                                     await connection.ExecuteAsync(
-                                        sql: GetSPToUpdatePaymentDetail(fileSummary.ItemType)/*"sp_update_payments_detail"*/,
+                                        sql: GetSPToUpdatePaymentDetail(fileSummary.ItemType, fileSummary.ContentType)/*"sp_update_payments_detail"*/,
                                         param: new
                                         {
                                             transactions_summary_id = summaryId,
@@ -661,38 +661,52 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        private string GetSPToUpdatePaymentDetail(string itemType)
+        private string GetSPToUpdatePaymentDetail(string itemType, string contentType)
         {
             if (itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
                 || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
             {
                 return @"sp_update_bill_payments_detail";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower())
+                && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_update_firs_wht_payments_detail";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
+                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_update_firs_wvat_payments_detail";
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                 && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                return @"sp_update_firs_multitax_payments_detail";
             }
             else return "";
         }
 
-        private string GetSPToUpdateEnterpriseError(string itemType)
+        private string GetSPToUpdateEnterpriseError(string itemType, string contentType)
         {
             if (itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
             {
                 return @"sp_update_bill_payments_detail_enterprise_error";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()) 
+                && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_update_firs_wht_detail_enterprise_error";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
+                && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_update_firs_wvat_detail_enterprise_error";
+            }
+            else if(itemType.ToLower().Equals(GenericConstants.MultiTax)
+                && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                return @"sp_update_firs_multitax_detail_enterprise_error";
             }
             else return "";
         }
