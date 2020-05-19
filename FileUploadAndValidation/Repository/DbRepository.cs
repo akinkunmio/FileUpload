@@ -693,8 +693,9 @@ namespace FileUploadAndValidation.Repository
 
         private string GetSPToUpdateEnterpriseError(string itemType, string contentType)
         {
-            if (itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
+            if ((itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+               && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_update_bill_payments_detail_enterprise_error";
             }

@@ -111,7 +111,7 @@ namespace FileUploadApi.ApiServices
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentId)
                 || fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
-                    paymentStatuses.Data = paymentStatus.RowStatusDto
+                    paymentStatuses.Data = paymentStatus
                         .Select(s => new BillPaymentRowStatusUntyped
                         {
                             Amount = s.Amount,
@@ -124,7 +124,7 @@ namespace FileUploadApi.ApiServices
                         });
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Wht))
-                    paymentStatuses.Data = paymentStatus.RowStatusDto
+                    paymentStatuses.Data = paymentStatus
                         .Select(s => new FirsWhtRowStatusUntyped
                         {
                             BeneficiaryAddress = s.BeneficiaryAddress,
@@ -144,7 +144,7 @@ namespace FileUploadApi.ApiServices
                         });
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Wvat))
-                    paymentStatuses.Data = paymentStatus.RowStatusDto
+                    paymentStatuses.Data = paymentStatus
                         .Select(s => new FirsWVatRowStatusUntyped
                         {
                             ContractorName = s.ContractorName,
@@ -166,23 +166,29 @@ namespace FileUploadApi.ApiServices
                             Status = s.RowStatus
                         });
 
-                if(fileSummary.ItemType.ToLower().Equals(GenericConstants.MultiTax))
-                    paymentStatuses.Data = paymentStatus.RowStatusDto
+                if(fileSummary.ItemType.ToLower().Equals(GenericConstants.MultiTax)
+                    && fileSummary.ContentType.ToLower().Equals(GenericConstants.Firs))
+                    paymentStatuses.Data = paymentStatus
                        .Select(s => new
                        {
-                           s.BeneficiaryAddress,
-                           s.BeneficiaryName,
+                           Row = s.RowNum,
                            s.BeneficiaryTin,
-                           s.ContractAmount,
+                           s.BeneficiaryName,
+                           s.BeneficiaryAddress,
                            s.ContractDate,
                            s.ContractDescription,
+                           s.ContractAmount,
                            s.ContractType,
-                           s.WhtRate,
-                           s.WhtAmount,
                            s.PeriodCovered,
                            s.InvoiceNumber,
+                           s.WhtRate,
+                           s.WhtAmount,
+                           s.Amount,
+                           s.Comment,
+                           s.DocumentNumber,
+                           s.PayerTin,
+                           s.TaxType,
                            s.Error,
-                           Row = s.RowNum,
                            Status = s.RowStatus
                        });
 
