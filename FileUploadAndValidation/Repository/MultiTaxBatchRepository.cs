@@ -48,45 +48,10 @@ namespace FileUploadAndValidation.Repository
             FileProperty fileProperty = await _nasRepository
                                                     .SaveFileToValidate(uploadResult.BatchId, request.ContentType, request.ItemType, uploadResult.ValidRows);
 
-            fileProperty.BusinessTin = request.BusinessTin;
             fileProperty.ContentType = request.ContentType;
             fileProperty.ItemType = request.ItemType;
 
-            var validationResponse = await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
-
-            //string validationResultFileName;
-
-            //if (validationResponse.ResponseData.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE 
-            //    && validationResponse.ResponseData.Results.Any() 
-            //    && validationResponse.ResponseData.ResultMode.ToLower().Equals("json"))
-            //{
-            //    var entValidatedRecordsCount = validationResponse.ResponseData.Results
-            //                                                        .Where(v => v.Status.ToLower().Equals("valid"))
-            //                                                        .Count();
-
-            //    await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
-            //    {
-            //        BatchId = uploadResult.BatchId,
-            //        NasToValidateFile = fileProperty.Url,
-            //        ModifiedDate = DateTime.Now.ToString(),
-            //        NumOfValidRecords = entValidatedRecordsCount,
-            //        Status = (entValidatedRecordsCount > 0) ? GenericConstants.AwaitingInitiation : GenericConstants.NoValidRecord,
-            //        RowStatuses = validationResponse.ResponseData.Results,
-            //    });
-
-            //    RowStatusDtoObject validationResult = await _dbRepository.GetPaymentRowStatuses(uploadResult.BatchId,
-            //        new PaginationFilter
-            //        {
-            //            PageSize = totalNoOfRows,
-            //            PageNumber = 1,
-            //            ItemType = request.ItemType,
-            //            ContentType = request.ContentType
-            //        });
-
-            //    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, request.ItemType, validationResult.RowStatusDto);
-
-            //    await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
-            //}
+            await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
         }
     }
 }

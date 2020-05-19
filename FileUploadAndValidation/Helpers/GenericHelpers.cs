@@ -366,6 +366,16 @@ namespace FileUploadAndValidation.Helpers
             return new string(Enumerable.Repeat(chars, 6)
                 .Select(s => s[new Random().Next(s.Length)]).ToArray());
         }
+
+        public static bool ToBool(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            return value.Equals("true", StringComparison.InvariantCultureIgnoreCase);
+        }
     }
 
     public class ValidateRowResult

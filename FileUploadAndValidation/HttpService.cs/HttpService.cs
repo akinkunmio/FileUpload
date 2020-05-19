@@ -102,7 +102,7 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else
                 {
-                    throw new AppException("An error occured while performing bill payment validation", (int)response.StatusCode);
+                    throw new AppException("An error occured while performing payment validation", (int)response.StatusCode);
                 }
 
                 return validateResponse;

@@ -102,7 +102,8 @@ namespace FileUploadApi.Controllers
                                     .Replace(".", string.Empty)
                                     .ToLower(),
                     UserId = long.Parse(userId),
-                    FileSize = Request.Form.Files.First().Length
+                    FileSize = Request.Form.Files.First().Length,
+                    HasHeaderRow = Request.Headers["HasHeaderRow"].ToString().ToBool()
                 };
 
                 response = await _multiTaxProcessor.UploadFileAsync(request);
