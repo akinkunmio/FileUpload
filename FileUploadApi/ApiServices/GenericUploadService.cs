@@ -212,12 +212,12 @@ namespace FileUploadApi.ApiServices
         {
             ConfirmedBillResponse result;
 
-            var confirmedBillPayments = await _dbRepository.GetConfirmedPayments(batchId);
+            var confirmedPayments = await _dbRepository.GetConfirmedPayments(batchId);
 
-            if (confirmedBillPayments.Count() <= 0 || !confirmedBillPayments.Any())
+            if (confirmedPayments.Count() < 1 || !confirmedPayments.Any())
                 throw new AppException($"Records awaiting payment initiation not found for batch Id: {batchId}", (int)HttpStatusCode.NotFound);
 
-            var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, initiatePaymentOptions.ItemType, confirmedBillPayments);
+            var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, initiatePaymentOptions.ContentType, initiatePaymentOptions.ItemType, confirmedPayments);
 
             var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 

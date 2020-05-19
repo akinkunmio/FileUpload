@@ -37,7 +37,7 @@ namespace FileUploadAndValidation.Repository
                 var fileName = batchId + "_validate.json";
                 var path = fileLocation + fileName;
 
-                string jsonString = JsonConvert.SerializeObject(GenericHelpers.GetValidateFileNasContent(contentType, itemType, rowDetails));
+                string jsonString = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails));
 
                 await File.WriteAllTextAsync(path, jsonString);
 
@@ -71,7 +71,7 @@ namespace FileUploadAndValidation.Repository
                 var fileLocation = @"../data/raw/";
                 var fileName = batchId + "_confirmed.json";
 
-                string json = JsonConvert.SerializeObject(GenericHelpers.GetValidateFileNasContent(contentType, itemType, rowDetails));
+                string json = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails));
 
                 var path = fileLocation + fileName;
 

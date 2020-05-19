@@ -184,7 +184,7 @@ namespace FileUploadAndValidation.Helpers
             return result;
         }
 
-        public static dynamic GetValidateFileNasContent(string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
+        public static dynamic GetSaveToNasFileContent(string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
         {
 
             if (itemType.ToLower().Equals(GenericConstants.MultiTax))

@@ -444,7 +444,7 @@ namespace FileUploadAndValidation.Repository
                     var summary = await GetBatchUploadSummary(batchId);
 
                     if (!summary.TransactionStatus.ToLower().Equals(GenericConstants.AwaitingInitiation.ToLower()))
-                        throw new AppException($"Upload Batch Id: '{batchId}' is not in awaiting initiation status!.");
+                        throw new AppException($"Payment cannot be initiated for upload with batchId:'{batchId}', because it is not in 'awaiting initiation' status!.");
                     
                     var summaryId = await GetBatchUploadSummaryId(batchId);
 
@@ -452,7 +452,7 @@ namespace FileUploadAndValidation.Repository
                         throw new AppException($"Upload file with Batch Id: '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
 
                     var result = await sqlConnection.QueryAsync<RowDetail>(
-                        sql: GetSPForGetConfirmedPayments(summary.ItemType),
+                        sql: GetSPForGetConfirmedPayments(summary.ItemType, summary.ContentType),
                         param: new
                         {
                             transactions_summary_id = summaryId,
@@ -473,23 +473,30 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        private string GetSPForGetConfirmedPayments(string itemType)
+        private string GetSPForGetConfirmedPayments(string itemType, string contentType)
         {
-            if (itemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
-                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+            if (contentType.ToLower().Equals(GenericConstants.Firs) 
+                && (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
             {
                 return @"sp_get_confirmed_bill_payments_by_transactions_summary_id";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+               && itemType.ToLower().Equals(GenericConstants.Wht))
             {
                 return @"sp_get_confirmed_firs_wht_by_transactions_summary_id";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.Wvat))
             {
                 return @"sp_get_confirmed_firs_wvat_by_transactions_summary_id";
             }
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+            {
+                return @"sp_get_confirmed_firs_multitax_by_transactions_summary_id";
+            }
             else return "";
-            
         }
 
         public async Task<IEnumerable<RowDetail>> GetPaymentRowStatuses(string batchId, PaginationFilter pagination)

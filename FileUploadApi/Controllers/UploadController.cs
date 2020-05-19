@@ -203,17 +203,18 @@ namespace FileUploadApi.Controllers
                     BusinessTin = request.BusinessTin,
                     TaxTypeId = request.TaxTypeId,
                     TaxTypeName = request.TaxTypeName,
-                    ProductId = request.ProductId
+                    ProductId = request.ProductId,
+                    ProductCode = request.ProductCode,
+                    CurrencyCode = request.CurrencyCode
                 };
 
-                var data = await _genericUploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
-                response.Data = data;
+                response.Data = await _genericUploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
             }
             catch (AppException ex)
             {
                 // _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
-                response.Error = ex.Message;
+                response.Message = ex.Message;
 
                 var result = new ObjectResult(new { ex.Message })
                 {
@@ -227,7 +228,7 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                response.Error = "Unknown error occured. Please retry!.";
+                response.Message = "Unknown error occured. Please retry!.";
                 var result = new ObjectResult(response)
                 {
                     StatusCode = (int)HttpStatusCode.BadRequest
