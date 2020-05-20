@@ -30,7 +30,7 @@ namespace FileUploadAndValidation.FileServices
 
             foreach (var row in contentRows)
             {
-                validateRowModel = await ValidateRow(itemType, row);
+                validateRowModel = await ValidateRow(itemType, row, columnContracts);
 
                 if (validateRowModel.isValid)
                     validRows.Add(validateRowModel.Valid);
@@ -40,16 +40,14 @@ namespace FileUploadAndValidation.FileServices
             }
 
             return new ValidateRowsResult { Failures = failures, ValidRows = validRows };
-
         }
 
-        private async Task<ValidateRowModel> ValidateRow(string itemType, Row row)
+        private async Task<ValidateRowModel> ValidateRow(string itemType, Row row, ColumnContract[] columnContracts)
         {
             var rowDetail = new RowDetail();
             var result = new ValidateRowModel();
 
-            var columnContract = GetColumnContractByTaxType(itemType);
-            var validationResult = GenericHelpers.ValidateRowCell(row, columnContract);
+            var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
 
             if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
                 rowDetail = new RowDetail
@@ -107,23 +105,6 @@ namespace FileUploadAndValidation.FileServices
             return await Task.FromResult(result);
         }
 
-        private ColumnContract[] GetColumnContractByTaxType(string itemType)
-        {
-            ColumnContract[] columnContracts = default;
-
-            if (itemType.ToLower().Equals(GenericConstants.Wht))
-            {
-                columnContracts = ContentTypeColumnContract.FirsWht();
-            }
-            if (itemType.ToLower().Equals(GenericConstants.Wvat))
-            {
-                columnContracts = ContentTypeColumnContract.FirsWht();
-            }
-
-            return columnContracts;
-        }
-
-
         public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
@@ -138,10 +119,6 @@ namespace FileUploadAndValidation.FileServices
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.");
 
-                uploadResult.RowsCount = rows.Count() - 1;
-
-                headerRow = rows.First();
-
                 var columnContract = new ColumnContract[] { };
 
                 if (request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
@@ -150,9 +127,19 @@ namespace FileUploadAndValidation.FileServices
                 if (request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
                     columnContract = ContentTypeColumnContract.FirsWvat();
 
-                GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+                uploadResult.RowsCount = rows.Count();
+                var contentRows = rows;
 
-                var contentRows = rows.Skip(1);
+                if (request.HasHeaderRow)
+                {
+                    uploadResult.RowsCount = rows.Count() - 1;
+
+                    headerRow = rows.First();
+
+                    GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+
+                    contentRows = rows.Skip(1);
+                }
 
                 var validateRowsResult = await ValidateContent(request.ItemType, contentRows, columnContract);
 

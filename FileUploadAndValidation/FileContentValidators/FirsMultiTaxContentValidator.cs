@@ -145,18 +145,20 @@ namespace FileUploadAndValidation.FileContentValidators
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.");
 
-                uploadResult.RowsCount = rows.Count() - 1;
+                uploadResult.RowsCount = rows.Count();
+                contentRows = rows;
 
                 if (request.HasHeaderRow)
                 {
+                    uploadResult.RowsCount -= 1;
+
                     headerRow = rows.First();
 
                     GenericHelpers.ValidateHeaderRow(headerRow, ContentTypeColumnContract.FirsMultiTaxWht());
 
-                    contentRows = rows.Skip(1);
+                    contentRows = contentRows.Skip(1);
                 }
 
-                contentRows = rows;
 
                 var validateRowsResult = await ValidateContent(request.ContentType, contentRows, columnContract);
 

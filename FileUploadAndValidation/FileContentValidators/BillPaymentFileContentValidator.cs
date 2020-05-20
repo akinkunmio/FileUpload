@@ -37,21 +37,24 @@ namespace FileUploadAndValidation.FileServices
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.");
 
-                uploadResult.RowsCount = rows.Count() - 1;
-
-                headerRow = rows.First();
-
                 var columnContract = new ColumnContract[] { };
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+                if (request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
                     columnContract = ContentTypeColumnContract.BillerPaymentIdWithItem();
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
-                    columnContract = ContentTypeColumnContract.BillerPaymentId();
+                uploadResult.RowsCount = rows.Count();
+                var contentRows = rows;
 
-                GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+                if (request.HasHeaderRow)
+                {
+                    uploadResult.RowsCount = rows.Count() - 1;
 
-                var contentRows = rows.Skip(1);
+                    headerRow = rows.First();
+
+                    GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+
+                    contentRows = rows.Skip(1);
+                }
 
                 var validateRowsResult = await ValidateContent(contentRows, columnContract);
 
@@ -182,8 +185,8 @@ namespace FileUploadAndValidation.FileServices
 
         public async Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
         {
-
             var validRows = new List<RowDetail>();
+
             ValidateRowModel validateRowModel;
             var failures = new List<Failure>();
 
@@ -191,17 +194,10 @@ namespace FileUploadAndValidation.FileServices
             {
                 validateRowModel = await ValidateRow(row, columnContracts);
 
-                if (validateRowModel.Valid)
-                    validRows.Add(new RowDetail
-                    {
-                        RowNum = row.Index,
-                        ProductCode = row.Columns[0].Value,
-                        ItemCode = row.Columns[1].Value,
-                        CustomerId = row.Columns[2].Value,
-                        Amount = row.Columns[3].Value
-                    });
+                if (validateRowModel.isValid)
+                    validRows.Add(validateRowModel.Valid);
 
-                if (validateRowModel.Failure != null && validateRowModel.Failure.ColumnValidationErrors != null && validateRowModel.Failure.ColumnValidationErrors.Any())
+                if (!validateRowModel.isValid)
                     failures.Add(validateRowModel.Failure);
             }
 
