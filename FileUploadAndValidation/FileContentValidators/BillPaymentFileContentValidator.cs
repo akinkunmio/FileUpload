@@ -206,8 +206,9 @@ namespace FileUploadAndValidation.FileServices
 
         private async Task<ValidateRowModel> ValidateRow(Row row, ColumnContract[] columnContracts)
         {
-            var validationErrorsResult = GenericHelpers.ValidateRowCell(row, columnContracts);
-
+            var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
+            var result = new ValidateRowModel();
+            
             var failure = new Failure();
 
             var rowDetail = new RowDetail
@@ -219,17 +220,22 @@ namespace FileUploadAndValidation.FileServices
                 Amount = row.Columns[3].Value
             };
 
-            if (validationErrorsResult.ValidationErrors.Count() > 0)
+            result.isValid = validationResult.Validity;
+
+            if (validationResult.Validity)
             {
-                failure =
-                    new Failure
-                    {
-                        ColumnValidationErrors = validationErrorsResult.ValidationErrors,
-                        Row = rowDetail
-                    };
+                result.Valid = rowDetail;
+            }
+            else
+            {
+                result.Failure = new Failure
+                {
+                    ColumnValidationErrors = validationResult.ValidationErrors,
+                    Row = rowDetail
+                };
             }
 
-            return await Task.FromResult(new ValidateRowModel { Valid = validationErrorsResult.Validity, Failure = failure });
+            return await Task.FromResult(result);
         }
 
        
