@@ -25,7 +25,7 @@ namespace FileUploadAndValidation.FileContentValidators
         private async Task<ValidateRowsResult> ValidateContent(string authority, IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
         {
             var validRows = new List<RowDetail>();
-
+            
             ValidateRowModel validateRowModel;
             var failures = new List<Failure>();
 
@@ -96,8 +96,7 @@ namespace FileUploadAndValidation.FileContentValidators
             {
                 result.Valid = rowDetail;
             }
-
-            if (!validationResult.Validity)
+            else
             {
                 result.Failure = new Failure
                 {
@@ -105,7 +104,7 @@ namespace FileUploadAndValidation.FileContentValidators
                     Row = rowDetail
                 };
             }
-              
+
             return await Task.FromResult(result);
         }
 
@@ -193,32 +192,11 @@ namespace FileUploadAndValidation.FileContentValidators
                                     }
                                 }
                         });
-
-                    var firstWhtPayerTin = whtRowDetails.First().PayerTin;
-
-                    failPayerTinValidation = whtRowDetails
-                                                        .Where(w => !w.PayerTin
-                                                        .Equals(firstWhtPayerTin));
-
-                    foreach (var nonDistinct in failPayerTinValidation)
-                        uploadResult.Failures.Add(new Failure
-                        {
-                            Row = nonDistinct,
-                            ColumnValidationErrors = new List<ValidationError>
-                                {
-                                    new ValidationError
-                                    {
-                                        PropertyName = "Payer Tin",
-                                        ErrorMessage = "Value should be the same with first wht payer tin"
-                                    }
-                                }
-                        });
                 };
                 
 
                uploadResult.ValidRows = uploadResult.ValidRows
-                        .Where(b => !failBeneficiaryTinValidation.Any(n => n.RowNum == b.RowNum) 
-                                    && !failBeneficiaryTinValidation.Any(n => n.RowNum == b.RowNum))
+                        .Where(b => !failBeneficiaryTinValidation.Any(n => n.RowNum == b.RowNum))
                         .Select(r => r)
                         .ToList();
 

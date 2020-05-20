@@ -21,7 +21,7 @@ namespace FileUploadAndValidation.FileServices
         {
             _logger = logger;
         }
-        private async Task<ValidateRowsResult> ValidateContent(string validationType, IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
+        private async Task<ValidateRowsResult> ValidateContent(string itemType, IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
         {
             var validRows = new List<RowDetail>();
 
@@ -30,63 +30,28 @@ namespace FileUploadAndValidation.FileServices
 
             foreach (var row in contentRows)
             {
-                validateRowModel = await ValidateRow(validationType, row, columnContracts);
+                validateRowModel = await ValidateRow(itemType, row);
 
-                if (validateRowModel.Valid && validationType.ToLower().Equals(GenericConstants.Wht))
-                    validRows.Add(new RowDetail
-                    {
-                        RowNum = row.Index,
-                        BeneficiaryTin = row.Columns[0].Value,
-                        BeneficiaryName = row.Columns[1].Value,
-                        BeneficiaryAddress = row.Columns[2].Value,
-                        ContractDate = row.Columns[3].Value,
-                        ContractDescription = row.Columns[4].Value,
-                        ContractAmount = row.Columns[5].Value,
-                        ContractType = row.Columns[6].Value,
-                        PeriodCovered = row.Columns[7].Value,
-                        InvoiceNumber = row.Columns[8].Value,
-                        WhtRate = row.Columns[9].Value,
-                        WhtAmount = row.Columns[10].Value
-                    });
-                else if (validateRowModel.Valid && validationType.ToLower().Equals(GenericConstants.Wvat))
-                {
-                    validRows.Add(new RowDetail
-                    {
-                        RowNum = row.Index,
-                        ContractorName = row.Columns[0].Value,
-                        ContractorAddress = row.Columns[1].Value,
-                        ContractorTin = row.Columns[2].Value,
-                        ContractDescription = row.Columns[3].Value,
-                        NatureOfTransaction = row.Columns[4].Value,
-                        TransactionDate = row.Columns[5].Value,
-                        InvoiceNumber = row.Columns[6].Value,
-                        TransactionCurrency = row.Columns[7].Value,
-                        CurrencyInvoicedValue = row.Columns[8].Value,
-                        CurrencyExchangeRate = row.Columns[9].Value,
-                        TransactionInvoicedValue = row.Columns[10].Value,
-                        WvatRate = row.Columns[11].Value,
-                        WvatValue = row.Columns[12].Value,
-                        TaxAccountNumber = row.Columns[13].Value
-                    });
-                }
+                if (validateRowModel.isValid)
+                    validRows.Add(validateRowModel.Valid);
 
-                if (validateRowModel.Failure != null 
-                    && validateRowModel.Failure.ColumnValidationErrors != null 
-                    && validateRowModel.Failure.ColumnValidationErrors.Any())
+                if (!validateRowModel.isValid)
                     failures.Add(validateRowModel.Failure);
             }
 
             return new ValidateRowsResult { Failures = failures, ValidRows = validRows };
+
         }
 
-        private async Task<ValidateRowModel> ValidateRow(string validationType, Row row, ColumnContract[] columnContracts)
+        private async Task<ValidateRowModel> ValidateRow(string itemType, Row row)
         {
-            var validationResult = GenericHelpers.  ValidateRowCell(row, columnContracts);
-
-            var failure = new Failure();
             var rowDetail = new RowDetail();
+            var result = new ValidateRowModel();
 
-            if (validationType.ToLower().Equals(GenericConstants.Wht.ToLower()))
+            var columnContract = GetColumnContractByTaxType(itemType);
+            var validationResult = GenericHelpers.ValidateRowCell(row, columnContract);
+
+            if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
                 rowDetail = new RowDetail
                 {
                     RowNum = row.Index,
@@ -94,14 +59,15 @@ namespace FileUploadAndValidation.FileServices
                     BeneficiaryName = row.Columns[1].Value,
                     BeneficiaryAddress = row.Columns[2].Value,
                     ContractDate = row.Columns[3].Value,
-                    ContractAmount = row.Columns[4].Value,
-                    InvoiceNumber = row.Columns[5].Value,
+                    ContractDescription = row.Columns[4].Value,
+                    ContractAmount = row.Columns[5].Value,
                     ContractType = row.Columns[6].Value,
                     PeriodCovered = row.Columns[7].Value,
-                    WhtRate = row.Columns[8].Value,
-                    WhtAmount = row.Columns[9].Value
+                    InvoiceNumber = row.Columns[8].Value,
+                    WhtRate = row.Columns[9].Value,
+                    WhtAmount = row.Columns[10].Value
                 };
-            else if (validationType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
             {
                 rowDetail = new RowDetail
                 {
@@ -110,31 +76,53 @@ namespace FileUploadAndValidation.FileServices
                     ContractorAddress = row.Columns[1].Value,
                     ContractorTin = row.Columns[2].Value,
                     ContractDescription = row.Columns[3].Value,
-                    TransactionDate = row.Columns[4].Value,
-                    NatureOfTransaction = row.Columns[5].Value,
+                    NatureOfTransaction = row.Columns[4].Value,
+                    TransactionDate = row.Columns[5].Value,
                     InvoiceNumber = row.Columns[6].Value,
                     TransactionCurrency = row.Columns[7].Value,
                     CurrencyInvoicedValue = row.Columns[8].Value,
-                    TransactionInvoicedValue = row.Columns[9].Value,
-                    CurrencyExchangeRate = row.Columns[10].Value,
-                    TaxAccountNumber = row.Columns[11].Value,
-                    WvatRate = row.Columns[12].Value,
-                    WvatValue = row.Columns[13].Value
+                    CurrencyExchangeRate = row.Columns[9].Value,
+                    TransactionInvoicedValue = row.Columns[10].Value,
+                    WvatRate = row.Columns[11].Value,
+                    WvatValue = row.Columns[12].Value,
+                    TaxAccountNumber = row.Columns[13].Value,
                 };
             }
 
-            if (validationResult.ValidationErrors.Count() > 0)
+            result.isValid = validationResult.Validity;
+
+            if (validationResult.Validity)
             {
-                failure =
-                    new Failure
-                    {
-                        ColumnValidationErrors = validationResult.ValidationErrors,
-                        Row = rowDetail
-                    };
+                result.Valid = rowDetail;
+            }
+            else
+            {
+                result.Failure = new Failure
+                {
+                    ColumnValidationErrors = validationResult.ValidationErrors,
+                    Row = rowDetail
+                };
             }
 
-            return await Task.FromResult(new ValidateRowModel { Valid = validationResult.Validity, Failure = failure });
+            return await Task.FromResult(result);
         }
+
+        private ColumnContract[] GetColumnContractByTaxType(string itemType)
+        {
+            ColumnContract[] columnContracts = default;
+
+            if (itemType.ToLower().Equals(GenericConstants.Wht))
+            {
+                columnContracts = ContentTypeColumnContract.FirsWht();
+            }
+            if (itemType.ToLower().Equals(GenericConstants.Wvat))
+            {
+                columnContracts = ContentTypeColumnContract.FirsWht();
+            }
+
+            return columnContracts;
+        }
+
 
         public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {

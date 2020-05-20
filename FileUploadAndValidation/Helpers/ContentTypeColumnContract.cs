@@ -83,8 +83,10 @@ namespace FileUploadAndValidation.Helpers
                 new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Required=false },
                 new ColumnContract{ ColumnName="WhtRate", DataType="decimal", Required=true },
                 new ColumnContract{ ColumnName="WhtAmount", DataType="decimal", Required=true },
-                new ColumnContract{ ColumnName="Amount ", DataType="decimal", Max=30, Required=false },
+                new ColumnContract{ ColumnName="Amount", DataType="decimal", Max=30, Required=false },
+                new ColumnContract{ ColumnName="Comment", DataType="string", Max=30, Required=false },
                 new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Max=30, Required=false },
+                new ColumnContract{ ColumnName="PayerTin", DataType="string", Max=30, Required=true },
                 new ColumnContract{ ColumnName="TaxType", DataType="string", Max=100, Required=true },
             };
         }
@@ -105,7 +107,9 @@ namespace FileUploadAndValidation.Helpers
                 new ColumnContract{ ColumnName="WhtRate", DataType="decimal", Required=false },
                 new ColumnContract{ ColumnName="WhtAmount", DataType="decimal", Required=false },
                 new ColumnContract{ ColumnName="Amount ", DataType="decimal", Max=30, Required=true },
+                new ColumnContract{ ColumnName="Comment", DataType="string", Max=30, Required=false },
                 new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Max=30, Required=false },
+                new ColumnContract{ ColumnName="PayerTin", DataType="string", Max=30, Required=true },
                 new ColumnContract{ ColumnName="TaxType", DataType="string", Max=100, Required=true },
             };
         }
