@@ -37,21 +37,24 @@ namespace FileUploadAndValidation.FileServices
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.");
 
-                uploadResult.RowsCount = rows.Count() - 1;
-
-                headerRow = rows.First();
-
                 var columnContract = new ColumnContract[] { };
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower()))
+                if (request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
                     columnContract = ContentTypeColumnContract.BillerPaymentIdWithItem();
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower()))
-                    columnContract = ContentTypeColumnContract.BillerPaymentId();
+                uploadResult.RowsCount = rows.Count();
+                var contentRows = rows;
 
-                GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+                if (request.HasHeaderRow)
+                {
+                    uploadResult.RowsCount = rows.Count() - 1;
 
-                var contentRows = rows.Skip(1);
+                    headerRow = rows.First();
+
+                    GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+
+                    contentRows = rows.Skip(1);
+                }
 
                 var validateRowsResult = await ValidateContent(contentRows, columnContract);
 
@@ -73,7 +76,8 @@ namespace FileUploadAndValidation.FileServices
                         throw new AppException($"Expected file Product Code to be {request.ProductCode}, but found {firstItem}!.");
 
                     bool allEqual = productCodeList.Skip(1)
-                      .All(s => string.Equals(firstItem, s, StringComparison.InvariantCultureIgnoreCase));
+                                                    .All(s => string
+                                                    .Equals(firstItem, s, StringComparison.InvariantCultureIgnoreCase));
 
                     if (!allEqual)
                         throw new AppException("Product Code should have same value for all records");
@@ -181,8 +185,8 @@ namespace FileUploadAndValidation.FileServices
 
         public async Task<ValidateRowsResult> ValidateContent(IEnumerable<Row> contentRows, ColumnContract[] columnContracts)
         {
-
             var validRows = new List<RowDetail>();
+
             ValidateRowModel validateRowModel;
             var failures = new List<Failure>();
 
@@ -190,17 +194,10 @@ namespace FileUploadAndValidation.FileServices
             {
                 validateRowModel = await ValidateRow(row, columnContracts);
 
-                if (validateRowModel.IsValid)
-                    validRows.Add(new RowDetail
-                    {
-                        RowNum = row.Index,
-                        ProductCode = row.Columns[0].Value,
-                        ItemCode = row.Columns[1].Value,
-                        CustomerId = row.Columns[2].Value,
-                        Amount = row.Columns[3].Value
-                    });
+                if (validateRowModel.isValid)
+                    validRows.Add(validateRowModel.Valid);
 
-                if (validateRowModel.Failure != null && validateRowModel.Failure.ColumnValidationErrors != null && validateRowModel.Failure.ColumnValidationErrors.Any())
+                if (!validateRowModel.isValid)
                     failures.Add(validateRowModel.Failure);
             }
 
@@ -209,8 +206,9 @@ namespace FileUploadAndValidation.FileServices
 
         private async Task<ValidateRowModel> ValidateRow(Row row, ColumnContract[] columnContracts)
         {
-            var validationErrorsResult = GenericHelpers.ValidateRowCell(row, columnContracts);
-
+            var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
+            var result = new ValidateRowModel();
+            
             var failure = new Failure();
 
             var rowDetail = new RowDetail
@@ -222,17 +220,22 @@ namespace FileUploadAndValidation.FileServices
                 Amount = row.Columns[3].Value
             };
 
-            if (validationErrorsResult.ValidationErrors.Count() > 0)
+            result.isValid = validationResult.Validity;
+
+            if (validationResult.Validity)
             {
-                failure =
-                    new Failure
-                    {
-                        ColumnValidationErrors = validationErrorsResult.ValidationErrors,
-                        Row = rowDetail
-                    };
+                result.Valid = rowDetail;
+            }
+            else
+            {
+                result.Failure = new Failure
+                {
+                    ColumnValidationErrors = validationResult.ValidationErrors,
+                    Row = rowDetail
+                };
             }
 
-            return await Task.FromResult(new ValidateRowModel { IsValid = validationErrorsResult.Validity, Failure = failure });
+            return await Task.FromResult(result);
         }
 
        

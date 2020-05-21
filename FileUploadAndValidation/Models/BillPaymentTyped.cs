@@ -56,6 +56,8 @@ namespace FileUploadAndValidation.Models
         public decimal WhtRate { get; set; }
 
         public decimal WhtAmount { get; set; }
+
+        public string PayerTin { get; set; }
     }
 
     public class FirsWhtUntyped
@@ -116,6 +118,20 @@ namespace FileUploadAndValidation.Models
         public decimal WVATRate { get; set; }
 
         public decimal WVATValue { get; set; }
+
+        public string PayerTin { get; set; }
+    }
+
+    public class FirsOtherTax
+    {
+        public string Amount { get; set; }
+
+        public string Comment { get; set; }
+
+        public string DocumentNumber { get; set; }
+
+        public string PayerTin { get; set; }
+        public int Row { get; set; }
     }
 
     public class FirsWVatUntyped

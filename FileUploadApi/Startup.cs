@@ -23,6 +23,7 @@ using GreenPipes;
 using DbUp;
 using System.Reflection;
 using FileUploadAndValidation.FileServices;
+using FileUploadAndValidation.FileContentValidators;
 
 namespace FileUploadApi
 {
@@ -40,6 +41,11 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
+            services.AddScoped<IGenericUploadService, GenericUploadService>();
+
+            services.AddScoped<IBatchProcessor, BatchProcessor>();
+            services.AddScoped<IMultiTaxProcessor, MultiTaxProcessor>();
+
             services.AddScoped<IFileReader, TxtFileReader>();
             services.AddScoped<IFileReader, CsvFileReader>();
             services.AddScoped<IFileReader, XlsFileReader>();
@@ -47,17 +53,19 @@ namespace FileUploadApi
 
             services.AddScoped<IFileContentValidator, BillPaymentFileContentValidator>();
             services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
+            services.AddScoped<IFileContentValidator, FirsMultiTaxContentValidator>();
 
             services.AddScoped<IBatchRepository, BatchRepository>();
-            services.AddScoped<IBatchProcessor, BatchProcessor>();
-
-            services.AddSingleton<IAppConfig, AppConfig>();
-            services.AddHttpClient<IHttpService, HttpService>();
+            services.AddScoped<IBatchRepository, MultiTaxBatchRepository>();
             
             services.AddScoped<IDbRepository, DbRepository>();
+
+            services.AddHttpClient<IHttpService, HttpService>();
+
             services.AddScoped<INasRepository, NasRepository>();
 
-
+            services.AddSingleton<IAppConfig, AppConfig>();
+            
             services.AddHealthChecks();
             services.AddSwaggerGen(config =>
             {

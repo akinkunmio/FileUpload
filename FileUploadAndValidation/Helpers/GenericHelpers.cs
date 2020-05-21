@@ -30,6 +30,64 @@ namespace FileUploadAndValidation.Helpers
             }
         }
 
+        public static dynamic RowMarshaller(RowDetail r, string contentType, string itemType)
+        {
+            dynamic result = default;
+
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.Wht))
+                result = new FirsWhtUntyped
+                {
+                    Row = r.RowNum,
+                    BeneficiaryAddress = r.BeneficiaryAddress,
+                    BeneficiaryName = r.BeneficiaryName,
+                    BeneficiaryTin = r.BeneficiaryTin,
+                    ContractAmount = r.ContractAmount,
+                    ContractDate = r.ContractDate,
+                    ContractDescription = r.ContractDescription,
+                    ContractType = r.ContractType,
+                    InvoiceNumber = r.InvoiceNumber,
+                    PeriodCovered = r.PeriodCovered,
+                    WhtAmount = r.WhtAmount,
+                    WhtRate = r.WhtRate
+                };
+
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.Wvat))
+                result = new FirsWVatUntyped
+                {
+                    Row = r.RowNum,
+                    ContractorAddress = r.ContractorAddress,
+                    ContractorName = r.ContractorName,
+                    ContractorTin = r.ContractorTin,
+                    CurrencyExchangeRate = r.CurrencyExchangeRate,
+                    CurrencyInvoicedValue = r.CurrencyInvoicedValue,
+                    ContractDescription = r.ContractDescription,
+                    NatureOfTransaction = r.NatureOfTransaction,
+                    InvoiceNumber = r.InvoiceNumber,
+                    TaxAccountNumber = r.TaxAccountNumber,
+                    TransactionCurrency = r.TransactionCurrency,
+                    TransactionDate = r.TransactionDate,
+                    TransactionInvoicedValue = r.TransactionInvoicedValue,
+                    WvatRate = r.WvatRate,
+                    WvatValue = r.WvatValue
+                };
+
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment)
+                && (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
+                result = new BillPaymentUntyped
+                {
+                    RowNumber = r.RowNum,
+                    Amount = r.Amount,
+                    CustomerId = r.CustomerId,
+                    ItemCode = r.ItemCode,
+                    ProductCode = r.ProductCode
+                };
+
+            return result;
+        }
+
         public static string ConstructValidationError(Failure failure)
         {
             var result = new StringBuilder();
@@ -37,11 +95,185 @@ namespace FileUploadAndValidation.Helpers
             {
                 result.Append($"{failure.ColumnValidationErrors[i].PropertyName}: {failure.ColumnValidationErrors[i].ErrorMessage}");
 
-                if (failure.ColumnValidationErrors[i] != null)
+                if (failure.ColumnValidationErrors[i+1] != null)
                     result.Append(", ");
             }
 
             return result.ToString();
+        }
+
+        private static dynamic MapToNasValidateObject(string contentType, string itemType, RowDetail r)
+        {
+            dynamic result = default;
+
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment)
+                && (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentId)))
+            {
+                result = new 
+                {
+                    Amount = decimal.Parse(r.Amount),
+                    r.CustomerId,
+                    r.ItemCode,
+                    r.ProductCode,
+                    Row = r.RowNum
+                };
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower())
+                && contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+            {
+                result = new
+                {
+                    Row = r.RowNum,
+                    r.BeneficiaryTin,
+                    r.BeneficiaryName,
+                    r.BeneficiaryAddress,
+                    r.ContractDate,
+                    ContractAmount = decimal.Parse(r.ContractAmount),
+                    r.ContractDescription,
+                    r.InvoiceNumber,
+                    r.ContractType,
+                    r.PeriodCovered,
+                    WhtRate = decimal.Parse(r.WhtRate),
+                    WhtAmount = decimal.Parse(r.WhtAmount),
+                    BusinessTin = r.PayerTin
+                };
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
+                && contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+            {
+                result = new 
+                {
+                    Row = r.RowNum,
+                    r.ContractorName,
+                    r.ContractorAddress,
+                    r.ContractorTin,
+                    r.ContractDescription,
+                    r.TransactionDate,
+                    r.NatureOfTransaction,
+                    r.InvoiceNumber,
+                    r.TransactionCurrency,
+                    CurrencyInvoicedValue = decimal.Parse(r.CurrencyInvoicedValue),
+                    TransactionInvoicedValue = decimal.Parse(r.TransactionInvoicedValue),
+                    CurrencyExchangeRate = decimal.Parse(r.CurrencyExchangeRate),
+                    r.TaxAccountNumber,
+                    WVATRate = decimal.Parse(r.WvatRate),
+                    WVATValue = decimal.Parse(r.WvatValue),
+                    BusinessTin = r.PayerTin
+                };
+            }
+
+            if ((itemType.ToLower().Equals(GenericConstants.Cit)
+                || itemType.ToLower().Equals(GenericConstants.Edt)
+                || itemType.ToLower().Equals(GenericConstants.PreOpLevy)
+                || itemType.ToLower().Equals(GenericConstants.Vat))
+               && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                result = new 
+                {
+                    Row = r.RowNum,
+                    CustomerTin = r.PayerTin,
+                    r.Amount,
+                    r.Comment,
+                    r.DocumentNumber,
+                };
+            }
+
+            return result;
+        }
+
+        public static dynamic GetSaveToNasFileContent(string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
+        {
+
+            if (itemType.ToLower().Equals(GenericConstants.MultiTax))
+            {
+                var result = new List<ValidateFileNasModel>();
+
+                var whtRows = rowDetails
+                    .Where(r => r.TaxType.ToLower()
+                    .Equals(GenericConstants.Wht))
+                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wht, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Wht,
+                    Taxes = whtRows
+                });
+
+                var citRows = rowDetails
+                    .Where(r => r.TaxType.ToLower()
+                    .Equals(GenericConstants.Cit))
+                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Cit, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Cit,
+                    Taxes = citRows
+                });
+
+                var edtRows = rowDetails
+                   .Where(r => r.TaxType.ToLower()
+                   .Equals(GenericConstants.Edt))
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Edt, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Edt,
+                    Taxes = edtRows
+                });
+
+                var preOpLevyRows = rowDetails
+                   .Where(r => r.TaxType.ToLower()
+                   .Equals(GenericConstants.PreOpLevy))
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.PreOpLevy, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.PreOpLevy,
+                    Taxes = preOpLevyRows
+                });
+
+                var vatRows = rowDetails
+                  .Where(r => r.TaxType.ToLower()
+                  .Equals(GenericConstants.Vat))
+                  .Select(s => MapToNasValidateObject(contentType, GenericConstants.Vat, s));
+
+                result.Add(new ValidateFileNasModel
+                {
+                    Authority = contentType,
+                    TaxType = GenericConstants.Vat,
+                    Taxes = preOpLevyRows
+                });
+
+                return result;
+            }
+
+            else if (itemType.ToLower().Equals(GenericConstants.Wht))
+            {
+                return rowDetails
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wht, s));
+            }
+
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat))
+            {
+                return rowDetails
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wvat, s));
+            }
+
+            else if (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
+            {
+               return rowDetails
+                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.BillPaymentId, s));
+            }
+
+            return "";
         }
 
         public static ValidateRowResult ValidateRowCell(Row row, ColumnContract[] columnContracts)
@@ -58,6 +290,10 @@ namespace FileUploadAndValidation.Helpers
 
                 try
                 {
+                    if(contract.ValidateCell != true)
+                    {
+                        continue;
+                    }
                     if (contract.Required == true && string.IsNullOrWhiteSpace(column.Value))
                     {
                         errorMessage = "Value must be provided";
@@ -133,6 +369,16 @@ namespace FileUploadAndValidation.Helpers
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, 6)
                 .Select(s => s[new Random().Next(s.Length)]).ToArray());
+        }
+
+        public static bool ToBool(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            return value.Equals("true", StringComparison.InvariantCultureIgnoreCase);
         }
     }
 

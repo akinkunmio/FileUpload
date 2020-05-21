@@ -14,6 +14,6 @@ namespace FileUploadAndValidation
 
         public int? Max { get; set; }
 
-        public bool? Id { get; set; }
+        public bool? ValidateCell { get; set; }
     }
 }

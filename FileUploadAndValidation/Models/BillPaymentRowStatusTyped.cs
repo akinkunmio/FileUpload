@@ -128,6 +128,8 @@ namespace FileUploadAndValidation.Models
         public string WhtRate { get; set; }
 
         public string WhtAmount { get; set; }
+
+        public string ContractDescription { get; set; }
     }
 
     public class FirsWhtRowStatusTyped
@@ -157,6 +159,8 @@ namespace FileUploadAndValidation.Models
         public decimal WhtRate { get; set; }
 
         public decimal WhtAmount { get; set; }
+
+        public string ContractDescription { get; set; }
     }
 
     public class FirsWVatRowStatusTyped

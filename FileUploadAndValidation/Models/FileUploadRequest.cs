@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FileUploadAndValidation.Helpers;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +10,8 @@ namespace FileUploadAndValidation.Models
 {
     public class FileUploadRequest
     {
+        public bool HasHeaderRow { get; set; }
+
         public string AuthToken { get; set; }
 
         public string ContentType { get; set; }
@@ -26,11 +29,14 @@ namespace FileUploadAndValidation.Models
         public long? UserId { get; set; }
 
         public string ProductCode { get; set; }
+
         public IFormFile FileRef { get; set; }
+
         public string ProductName { get; set; }
+
         public string BusinessTin { get; set; }
 
-        public static FileUploadRequest FromRequest(HttpRequest request)
+        public static FileUploadRequest FromRequestForSingle(HttpRequest request)
         {
             var file = request.Form.Files.First();
             var userId = /*request.Form["id"].ToString() ??*/ "255";
@@ -53,6 +59,25 @@ namespace FileUploadAndValidation.Models
                 ProductCode = productCode,
                 ProductName = productName,
                 BusinessTin = businessTin,
+            };
+        }
+
+        public static FileUploadRequest FromRequestForMultiple(HttpRequest request) 
+        {
+            var userId = /*request.Form["id"].ToString() ??*/ "255";
+            
+            return new FileUploadRequest 
+            {
+                    ItemType = GenericConstants.MultiTax,
+                    ContentType = request.Query["authority"],
+                    AuthToken = request.Headers["Authorization"].ToString(),
+                    FileRef = request.Form.Files.First(),
+                    FileName = request.Form.Files.First().FileName.Split('.')[0],
+                    FileExtension = Path.GetExtension(request.Form.Files.First().FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower(),
+                    UserId = long.Parse(userId),
+                    FileSize = request.Form.Files.First().Length
             };
         }
     }

@@ -6,7 +6,8 @@ namespace FileUploadAndValidation.Models
 {
     public class ValidateRowModel
     {
-        public bool IsValid { get; set; }
+        public bool isValid { get; set; }
+        public RowDetail Valid { get; set; }
         public Failure Failure { get; set; }
     }
     public class ValidateRowsResult

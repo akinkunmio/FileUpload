@@ -34,41 +34,47 @@ namespace FileUploadAndValidation.UploadServices
             _httpClient.Timeout = new TimeSpan(0, 0, 1, 0, 0);
         }
 
-        private string GetValidateUrl(string contentType)
+        private string GetValidateUrl(string itemType)
         {
-            string result = "";
 
-            if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
-                result = GenericConstants.ValidateBillPaymentUrl;
+            if (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
+                return GenericConstants.ValidateBillPaymentUrl;
 
-            else if(contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
-                result = GenericConstants.ValidateFirsUrl;
+            else if(itemType.ToLower().Equals(GenericConstants.Firs))
+                return GenericConstants.ValidateFirsUrl;
 
-            return result;
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax))
+                return GenericConstants.ValidateMultitaxUrl;
+
+            return "";
         }
 
-        private string GetInitiatePaymentUrl(string contentType)
+        private string GetInitiatePaymentUrl(string contentType, string itemType)
         {
-            string result = "";
 
             if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
-                result = GenericConstants.InitiateBillPaymentUrl;
+                return GenericConstants.InitiateBillPaymentUrl;
 
-            else if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
-                result = GenericConstants.InitiateFirPaymentUrl;
+            else if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower())
+                && (itemType.ToLower().Equals(GenericConstants.Wht)
+                || itemType.ToLower().Equals(GenericConstants.Wvat)))
+                return GenericConstants.InitiateFirsPaymentUrl;
 
-            return result;
-
+            else if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower())
+                && (itemType.ToLower().Equals(GenericConstants.MultiTax)))
+                return GenericConstants.InitiateFirsMultitaxPaymentUrl;
+            return "";
         }
 
-        public async Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
+        public async Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
         {
             ValidationResponse validateResponse;
             try
             {
                 var requestBody = ConstructValidateRequestString(greaterThanFifty, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin);
 
-                var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ContentType))
+                var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ItemType))
                 {
                     Content = new StringContent(requestBody, Encoding.UTF8, "application/json")
                 };
@@ -86,7 +92,8 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    throw new AppException("Bad Request", (int)HttpStatusCode.BadRequest);
+                    validateResponse = JsonConvert.DeserializeObject<ValidationResponse>(responseResult);
+                    throw new AppException($"{validateResponse.ResponseDescription}", (int)HttpStatusCode.BadRequest);
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
@@ -98,7 +105,7 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else
                 {
-                    throw new AppException("An error occured while performing bill payment validation", (int)response.StatusCode);
+                    throw new AppException("An error occured while performing payment validation", (int)response.StatusCode);
                 }
 
                 return validateResponse;
@@ -133,7 +140,9 @@ namespace FileUploadAndValidation.UploadServices
                     DataStoreUrl = url
                 });
 
-            if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && (itemType.ToLower().Equals(GenericConstants.Wht)
+                || itemType.ToLower().Equals(GenericConstants.Wvat)))
                 result = JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
@@ -142,10 +151,19 @@ namespace FileUploadAndValidation.UploadServices
                     BusinessTin = businessTin
                 });
 
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+                result = JsonConvert.SerializeObject(new
+                {
+                    DataStore = 1,
+                    DataStoreUrl = url,
+                    BatchId = batchId
+                });
+
             return result;
         }
 
-        private string ConstructConfirmedRequestString(InitiatePaymentOptions initiatePaymentOptions, FileProperty fileProperty)
+        private string ConstructInitiatePaymentRequestString(InitiatePaymentOptions initiatePaymentOptions, FileProperty fileProperty)
         {
             string result = "";
 
@@ -182,13 +200,13 @@ namespace FileUploadAndValidation.UploadServices
             return result;
         }
 
-        public async Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
+        public async Task<ConfirmedBillResponse> InitiatePayment(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions)
         {
             try
             {
-                var req = ConstructConfirmedRequestString(initiatePaymentOptions, fileProperty);
+                var req = ConstructInitiatePaymentRequestString(initiatePaymentOptions, fileProperty);
 
-                var request = new HttpRequestMessage(HttpMethod.Post, GetInitiatePaymentUrl(fileProperty.ContentType))
+                var request = new HttpRequestMessage(HttpMethod.Post, GetInitiatePaymentUrl(fileProperty.ContentType, fileProperty.ItemType))
                 {
                     Content = new StringContent(req, Encoding.UTF8, "application/json")
                 };
@@ -206,19 +224,19 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    var approvalResult = JsonConvert.DeserializeObject<FailedInitiatePaymentResponse>(responseResult);
+                    var approvalResult = JsonConvert.DeserializeObject<SuccessInitiatePaymentResponse>(responseResult);
                     throw new AppException(approvalResult.ResponseDescription, (int)HttpStatusCode.BadRequest, new ConfirmedBillResponse { PaymentInitiated = false });
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new AppException("Unauthorized to initiate bill transaction payment.", (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
+                    throw new AppException("Unauthorized", (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
                 }
                 else
                 {
-                    FailedInitiatePaymentResponse approvalResult;
+                    SuccessInitiatePaymentResponse approvalResult;
                     if (responseResult != null)
                     {
-                        approvalResult = JsonConvert.DeserializeObject<FailedInitiatePaymentResponse>(responseResult);
+                        approvalResult = JsonConvert.DeserializeObject<SuccessInitiatePaymentResponse>(responseResult);
                         throw new AppException(approvalResult.ResponseDescription, (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
                     }
                     throw new AppException("Unable to initiate bill transaction payment.", (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
@@ -240,9 +258,9 @@ namespace FileUploadAndValidation.UploadServices
 
     public interface IHttpService
     {
-        Task<ValidationResponse> ValidateBillRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty);
+        Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty);
 
-        Task<ConfirmedBillResponse> ConfirmedBillRecords(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
+        Task<ConfirmedBillResponse> InitiatePayment(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
     }
 
     public class ConfirmedBillResponse

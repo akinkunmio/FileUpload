@@ -45,13 +45,13 @@ namespace FileUploadAndValidation.Repository
             }, uploadResult.ValidRows, uploadResult.Failures);
 
 
-            FileProperty fileProperty = await _nasRepository.SaveFileToValidate(uploadResult.BatchId, request.ItemType, uploadResult.ValidRows.AsEnumerable());
+            FileProperty fileProperty = await _nasRepository.SaveFileToValidate(uploadResult.BatchId, request.ContentType, request.ItemType, uploadResult.ValidRows.AsEnumerable());
 
-            fileProperty.BusinessTin = request.BusinessTin ?? "";
+            fileProperty.BusinessTin = request.BusinessTin;
             fileProperty.ContentType = request.ContentType;
             fileProperty.ItemType = request.ItemType;
 
-            var validationResponse = await _httpService.ValidateBillRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
+            var validationResponse = await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
 
             string validationResultFileName;
 
@@ -69,7 +69,7 @@ namespace FileUploadAndValidation.Repository
                     RowStatuses = validationResponse.ResponseData.Results,
                 });
 
-                RowStatusDtoObject validationResult = await _dbRepository.GetPaymentRowStatuses(uploadResult.BatchId, 
+                var validationResult = await _dbRepository.GetPaymentRowStatuses(uploadResult.BatchId, 
                     new PaginationFilter
                     {
                         PageSize = totalNoOfRows,
@@ -78,16 +78,13 @@ namespace FileUploadAndValidation.Repository
                         ContentType = request.ContentType
                     });
 
-                validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, request.ItemType, validationResult.RowStatusDto);
+                validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, request.ItemType, request.ContentType, validationResult);
 
                 await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
             }
         }
 
     }
-    public interface IBatchRepository
-    {
-        Task Save(UploadResult uploadResult, FileUploadRequest request);
-    }
+    
 
 }

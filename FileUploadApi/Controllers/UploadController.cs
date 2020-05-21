@@ -24,21 +24,27 @@ namespace FileUploadApi.Controllers
     [ApiController]
     public class UploadController : ControllerBase
     {
+        private readonly IMultiTaxProcessor _multiTaxProcessor;
+        private readonly IGenericUploadService _genericUploadService;
         private readonly IBatchProcessor _batchProcessor;
         private readonly ILogger<UploadController> _logger;
 
 
-        public UploadController(IBatchProcessor batchProcessor, 
-            ILogger<UploadController> logger)
+        public UploadController(IBatchProcessor batchProcessor,
+            ILogger<UploadController> logger,
+            IGenericUploadService genericUploadService,
+            IMultiTaxProcessor multiTaxProcessor)
         {
             _logger = logger;
             _batchProcessor = batchProcessor;
+            _genericUploadService = genericUploadService;
+            _multiTaxProcessor = multiTaxProcessor;
         }
 
         [HttpPost("uploadfile/{contentType}/{itemType}")]
         public async Task<IActionResult> PostBulkUploadPaymentAsync(string contentType, string itemType)
         {
-            var uploadResult = new UploadResult();
+            ResponseResult response;
 
             var userId = Request.Form["id"].ToString() /*"255"*/;
 
@@ -46,24 +52,9 @@ namespace FileUploadApi.Controllers
             {
                 ValidateUserId(userId);
 
-                var request = new FileUploadRequest
-                {
-                    ItemType = itemType,
-                    ContentType = contentType,
-                    AuthToken = Request.Headers["Authorization"].ToString(),
-                    FileRef = Request.Form.Files.First(),
-                    FileName = Request.Form.Files.First().FileName.Split('.')[0],
-                    FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
-                                    .Replace(".", string.Empty)
-                                    .ToLower(),
-                    UserId = long.Parse(userId),
-                    ProductCode = Request.Form["productCode"].ToString() /*?? "AIRTEL"*/,
-                    ProductName = Request.Form["productName"].ToString() /*?? "AIRTEL"*/,
-                    BusinessTin = Request.Form["businessTin"].ToString() /*?? "00771252-0001"*/,
-                    FileSize = Request.Form.Files.First().Length,
-                };
+                var request = FileUploadRequest.FromRequestForSingle(Request);
 
-                uploadResult = await _batchProcessor.UploadFileAsync(request);
+                response = await _batchProcessor.UploadFileAsync(request);
             }
             catch (AppException ex)
             {
@@ -83,79 +74,59 @@ namespace FileUploadApi.Controllers
                 return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
             }
 
-            return Ok(new ResponseResult
-            {
-                BatchId = uploadResult.BatchId,
-                ValidRows = uploadResult.ValidRows.Select(row => RowMarshaller(row, contentType, itemType)).ToList(),
-                Failures = uploadResult.Failures.Select(a => new ResponseResult.FailedValidation
-                {
-                    ColumnValidationErrors = a.ColumnValidationErrors,
-                    Row = RowMarshaller(a.Row, contentType, itemType)
-                }).ToList(),
-                ErrorMessage = uploadResult.ErrorMessage,
-                FileName = uploadResult.FileName,
-                ProductCode = uploadResult.ProductCode,
-                ProductName = uploadResult.ProductName,
-                RowsCount = uploadResult.RowsCount
-            });
+            return Ok(response);
         }
+       
 
-        private dynamic RowMarshaller(RowDetail r, string contentType, string itemType)
+        [HttpPost("multitax/{authority}")]
+        public async Task<IActionResult> PostMultiTaxPaymentUploadAsync(string authority)
         {
-            dynamic result = default;
-            
-                if (contentType.ToLower().Equals(GenericConstants.Firs)
-                    && itemType.ToLower().Equals(GenericConstants.WHT))
-                    result = new FirsWhtUntyped 
-                    { 
-                        Row = r.RowNum,
-                        BeneficiaryAddress = r.BeneficiaryAddress,
-                        BeneficiaryName = r.BeneficiaryName,
-                        BeneficiaryTin = r.BeneficiaryTin,
-                        ContractAmount = r.ContractAmount,
-                        ContractDate = r.ContractDate,
-                        ContractDescription = r.ContractDescription,
-                        ContractType = r.ContractType,
-                        InvoiceNumber = r.InvoiceNumber,
-                        PeriodCovered = r.PeriodCovered,
-                        WhtAmount = r.WhtAmount,
-                        WhtRate = r.WhtRate
-                    };
+            ResponseResult response;
 
-                if (contentType.ToLower().Equals(GenericConstants.Firs)
-                    && itemType.ToLower().Equals(GenericConstants.WVAT))
-                    result = new FirsWVatUntyped
-                    {
-                        Row = r.RowNum,
-                        ContractorAddress = r.ContractorAddress,
-                        ContractorName = r.ContractorName,
-                        ContractorTin = r.ContractorTin,
-                        CurrencyExchangeRate = r.CurrencyExchangeRate,
-                        CurrencyInvoicedValue = r.CurrencyInvoicedValue,
-                        ContractDescription = r.ContractDescription,
-                        NatureOfTransaction = r.NatureOfTransaction,
-                        InvoiceNumber = r.InvoiceNumber,
-                        TaxAccountNumber = r.TaxAccountNumber,
-                        TransactionCurrency = r.TransactionCurrency,
-                        TransactionDate = r.TransactionDate,
-                        TransactionInvoicedValue = r.TransactionInvoicedValue,
-                        WvatRate = r.WvatRate,
-                        WvatValue = r.WvatValue
-                    }; 
+            var userId = /*Request.Form["id"].ToString()*/ "255";
 
-                if (contentType.ToLower().Equals(GenericConstants.BillPayment)
-                    && (itemType.ToLower().Equals(GenericConstants.BillPaymentId) 
-                    || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
-                    result = new BillPaymentUntyped
-                    {
-                        RowNumber = r.RowNum,
-                        Amount = r.Amount,
-                        CustomerId = r.CustomerId,
-                        ItemCode = r.ItemCode,
-                        ProductCode = r.ProductCode
-                    };
-            
-            return result;
+            try
+            {
+                ValidateUserId(userId);
+
+                var request = new FileUploadRequest
+                {
+                    ItemType = GenericConstants.MultiTax,
+                    ContentType = authority,
+                    AuthToken = Request.Headers["Authorization"].ToString(),
+                    FileRef = Request.Form.Files.First(),
+                    FileName = Request.Form.Files
+                                        .First().FileName
+                                        .Split('.')[0],
+                    FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower(),
+                    UserId = long.Parse(userId),
+                    FileSize = Request.Form.Files.First().Length,
+                    HasHeaderRow = /*Request.Headers["HasHeaderRow"].ToString().ToBool()*/ true
+                };
+
+                response = await _multiTaxProcessor.UploadFileAsync(request);
+            }
+            catch (AppException ex)
+            {
+                _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult(new { ex.Message })
+                {
+                    StatusCode = ex.StatusCode,
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
+            }
+
+            return Ok(response);
         }
 
 
@@ -176,7 +147,7 @@ namespace FileUploadApi.Controllers
 
             try
             {
-                var result = await _batchProcessor.GetBillPaymentsStatus(batchId, paginationFilter);
+                var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter);
 
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
@@ -193,9 +164,9 @@ namespace FileUploadApi.Controllers
             catch (AppException ex)
             {
                 _logger.LogError("Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
-                
+
                 response.Error = ex.Message;
-                
+
                 var result = new ObjectResult(new { ex.Message })
                 {
                     StatusCode = ex.StatusCode,
@@ -232,18 +203,19 @@ namespace FileUploadApi.Controllers
                     BusinessTin = request.BusinessTin,
                     TaxTypeId = request.TaxTypeId,
                     TaxTypeName = request.TaxTypeName,
-                    ProductId = request.ProductId
+                    ProductId = request.ProductId,
+                    ProductCode = request.ProductCode,
+                    CurrencyCode = request.CurrencyCode
                 };
 
-                var data = await _batchProcessor.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
-                response.Data = data;
+                response.Data = await _genericUploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
             }
             catch (AppException ex)
             {
                 // _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
-                response.Error = ex.Message;
-                
+                response.Message = ex.Message;
+
                 var result = new ObjectResult(new { ex.Message })
                 {
                     StatusCode = ex.StatusCode,
@@ -256,7 +228,7 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                response.Error = "Unknown error occured. Please retry!.";
+                response.Message = "Unknown error occured. Please retry!.";
                 var result = new ObjectResult(response)
                 {
                     StatusCode = (int)HttpStatusCode.BadRequest
@@ -274,11 +246,13 @@ namespace FileUploadApi.Controllers
             {
                 var outputStream = new MemoryStream();
 
-                var templateDetail = await _batchProcessor.GetFileTemplateContentAsync(contentType, itemType, outputStream);
+                var fileName = await _genericUploadService.GetFileTemplateContentAsync(contentType, itemType, outputStream);
+
+                var extension = MimeUtility.GetMimeMapping(fileName);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
-                return File(outputStream, contentType, templateDetail.FileName);
+                return File(outputStream, extension, fileName);
             }
             catch (AppException ex)
             {
@@ -317,9 +291,9 @@ namespace FileUploadApi.Controllers
         public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] SummaryPaginationQuery pagination)
         {
             var paginationFilter =
-                new PaginationFilter 
-                { 
-                    PageSize = pagination.PageSize, 
+                new PaginationFilter
+                {
+                    PageSize = pagination.PageSize,
                     PageNumber = pagination.PageNumber
                 };
 
@@ -333,7 +307,7 @@ namespace FileUploadApi.Controllers
             {
                 ValidateUserId(userId);
 
-                var result = await _batchProcessor.GetUserFilesSummary(userId, paginationFilter);
+                var result = await _genericUploadService.GetUserFilesSummary(userId, paginationFilter);
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
             }
@@ -364,13 +338,13 @@ namespace FileUploadApi.Controllers
             {
                 var outputStream = new MemoryStream();
 
-                var resultModel = await _batchProcessor.GetFileValidationResultAsync(batchId, outputStream);
+                var resultModel = await _genericUploadService.GetFileValidationResultAsync(batchId, outputStream);
 
                 var contentType = MimeUtility.GetMimeMapping(resultModel.NasValidationFileName);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
-                return File(outputStream, contentType, resultModel.RawFileName+'_'+GenericConstants.ValidationResultFile);
+                return File(outputStream, contentType, resultModel.RawFileName + '_' + GenericConstants.ValidationResultFile);
             }
             catch (AppException ex)
             {
@@ -386,7 +360,7 @@ namespace FileUploadApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
+                return BadRequest(new { errorMessage = "Unknown error occured.!." });
             }
         }
     }
