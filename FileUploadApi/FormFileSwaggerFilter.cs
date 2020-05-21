@@ -35,7 +35,7 @@ namespace FileUploadApi
                 operation.Parameters.Add(new NonBodyParameter
                 {
                     Name = "id",
-                    In = "string",
+                    In = "formData",
                     Required = true,
                     Type = "string"
                 });
@@ -43,13 +43,13 @@ namespace FileUploadApi
                 operation.Parameters.Add(new NonBodyParameter
                 {
                     Name = "hasHeaderRow",
-                    In = "string",
+                    In = "formData",
                     Required = true,
                     Type = "string"
                 });
 
                 operation.Consumes.Add("multipart/form-data");
-                operation.Consumes.Add("string");
+                operation.Consumes.Add("string/form-data");
             }
         }
     }
