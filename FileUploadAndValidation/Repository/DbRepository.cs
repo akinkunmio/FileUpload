@@ -243,6 +243,7 @@ namespace FileUploadAndValidation.Repository
                                             comment = valid.Comment,
                                             tax_type = valid.TaxAccountNumber,
                                             document_number = valid.DocumentNumber,
+                                            payer_tin = valid.PayerTin,
                                             created_date = valid.CreatedDate,
                                             row_num = valid.RowNum,
                                             transactions_summary_Id = transactionSummaryId,

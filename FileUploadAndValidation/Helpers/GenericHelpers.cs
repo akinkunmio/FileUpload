@@ -290,6 +290,10 @@ namespace FileUploadAndValidation.Helpers
 
                 try
                 {
+                    if(contract.ValidateCell != true)
+                    {
+                        continue;
+                    }
                     if (contract.Required == true && string.IsNullOrWhiteSpace(column.Value))
                     {
                         errorMessage = "Value must be provided";

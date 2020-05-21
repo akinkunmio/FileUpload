@@ -72,22 +72,22 @@ namespace FileUploadAndValidation.Helpers
         {
             return new[]
             {
-                new ColumnContract{ ColumnName="BeneficiaryTin", DataType="string", Required=true, Min = 13 },
-                new ColumnContract{ ColumnName="BeneficiaryName", DataType="string", Required=true },
-                new ColumnContract{ ColumnName="BeneficiaryAddress", DataType="string", Required=true },
-                new ColumnContract{ ColumnName="ContractDate", DataType="string", Required=true },
-                new ColumnContract{ ColumnName="ContractDescription", DataType="string", Required=true },
-                new ColumnContract{ ColumnName="ContractAmount", DataType="decimal", Required=true },
-                new ColumnContract{ ColumnName="ContractType", DataType="string", Required=true },
-                new ColumnContract{ ColumnName="PeriodCovered", DataType="string", Required=true },
-                new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Required=false },
-                new ColumnContract{ ColumnName="WhtRate", DataType="decimal", Required=true },
-                new ColumnContract{ ColumnName="WhtAmount", DataType="decimal", Required=true },
-                new ColumnContract{ ColumnName="Amount", DataType="decimal", Max=30, Required=false },
-                new ColumnContract{ ColumnName="Comment", DataType="string", Max=30, Required=false },
-                new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Max=30, Required=false },
-                new ColumnContract{ ColumnName="PayerTin", DataType="string", Max=30, Required=true },
-                new ColumnContract{ ColumnName="TaxType", DataType="string", Max=100, Required=true },
+                new ColumnContract{ ColumnName="BeneficiaryTin", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="BeneficiaryName", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="BeneficiaryAddress", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ContractDate", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ContractDescription", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ContractAmount", DataType="decimal", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ContractType", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="PeriodCovered", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Required=false, ValidateCell = true },
+                new ColumnContract{ ColumnName="WhtRate", DataType="decimal", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="WhtAmount", DataType="decimal", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="Amount", DataType="decimal", Required=false },
+                new ColumnContract{ ColumnName="Comment", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="PayerTin", DataType="string", Min=1, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="TaxType", DataType="string", Min=1, Required=true, ValidateCell = true },
             };
         }
 
@@ -95,7 +95,7 @@ namespace FileUploadAndValidation.Helpers
         {
             return new[]
             {
-                new ColumnContract{ ColumnName="BeneficiaryTin", DataType="string", Required=false, Min = 13 },
+                new ColumnContract{ ColumnName="BeneficiaryTin", DataType="string", Required=false },
                 new ColumnContract{ ColumnName="BeneficiaryName", DataType="string", Required=false },
                 new ColumnContract{ ColumnName="BeneficiaryAddress", DataType="string", Required=false },
                 new ColumnContract{ ColumnName="ContractDate", DataType="string", Required=false },
@@ -106,11 +106,11 @@ namespace FileUploadAndValidation.Helpers
                 new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Required=false },
                 new ColumnContract{ ColumnName="WhtRate", DataType="decimal", Required=false },
                 new ColumnContract{ ColumnName="WhtAmount", DataType="decimal", Required=false },
-                new ColumnContract{ ColumnName="Amount ", DataType="decimal", Max=30, Required=true },
-                new ColumnContract{ ColumnName="Comment", DataType="string", Max=30, Required=false },
-                new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Max=30, Required=false },
-                new ColumnContract{ ColumnName="PayerTin", DataType="string", Max=30, Required=true },
-                new ColumnContract{ ColumnName="TaxType", DataType="string", Max=100, Required=true },
+                new ColumnContract{ ColumnName="Amount ", DataType="decimal", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="Comment", DataType="string", Required=false, ValidateCell = true },
+                new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Required=false, ValidateCell = true },
+                new ColumnContract{ ColumnName="PayerTin", DataType="string", Min=1, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="TaxType", DataType="string", Min=1, Required=true, ValidateCell = true },
             };
         }
     }
