@@ -52,7 +52,25 @@ namespace FileUploadApi.Controllers
             {
                 ValidateUserId(userId);
 
-                var request = FileUploadRequest.FromRequestForSingle(Request);
+                var request = new FileUploadRequest
+                {
+                    ItemType = itemType,
+                    ContentType = contentType,
+                    AuthToken = Request.Headers["Authorization"].ToString(),
+                    FileRef = Request.Form.Files.First(),
+                    FileName = Request.Form.Files
+                                        .First().FileName
+                                        .Split('.')[0],
+                    FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower(),
+                    UserId = long.Parse(userId),
+                    ProductCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL",
+                    ProductName = /*request.Form["productName"].ToString() ??*/ "AIRTEL",
+                    BusinessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001",
+                    FileSize = Request.Form.Files.First().Length,
+                    HasHeaderRow = /*Request.Headers["HasHeaderRow"].ToString().ToBool()*/ true
+                };
 
                 response = await _batchProcessor.UploadFileAsync(request);
             }
