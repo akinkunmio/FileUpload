@@ -68,6 +68,9 @@ namespace FileUploadApi.ApiServices
                 case GenericConstants.Firs:
                     await _fileContentValidators.ToArray()[2].Validate(request, rows, uploadResult);
                     break;
+                case GenericConstants.Lirs:
+                    await _fileContentValidators.ToArray()[3].Validate(request, rows, uploadResult);
+                    break;
                 default:
                     throw new AppException("Authority type not supported!.");
             }

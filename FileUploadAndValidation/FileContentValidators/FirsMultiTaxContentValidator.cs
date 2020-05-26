@@ -128,6 +128,7 @@ namespace FileUploadAndValidation.FileContentValidators
 
             return columnContracts;
         }
+        
         public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));

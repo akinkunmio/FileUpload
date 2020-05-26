@@ -69,7 +69,7 @@ namespace FileUploadApi.Controllers
                     ProductName = /*request.Form["productName"].ToString() ??*/ "AIRTEL",
                     BusinessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001",
                     FileSize = Request.Form.Files.First().Length,
-                    HasHeaderRow = /*Request.Headers["HasHeaderRow"].ToString().ToBool()*/ true
+                    HasHeaderRow = /*Request.Form["HasHeaderRow"].ToString().ToBool()*/ true
                 };
 
                 response = await _batchProcessor.UploadFileAsync(request);
@@ -124,7 +124,7 @@ namespace FileUploadApi.Controllers
                                     .ToLower(),
                     UserId = long.Parse(userId),
                     FileSize = Request.Form.Files.First().Length,
-                    HasHeaderRow = /*Request.Headers["HasHeaderRow"].ToString().ToBool()*/ true
+                    HasHeaderRow = /*Request.Form["HasHeaderRow"].ToString().ToBool()*/ true
                 };
 
                 response = await _multiTaxProcessor.UploadFileAsync(request);
