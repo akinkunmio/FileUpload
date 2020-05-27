@@ -37,26 +37,29 @@ namespace FileUploadAndValidation.FileServices
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.");
 
-                var columnContract = new ColumnContract[] { };
+                var columnContracts = new ColumnContract[] { };
 
                 if (request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
-                    columnContract = ContentTypeColumnContract.BillerPaymentIdWithItem();
+                    columnContracts = ContentTypeColumnContract.BillerPaymentIdWithItem();
+
+                if (request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId))
+                    columnContracts = ContentTypeColumnContract.BillerPaymentId();
 
                 uploadResult.RowsCount = rows.Count();
                 var contentRows = rows;
 
                 if (request.HasHeaderRow)
                 {
-                    uploadResult.RowsCount = rows.Count() - 1;
+                    uploadResult.RowsCount -= 1;
 
                     headerRow = rows.First();
 
-                    GenericHelpers.ValidateHeaderRow(headerRow, columnContract);
+                    GenericHelpers.ValidateHeaderRow(headerRow, columnContracts);
 
                     contentRows = rows.Skip(1);
                 }
 
-                var validateRowsResult = await ValidateContent(contentRows, columnContract);
+                var validateRowsResult = await ValidateContent(contentRows, columnContracts);
 
                 uploadResult.Failures = validateRowsResult.Failures;
                 uploadResult.ValidRows = validateRowsResult.ValidRows;

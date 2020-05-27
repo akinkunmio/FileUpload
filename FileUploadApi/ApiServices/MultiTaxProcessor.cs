@@ -38,7 +38,7 @@ namespace FileUploadApi.ApiServices
 
             if (!request.ContentType.ToLower().Equals(GenericConstants.Firs)
                && !request.ContentType.ToLower().Equals(GenericConstants.Lirs)
-               && !request.ContentType.ToLower().Equals(GenericConstants.FCTirs))
+               && !request.ContentType.ToLower().Equals(GenericConstants.FctIrs))
                 throw new AppException("Invalid Authority Type specified");
 
             var uploadResult = new UploadResult
@@ -68,7 +68,7 @@ namespace FileUploadApi.ApiServices
                 case GenericConstants.Firs:
                     await _fileContentValidators.ToArray()[2].Validate(request, rows, uploadResult);
                     break;
-                case GenericConstants.Lirs:
+                case GenericConstants.FctIrs:
                     await _fileContentValidators.ToArray()[3].Validate(request, rows, uploadResult);
                     break;
                 default:

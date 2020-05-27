@@ -1,26 +1,87 @@
 ﻿using FileUploadAndValidation.FileServices;
 using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
+using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
+using FilleUploadCore.Helpers;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FileUploadAndValidation.FileContentValidators
 {
-    public class LirsMultiTaxContentValidator : IFileContentValidator
+    public class FctIrsMultiTaxContentValidator : IFileContentValidator
     {
-        private readonly ILogger<LirsMultiTaxContentValidator> _logger;
+        private readonly ILogger<FctIrsMultiTaxContentValidator> _logger;
 
-        public LirsMultiTaxContentValidator(ILogger<LirsMultiTaxContentValidator> logger)
+        public FctIrsMultiTaxContentValidator(ILogger<FctIrsMultiTaxContentValidator> logger)
         {
             _logger = logger;
         }
-        public Task<UploadResult> Validate(FileUploadRequest uploadRequest, IEnumerable<Row> rows, UploadResult uploadResult)
+        public async Task<UploadResult> Validate(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {
-            throw new NotImplementedException();
+            ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
+            ArgumentGuard.NotNullOrEmpty(rows, nameof(rows));
+
+            var headerRow = new Row();
+            IEnumerable<Row> contentRows = new List<Row>();
+            IEnumerable<RowDetail> fctIrsPayments = new List<RowDetail>();
+            var columnContract = new ColumnContract[] { };
+
+            try
+            {
+                if (!rows.Any())
+                    throw new AppException("Empty file was uploaded!.");
+
+                uploadResult.RowsCount = rows.Count();
+                contentRows = rows;
+
+                if (request.HasHeaderRow)
+                {
+                    uploadResult.RowsCount -= 1;
+
+                    headerRow = rows.First();
+
+                    GenericHelpers.ValidateHeaderRow(headerRow, ContentTypeColumnContract.FirsMultiTaxWht());
+
+                    contentRows = contentRows.Skip(1);
+                }
+
+
+                var validateRowsResult = await ValidateContent(request.ContentType, contentRows);
+
+                uploadResult.Failures = validateRowsResult.Failures;
+                uploadResult.ValidRows = validateRowsResult.ValidRows;
+
+                if (uploadResult.ValidRows.Count() == 0)
+                    throw new AppException("All records are invalid", 400, uploadResult);
+
+                if (uploadResult.Failures.Any())
+                    foreach (var failure in uploadResult.Failures)
+                    {
+                        failure.Row.Error = GenericHelpers.ConstructValidationError(failure);
+                    }
+
+                if (uploadResult.ValidRows.Count() == 0)
+                    throw new AppException("All records are invalid", 400, uploadResult);
+
+                return uploadResult;
+            }
+            catch (AppException appEx)
+            {
+                uploadResult.ErrorMessage = appEx.Message;
+                appEx.Value = uploadResult;
+                throw appEx;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError("Error occured while uploading bill payment file with error message {ex.message} | {ex.StackTrace}", exception.Message, exception.StackTrace);
+                uploadResult.ErrorMessage = exception.Message;
+                throw new AppException(exception.Message, 400, uploadResult);
+            }
         }
 
         private async Task<ValidateRowsResult> ValidateContent(string authority, IEnumerable<Row> contentRows)

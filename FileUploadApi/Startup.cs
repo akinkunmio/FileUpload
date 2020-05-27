@@ -54,7 +54,7 @@ namespace FileUploadApi
             services.AddScoped<IFileContentValidator, BillPaymentFileContentValidator>();
             services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
             services.AddScoped<IFileContentValidator, FirsMultiTaxContentValidator>();
-            services.AddScoped<IFileContentValidator, LirsMultiTaxContentValidator>();
+            services.AddScoped<IFileContentValidator, FctIrsMultiTaxContentValidator>();
 
 
             services.AddScoped<IBatchRepository, BatchRepository>();
