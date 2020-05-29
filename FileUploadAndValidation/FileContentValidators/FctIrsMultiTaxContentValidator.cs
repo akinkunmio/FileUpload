@@ -113,43 +113,38 @@ namespace FileUploadAndValidation.FileContentValidators
             string rowTaxType = default;
 
             if (authority.ToLower().Equals(GenericConstants.Firs))
-                rowTaxType = row.Columns[15].Value;
+                //picks the row column(cell) that has the tax type value
+                rowTaxType = row.Columns[4].Value;
 
             var columnContracts = GetColumnContractByTaxType(authority, rowTaxType);
 
             var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
 
+            if (rowTaxType.ToLower().Equals(GenericConstants.PreOpLevy))
+                rowDetail = new RowDetail
+                {
+                    RowNum = row.Index,
+                    ProductCode = row.Columns[0].Value,
+                    ItemCode = row.Columns[1].Value,
+                    CustomerId = row.Columns[2].Value,
+                    Amount = row.Columns[3].Value,
+                    Desc = row.Columns[4].Value,
+                    CustomerName = row.Columns[5].Value,
+                    PhoneNumber = row.Columns[6].Value,
+                    Email = row.Columns[7].Value,
+                    Address = row.Columns[8].Value
+                };
+
             if (rowTaxType.ToLower().Equals(GenericConstants.Wht))
                 rowDetail = new RowDetail
                 {
                     RowNum = row.Index,
-                    BeneficiaryTin = row.Columns[0].Value,
-                    BeneficiaryName = row.Columns[1].Value,
-                    BeneficiaryAddress = row.Columns[2].Value,
-                    ContractDate = row.Columns[3].Value,
-                    ContractDescription = row.Columns[4].Value,
-                    ContractAmount = row.Columns[5].Value,
-                    ContractType = row.Columns[6].Value,
-                    PeriodCovered = row.Columns[7].Value,
-                    InvoiceNumber = row.Columns[8].Value,
-                    WhtRate = row.Columns[9].Value,
-                    WhtAmount = row.Columns[10].Value,
-                    PayerTin = row.Columns[14].Value,
-                    TaxType = row.Columns[15].Value
-                };
-
-            if (rowTaxType.ToLower().Equals(GenericConstants.Vat)
-                || rowTaxType.ToLower().Equals(GenericConstants.Cit)
-                || rowTaxType.ToLower().Equals(GenericConstants.Edt)
-                || rowTaxType.ToLower().Equals(GenericConstants.PreOpLevy))
-                rowDetail = new RowDetail
-                {
-                    RowNum = row.Index,
-                    Amount = row.Columns[11].Value,
-                    Comment = row.Columns[12].Value,
-                    DocumentNumber = row.Columns[13].Value,
-                    PayerTin = row.Columns[14].Value,
-                    TaxType = row.Columns[15].Value
+                    ProductCode = row.Columns[0].Value,
+                    ItemCode = row.Columns[1].Value,
+                    CustomerId = row.Columns[2].Value,
+                    Amount = row.Columns[3].Value,
+                    Desc = row.Columns[4].Value,
+                    CustomerName = row.Columns[5].Value
                 };
 
             result.isValid = validationResult.Validity;
@@ -174,18 +169,15 @@ namespace FileUploadAndValidation.FileContentValidators
         {
             ColumnContract[] columnContracts = default;
 
-            if (authority.ToLower().Equals(GenericConstants.Firs))
+            if (authority.ToLower().Equals(GenericConstants.FctIrs))
             {
                 if (!string.IsNullOrWhiteSpace(taxType)
                    && taxType.ToLower().Equals(GenericConstants.Wht))
-                    columnContracts = ContentTypeColumnContract.FirsMultiTaxWht();
+                    columnContracts = ContentTypeColumnContract.FctIrsMultiTaxWht();
 
                 if (!string.IsNullOrWhiteSpace(taxType)
-                   && (taxType.ToLower().Equals(GenericConstants.Vat)
-                   || taxType.ToLower().Equals(GenericConstants.PreOpLevy)
-                   || taxType.ToLower().Equals(GenericConstants.Cit)
-                   || taxType.ToLower().Equals(GenericConstants.Edt)))
-                    columnContracts = ContentTypeColumnContract.FirsMultiTaxOther();
+                   && (taxType.ToLower().Equals(GenericConstants.PreOpLevy)))
+                    columnContracts = ContentTypeColumnContract.FctIrsMultiTaxPreOp();
             }
 
             return columnContracts;
