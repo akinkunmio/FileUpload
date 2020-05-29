@@ -101,7 +101,7 @@ namespace FileUploadApi.Controllers
         {
             ResponseResult response;
 
-            var userId = /*Request.Form["id"].ToString()*/ "255";
+            var userId = Request.Form["id"].ToString() /*"255"*/;
 
             try
             {
@@ -124,7 +124,7 @@ namespace FileUploadApi.Controllers
                                     .ToLower(),
                     UserId = long.Parse(userId),
                     FileSize = Request.Form.Files.First().Length,
-                    HasHeaderRow = /*Request.Form["HasHeaderRow"].ToString().ToBool()*/ true
+                    HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool() /*true*/
                 };
 
                 response = await _multiTaxProcessor.UploadFileAsync(request);

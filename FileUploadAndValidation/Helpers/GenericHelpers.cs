@@ -376,8 +376,8 @@ namespace FileUploadAndValidation.Helpers
 
         public static string GenerateBatchId(string fileName, DateTime date)
         {
-            //return fileName + "_" + RandomString() + "_" + date.ToString("yyyyMMddHHmmssffff");
-            return "firs_multitax1_ZMWYAA_202005290823495638";
+            return fileName + "_" + RandomString() + "_" + date.ToString("yyyyMMddHHmmssffff");
+           // return "firs_multitax1_ZMWYAA_202005290823495638";
         }
         
         public static string GetFileNameFromBatchId(string batchId)

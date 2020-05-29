@@ -118,16 +118,16 @@ namespace FileUploadAndValidation.UploadServices
             catch (Exception ex)
             {
                 _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return new ValidationResponse
-                {
-                    ResponseCode = "90000",
-                    ResponseDescription = "Validation request is being processed",
-                    ResponseData = new ValidationData
-                    {
-                        NumOfRecords = 6,
-                        ResultMode = "Queue"
-                    }
-                };
+                //return new ValidationResponse
+                //{
+                //    ResponseCode = "90000",
+                //    ResponseDescription = "Validation request is being processed",
+                //    ResponseData = new ValidationData
+                //    {
+                //        NumOfRecords = 6,
+                //        ResultMode = "Queue"
+                //    }
+                //};
                 throw new AppException("Error occured while performing bill payment validation"+ex.Message);
             }
         }

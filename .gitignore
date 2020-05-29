@@ -40,3 +40,5 @@ msbuild.wrn
 /UnitTests/FileUploadAndValidationTests/BillPaymentHttpUnitTest.cs
 /FileUploadAndValidation.fpr
 /FileUploadAndValidation/Repository/FirsBatchRepository.cs
+/FileUploadApi/Models/AppExceptionFilter.cs
+/FilleUploadCore/Exceptions/AppExceptionFilter.cs
