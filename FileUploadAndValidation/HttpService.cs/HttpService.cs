@@ -72,7 +72,7 @@ namespace FileUploadAndValidation.UploadServices
             ValidationResponse validateResponse;
             try
             {
-                var requestBody = ConstructValidateRequestString(greaterThanFifty, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin);
+                var requestBody = ConstructValidateRequestString(greaterThanFifty, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin, fileProperty.BatchId);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ItemType))
                 {
@@ -219,12 +219,12 @@ namespace FileUploadAndValidation.UploadServices
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var approvalResult = JsonConvert.DeserializeObject<SuccessInitiatePaymentResponse>(responseResult);
+                    var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
                     return new ConfirmedBillResponse { PaymentInitiated = true };
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    var approvalResult = JsonConvert.DeserializeObject<SuccessInitiatePaymentResponse>(responseResult);
+                    var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
                     throw new AppException(approvalResult.ResponseDescription, (int)HttpStatusCode.BadRequest, new ConfirmedBillResponse { PaymentInitiated = false });
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -233,10 +233,10 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else
                 {
-                    SuccessInitiatePaymentResponse approvalResult;
+                    InitiatePaymentResponse approvalResult;
                     if (responseResult != null)
                     {
-                        approvalResult = JsonConvert.DeserializeObject<SuccessInitiatePaymentResponse>(responseResult);
+                        approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
                         throw new AppException(approvalResult.ResponseDescription, (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
                     }
                     throw new AppException("Unable to initiate bill transaction payment.", (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });

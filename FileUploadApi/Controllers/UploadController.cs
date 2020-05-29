@@ -89,6 +89,9 @@ namespace FileUploadApi.Controllers
             {
                 ValidateUserId(userId);
 
+                //if (string.IsNullOrWhiteSpace(Request.Headers["HasHeaderRow"].ToString()))
+                //    throw new AppException("Value must be passed for HasHeaderRow");
+
                 var request = new FileUploadRequest
                 {
                     ItemType = GenericConstants.MultiTax,
@@ -286,6 +289,7 @@ namespace FileUploadApi.Controllers
                 throw new AppException($"Invalid value '{id}' passed for 'id'!.");
             }
         }
+
 
         [HttpPost("user/uploads")]
         public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] SummaryPaginationQuery pagination)

@@ -168,44 +168,45 @@ namespace FileUploadAndValidation.FileContentValidators
                 if (uploadResult.ValidRows.Count() == 0)
                     throw new AppException("All records are invalid", 400, uploadResult);
 
-                if (uploadResult.ValidRows.Count() > 0
-                    && uploadResult.ValidRows.Any())
-                {
+               // if (uploadResult.ValidRows.Count() > 0
+               //     && uploadResult.ValidRows.Any())
+               // {
 
-                    var whtRowDetails = uploadResult.ValidRows
-                              .Where(u => u.TaxType.ToLower().Equals(GenericConstants.Wht))
-                              .Select(v => v);
+               //     var whtRowDetails = uploadResult.ValidRows
+               //               .Where(u => u.TaxType.ToLower().Equals(GenericConstants.Wht))
+               //               .Select(v => v);
 
-                    failBeneficiaryTinValidation = whtRowDetails
-                              ?.GroupBy(b => new { b.BeneficiaryTin })
-                              .Where(g => g.Count() > 1)
-                              .SelectMany(r => r);
+               //     failBeneficiaryTinValidation = whtRowDetails
+               //               ?.GroupBy(b => new { b.BeneficiaryTin })
+               //               .Where(g => g.Count() > 1)
+               //               .SelectMany(r => r);
 
-                    foreach (var nonDistinct in failBeneficiaryTinValidation)
-                        uploadResult.Failures.Add(new Failure
-                        {
-                            Row = nonDistinct,
-                            ColumnValidationErrors = new List<ValidationError>
-                                {
-                                    new ValidationError
-                                    {
-                                        PropertyName = "Beneficiary Tin",
-                                        ErrorMessage = "Value should be unique for wht tax type"
-                                    }
-                                }
-                        });
-                };
+               //     foreach (var nonDistinct in failBeneficiaryTinValidation)
+               //         uploadResult.Failures.Add(new Failure
+               //         {
+               //             Row = nonDistinct,
+               //             ColumnValidationErrors = new List<ValidationError>
+               //                 {
+               //                     new ValidationError
+               //                     {
+               //                         PropertyName = "Beneficiary Tin",
+               //                         ErrorMessage = "Value should be unique for wht tax type"
+               //                     }
+               //                 }
+               //         });
+               // };
                 
 
-               uploadResult.ValidRows = uploadResult.ValidRows
-                        .Where(b => !failBeneficiaryTinValidation.Any(n => n.RowNum == b.RowNum))
-                        .Select(r => r)
-                        .ToList();
+               //uploadResult.ValidRows = uploadResult.ValidRows
+               //         .Where(b => !failBeneficiaryTinValidation.Any(n => n.RowNum == b.RowNum))
+               //         .Select(r => r)
+               //         .ToList();
 
-                foreach (var failure in uploadResult.Failures)
-                {
-                    failure.Row.Error = GenericHelpers.ConstructValidationError(failure);
-                }
+                if(uploadResult.Failures.Any()) 
+                    foreach (var failure in uploadResult.Failures)
+                    {
+                        failure.Row.Error = GenericHelpers.ConstructValidationError(failure);
+                    }
 
                 if (uploadResult.ValidRows.Count() == 0)
                     throw new AppException("All records are invalid", 400, uploadResult);
