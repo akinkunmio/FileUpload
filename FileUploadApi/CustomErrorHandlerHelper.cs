@@ -53,7 +53,7 @@ namespace FileUploadApi
                 {
                     Status = ex.StatusCode,
                     Title = title,
-                   // Detail = details,
+                    Detail = details,
                     Instance = instance,
                 };
 
