@@ -170,7 +170,7 @@ namespace FileUploadApi.Controllers
             {
                 PageSize = pagination.PageSize,
                 PageNumber = pagination.PageNumber,
-                Status = pagination.Status.ToString()
+                Status = ((StatusEnum)pagination.Status).ToString()
             };
 
             try
