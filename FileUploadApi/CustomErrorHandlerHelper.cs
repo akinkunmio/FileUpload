@@ -45,8 +45,8 @@ namespace FileUploadApi
                 httpContext.Response.ContentType = "application/problem+json";
 
                 // Get the details to display, depending on whether we want to expose the raw exception
-                var title = /*includeDetails ? "An error occured: " + ex.Message : */"An error occured";
-                var details =  ex.ToString();
+                var title = includeDetails ? "An error occured: " + ex.Message : "An error occured";
+                var details = includeDetails ? ex.StackTrace.ToString() : null;
                 var instance = httpContext.Request.Path.ToString();
 
                 var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails
