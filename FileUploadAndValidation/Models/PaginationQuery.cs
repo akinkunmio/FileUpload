@@ -18,16 +18,14 @@ namespace FileUploadAndValidation.Models
         {
             PageSize = pageSize;
             PageNumber = pageNumber;
-            Status = (Enum.IsDefined(typeof(StatusEnum), status)) 
-                ? (StatusEnum)status 
-                : throw new AppException("The field 'Status' must be between 0 and 2.");
+            Status = status;
         }
 
         public int PageNumber { get; set; }
 
         public int PageSize { get; set; }
 
-        public StatusEnum Status { get; set; }
+        public int Status { get; set; }
     }
 
     public class SummaryPaginationQuery

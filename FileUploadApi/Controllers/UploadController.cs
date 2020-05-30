@@ -156,10 +156,15 @@ namespace FileUploadApi.Controllers
         [HttpGet("{batchId}/status")]
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
+
+            var status = (Enum.IsDefined(typeof(StatusEnum), pagination.Status))
+                ? (StatusEnum)pagination.Status
+                : throw new AppException("The field 'Status' must be between 0 and 2.");
+
             var paginationFilter =
                new PaginationFilter(pagination.PageSize,
                pagination.PageNumber,
-               pagination.Status);
+               status);
 
             var response = new PagedResponse<dynamic>()
             {
