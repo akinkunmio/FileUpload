@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using FilleUploadCore.Exceptions;
+using System.Net;
 
 namespace FileUploadApi
 {
@@ -45,7 +46,7 @@ namespace FileUploadApi
                 httpContext.Response.ContentType = "application/problem+json";
 
                 // Get the details to display, depending on whether we want to expose the raw exception
-                var title = /*includeDetails ? "An error occured: " + ex.Message : */"An error occured";
+                var title = ((HttpStatusCode)ex.StatusCode).ToString();
                 var details = /*includeDetails ? */ex.Message.ToString()/* : null*/;
                 var instance = httpContext.Request.Path.ToString();
 
