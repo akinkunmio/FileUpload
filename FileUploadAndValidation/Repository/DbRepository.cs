@@ -529,7 +529,7 @@ namespace FileUploadAndValidation.Repository
                        commandType: CommandType.StoredProcedure);
 
                     if (result == null)
-                        throw new AppException($"No records found for file with batchId '{batchId}'");
+                        throw new AppException($"No record found.");
 
                     return result;
                 }

@@ -192,8 +192,8 @@ namespace FileUploadApi.ApiServices
                            Status = s.RowStatus
                        });
 
-                if (paymentStatuses.Data.Count() < 1)
-                    throw new AppException($"No result found for Batch Id '{batchId}'", (int)HttpStatusCode.NotFound);
+                //if (paymentStatuses.Data.Count() < 1)
+                //    throw new AppException($"No result found", (int)HttpStatusCode.OK);
             }
             catch (AppException appEx)
             {

@@ -24,6 +24,7 @@ using DbUp;
 using System.Reflection;
 using FileUploadAndValidation.FileServices;
 using FileUploadAndValidation.FileContentValidators;
+using Hellang.Middleware.ProblemDetails;
 
 namespace FileUploadApi
 {
@@ -91,6 +92,7 @@ namespace FileUploadApi
             });
            
             services.AddCors();
+            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2).AddViewComponentsAsServices();
             
             services.AddScoped<SendBillPaymentValidateMessageConsumer>();
@@ -153,6 +155,7 @@ namespace FileUploadApi
             }
             else
             {
+                app.UseExceptionHandler(err => err.UseCustomErrors(env));
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
