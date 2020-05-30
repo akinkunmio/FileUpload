@@ -159,7 +159,7 @@ namespace FileUploadApi.Controllers
 
             var status = (Enum.IsDefined(typeof(StatusEnum), pagination.Status))
                 ? (StatusEnum)pagination.Status
-                : throw new AppException("The field 'Status' must be between 0 and 2.");
+                : throw new AppException("The field 'Status' must have a value between 0 and 2.");
 
             var paginationFilter =
                new PaginationFilter(pagination.PageSize,
