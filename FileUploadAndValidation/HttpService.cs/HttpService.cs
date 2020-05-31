@@ -276,5 +276,6 @@ namespace FileUploadAndValidation.UploadServices
     public class ConfirmedBillResponse
     {
         public bool PaymentInitiated { get; set; }
+        public string errorMessage { get; set; }
     }
 }

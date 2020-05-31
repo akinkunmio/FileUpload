@@ -286,6 +286,60 @@ namespace FileUploadAndValidation.Repository
                                 }
                             }
 
+                            if (fileDetail.ContentType.ToLower().Equals(GenericConstants.FctIrs)
+                              && fileDetail.ItemType.ToLower().Equals(GenericConstants.MultiTax))
+                            {
+                                foreach (var valid in payments)
+                                {
+                                    //create sp sp_insert_valid_fctirs_multitax
+                                    await connection.ExecuteAsync(sql: "sp_insert_valid_fctirs_multitax",
+                                        param: new
+                                        {
+                                            product_code = valid.ProductCode,
+                                            item_code = valid.ItemCode,
+                                            customer_id = valid.CustomerId,
+                                            amount = valid.Amount,
+                                            desc = valid.Desc,
+                                            customer_name = valid.CustomerName,
+                                            phone_number = valid.PhoneNumber,
+                                            email = valid.Email,
+                                            address = valid.Address,
+                                            created_date = valid.CreatedDate,
+                                            row_num = valid.RowNum,
+                                            transactions_summary_Id = transactionSummaryId,
+                                            initial_validation_status = "Valid"
+                                        },
+                                        transaction: sqlTransaction,
+                                        commandType: System.Data.CommandType.StoredProcedure);
+                                }
+
+                                foreach (var inValid in invalidPayments)
+                                {
+                                    // create sp_insert_invalid_fctirs_multitax
+                                    await connection.ExecuteAsync(sql: "sp_insert_invalid_fctirs_multitax",
+                                        param: new
+                                        {
+                                            product_code = inValid.Row.ProductCode,
+                                            item_code = inValid.Row.ItemCode,
+                                            customer_id = inValid.Row.CustomerId,
+                                            amount = inValid.Row.Amount,
+                                            desc = inValid.Row.Desc,
+                                            customer_name = inValid.Row.CustomerName,
+                                            phone_number = inValid.Row.PhoneNumber,
+                                            email = inValid.Row.Email,
+                                            address = inValid.Row.Address,
+                                            created_date = inValid.Row.CreatedDate,
+                                            row_num = inValid.Row.RowNum,
+                                            transactions_summary_Id = transactionSummaryId,
+                                            row_status = "Invalid",
+                                            initial_validation_status = "Invalid",
+                                            error = inValid.Row.Error
+                                        },
+                                        transaction: sqlTransaction,
+                                        commandType: System.Data.CommandType.StoredProcedure);
+                                }
+                            }
+
                             sqlTransaction.Commit();
                             return fileDetail.BatchId;
                         }
@@ -365,7 +419,7 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<PagedData<BatchFileSummary>> GetUploadSummariesByUserId(string userId, PaginationFilter paginationFilter)
+        public async Task<PagedData<BatchFileSummary>> GetUploadSummariesByUserId(string userId, SummaryPaginationFilter paginationFilter)
         {
             var result = new PagedData<BatchFileSummary>();
 
@@ -382,8 +436,29 @@ namespace FileUploadAndValidation.Repository
                         },
                         commandType: CommandType.StoredProcedure);
 
-                    if (results == null)
-                        throw new AppException($"No file has been uploaded by user!.", (int)HttpStatusCode.NotFound);
+                    //if (results == null)
+                    //    throw new AppException($"No file has been uploaded by user!.", (int)HttpStatusCode.NotFound);
+
+                    //filter by status
+                    if (paginationFilter.Status == SummaryStatusEnum.Valid)
+                    {
+                        results = results.Where(e => e.NumOfRecords == e.NumOfValidRecords);
+                    }
+
+                    if(paginationFilter.Status == SummaryStatusEnum.Invalid)
+                    {
+                        results = results.Where(e => e.NumOfValidRecords == 0); 
+                    }
+
+                    if (paginationFilter.Status == SummaryStatusEnum.ValidAndInvalid)
+                    {
+                        results = results.Where(e => e.NumOfRecords == e.NumOfValidRecords || e.NumOfValidRecords == 0);
+                    }
+
+                    //filter by productcode
+                    results = (!string.IsNullOrWhiteSpace(paginationFilter.ProductCode))
+                        ? results.Where(e => e.ProductCode.ToLower().Equals(paginationFilter.ProductCode.ToLower()))
+                        : results;
 
                     result.Data = results
                                     .Skip((paginationFilter.PageNumber - 1) * paginationFilter.PageSize)
@@ -496,6 +571,11 @@ namespace FileUploadAndValidation.Repository
                 && itemType.ToLower().Equals(GenericConstants.MultiTax))
             {
                 return @"sp_get_confirmed_firs_multitax_by_transactions_summary_id";
+            }
+            else if (contentType.ToLower().Equals(GenericConstants.FctIrs)
+                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+            {
+                return @"sp_get_confirmed_fctirs_multitax_by_transactions_summary_id";
             }
             else return "";
         }

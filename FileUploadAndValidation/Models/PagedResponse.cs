@@ -63,6 +63,12 @@ namespace FileUploadAndValidation.Models
 
         public int? PageNumber { get; set; }
 
+        public string ProductCode { get; set; }
+
+        public string ProductName { get; set; }
+
+        public string StatusFilter { get; set; }
+
         public int TotalCount { get; set; }
 
         public string Error { get; set; }
@@ -97,10 +103,53 @@ namespace FileUploadAndValidation.Models
         public string ItemType { get; set; }
     }
 
+    public class SummaryPaginationFilter
+    {
+        public SummaryPaginationFilter(int pageSize, int pageNumber, string productCode)
+        {
+            PageSize = (pageSize > 0) ? pageSize : 10;
+            PageNumber = (pageNumber > 0) ? pageNumber : 1;
+            ProductCode = productCode;
+        }
+
+        public SummaryPaginationFilter(int pageSize, int pageNumber)
+        {
+            PageSize = (pageSize > 0) ? pageSize : 10;
+            PageNumber = (pageNumber > 0) ? pageNumber : 1;
+        }
+
+        public SummaryPaginationFilter()
+        {
+
+        }
+
+        public int PageSize { get; set; }
+
+        public int PageNumber { get; set; }
+
+        public string ProductCode { get; set; }
+
+        public string ProductName { get; set; }
+
+        public SummaryStatusEnum Status { get; set; } = SummaryStatusEnum.All;
+
+        //public string ContentType { get; set; }
+
+        //public string ItemType { get; set; }
+    }
+
     public enum StatusEnum
     {
         All = 0,
         Valid = 1,
         Invalid = 2
+    }
+
+    public enum SummaryStatusEnum
+    {
+        All = 0,
+        Valid = 1,
+        Invalid = 2,
+        ValidAndInvalid = 3
     }
 }

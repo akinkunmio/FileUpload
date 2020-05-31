@@ -46,7 +46,7 @@ namespace FilleUploadCore.Exceptions
 
         public string FriendlyMessage { get; set; }
 
-        public int? StatusCode { get; set; } = (int)HttpStatusCode.BadRequest;
+        public int? StatusCode { get; set; } = (int)HttpStatusCode.InternalServerError;
 
         public object Value { get; set; }
     }

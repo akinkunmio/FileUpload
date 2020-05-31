@@ -157,24 +157,24 @@ namespace FileUploadApi.Controllers
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
 
-            var status = (Enum.IsDefined(typeof(StatusEnum), pagination.Status))
-                ? (StatusEnum)pagination.Status
-                : throw new AppException("The field 'Status' must have a value between 0 and 2.");
-
-            var paginationFilter =
-               new PaginationFilter(pagination.PageSize,
-               pagination.PageNumber,
-               status);
-
             var response = new PagedResponse<dynamic>()
             {
                 PageSize = pagination.PageSize,
                 PageNumber = pagination.PageNumber,
-                Status = ((StatusEnum)pagination.Status).ToString()
             };
-
+                
             try
             {
+
+                var status = (Enum.IsDefined(typeof(StatusEnum), pagination.Status))
+                ? (StatusEnum)pagination.Status
+                : throw new AppException("The field 'Status' must have a value between 0 and 2.");
+
+                var paginationFilter =
+                   new PaginationFilter(pagination.PageSize,
+                   pagination.PageNumber,
+                   status);
+
                 var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter);
 
                 response.Data = result.Data;
@@ -188,25 +188,30 @@ namespace FileUploadApi.Controllers
                 response.ContentType = result.ContentType;
                 response.ValidCount = result.ValidRowCount;
                 response.InvalidCount = result.InvalidCount;
+                response.Status = ((StatusEnum)pagination.Status).ToString();
+
             }
             catch (AppException ex)
             {
                 _logger.LogError("Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
+                
+                throw ex;
+                //response.Error = ex.Message;
 
-                response.Error = ex.Message;
+                //var result = new ObjectResult(new { errorMessage = ex.Message })
+                //{
+                //    StatusCode = ex.StatusCode,
+                //};
 
-                var result = new ObjectResult(new { errorMessage = ex.Message })
-                {
-                    StatusCode = ex.StatusCode,
-                };
-
-                return result;
+                //return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest("An error occured. Please retry!");
+                throw ex;
+                //return BadRequest("An error occured. Please retry!");
+
             }
 
             return Ok(response);
@@ -320,7 +325,7 @@ namespace FileUploadApi.Controllers
         public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] SummaryPaginationQuery pagination)
         {
             var paginationFilter =
-                new PaginationFilter
+                new SummaryPaginationFilter
                 {
                     PageSize = pagination.PageSize,
                     PageNumber = pagination.PageNumber
@@ -329,7 +334,10 @@ namespace FileUploadApi.Controllers
             var response = new SummaryPagedResponse<BatchFileSummaryDto>()
             {
                 PageSize = paginationFilter.PageSize,
-                PageNumber = paginationFilter.PageNumber
+                PageNumber = paginationFilter.PageNumber,
+                ProductCode = paginationFilter.ProductCode,
+                ProductName = paginationFilter.ProductName,
+                StatusFilter = (paginationFilter.Status).ToString()
             };
 
             try

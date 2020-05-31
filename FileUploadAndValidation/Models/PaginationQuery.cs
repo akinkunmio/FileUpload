@@ -12,6 +12,7 @@ namespace FileUploadAndValidation.Models
             PageNumber = 1;
             PageSize = 10;
             Status = (int)StatusEnum.All;
+            TaxType = "all";
         }
 
         public PaginationQuery(int pageNumber, int pageSize, int status)
@@ -19,6 +20,15 @@ namespace FileUploadAndValidation.Models
             PageSize = pageSize;
             PageNumber = pageNumber;
             Status = status;
+            TaxType = "all";
+        }
+
+        public PaginationQuery(int pageNumber, int pageSize, int status, string taxType)
+        {
+            PageSize = pageSize;
+            PageNumber = pageNumber;
+            Status = status;
+            TaxType = taxType;
         }
 
         public int PageNumber { get; set; }
@@ -26,6 +36,8 @@ namespace FileUploadAndValidation.Models
         public int PageSize { get; set; }
 
         public int Status { get; set; }
+
+        public string TaxType { get; set; }
     }
 
     public class SummaryPaginationQuery
@@ -42,8 +54,29 @@ namespace FileUploadAndValidation.Models
             PageNumber = pageNumber;
         }
 
+        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode)
+        {
+            PageSize = pageSize;
+            PageNumber = pageNumber;
+            ProductCode = productCode;
+        }
+
+        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode, SummaryStatusEnum status)
+        {
+            PageSize = pageSize;
+            PageNumber = pageNumber;
+            ProductCode = productCode;
+            Status = status;
+        }
+
         public int PageNumber { get; set; }
 
         public int PageSize { get; set; }
+
+        public string ProductCode { get; set; }
+
+        public string ProductName { get; set; }
+
+        public SummaryStatusEnum Status { get; set; } = SummaryStatusEnum.All;
     }
 }

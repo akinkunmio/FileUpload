@@ -42,6 +42,8 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
+           // services.AddProblemDetails();
+
             services.AddScoped<IGenericUploadService, GenericUploadService>();
 
             services.AddScoped<IBatchProcessor, BatchProcessor>();
@@ -172,6 +174,7 @@ namespace FileUploadApi
                .AllowCredentials()
                );
 
+           // app.UseProblemDetails();
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUI(c => {

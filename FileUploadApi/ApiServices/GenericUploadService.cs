@@ -59,7 +59,7 @@ namespace FileUploadApi.ApiServices
             return batchFileSummaryDto;
         }
 
-        public async Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, PaginationFilter paginationFilter)
+        public async Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, SummaryPaginationFilter paginationFilter)
         {
             var userFileSummaries = new PagedData<BatchFileSummary>();
             var pagedData = new PagedData<BatchFileSummaryDto>();
@@ -210,12 +210,18 @@ namespace FileUploadApi.ApiServices
 
         public async Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
         {
-            ConfirmedBillResponse result;
+            ConfirmedBillResponse result = default;
 
             var confirmedPayments = await _dbRepository.GetConfirmedPayments(batchId);
 
             if (confirmedPayments.Count() < 1 || !confirmedPayments.Any())
-                throw new AppException($"Records awaiting payment initiation not found for batch Id: {batchId}", (int)HttpStatusCode.NotFound);
+            { 
+                result.errorMessage = "No records found, to initiate payment on!.";
+                result.PaymentInitiated = false;
+                return result;
+            }
+
+                //throw new AppException($"!.", (int)HttpStatusCode.NotFound);
 
             var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, initiatePaymentOptions.ContentType, initiatePaymentOptions.ItemType, confirmedPayments);
 
