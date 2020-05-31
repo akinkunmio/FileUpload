@@ -456,9 +456,9 @@ namespace FileUploadAndValidation.Repository
                     }
 
                     //filter by productcode
-                    results = (!string.IsNullOrWhiteSpace(paginationFilter.ProductCode))
-                        ? results.Where(e => e.ProductCode.ToLower().Equals(paginationFilter.ProductCode.ToLower())).Select(s => s)
-                        : results;
+                    if (!string.IsNullOrWhiteSpace(paginationFilter.ProductCode))
+                        results = results
+                            .Where(e => e.ProductCode.ToLower().Equals(paginationFilter.ProductCode, StringComparison.InvariantCultureIgnoreCase));
 
                     result.Data = results
                                     .Skip((paginationFilter.PageNumber - 1) * paginationFilter.PageSize)

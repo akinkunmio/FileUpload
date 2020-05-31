@@ -61,11 +61,11 @@ namespace FileUploadApi.Controllers
                                     .Replace(".", string.Empty)
                                     .ToLower(),
                     UserId = long.Parse(userId),
-                    ProductCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL",
-                    ProductName = /*request.Form["productName"].ToString() ??*/ "AIRTEL",
-                    BusinessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001",
+                    ProductCode = Request.Form["productCode"].ToString() ??"AIRTEL",
+                    ProductName = Request.Form["productName"].ToString() ?? "AIRTEL",
+                    BusinessTin = Request.Form["businessTin"].ToString() ?? "00771252-0001",
                     FileSize = Request.Form.Files.First().Length,
-                    HasHeaderRow = /*Request.Form["HasHeaderRow"].ToString().ToBool()*/ true
+                    HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool()
                 };
 
                 response = await _batchProcessor.UploadFileAsync(request);
