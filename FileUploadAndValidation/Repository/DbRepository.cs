@@ -595,21 +595,36 @@ namespace FileUploadAndValidation.Repository
                    
                     BatchFileSummary summary = await GetBatchUploadSummary(batchId);
                   
-                    IEnumerable<RowDetail> result;
+                    IEnumerable<RowDetail> result = new List<RowDetail>();
 
-                    result = await sqlConnection.QueryAsync<RowDetail>(
-                       sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
-                       param: new
-                       {
-                           transactions_summary_id = summaryId,
-                           page_size = pagination.PageSize,
-                           page_number = pagination.PageNumber,
-                           status = pagination.Status
-                       },
-                       commandType: CommandType.StoredProcedure);
+                    if (!summary.ItemType.ToLower().Equals(GenericConstants.MultiTax))
+                    {
+                        result = await sqlConnection.QueryAsync<RowDetail>(
+                           sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
+                           param: new
+                           {
+                               transactions_summary_id = summaryId,
+                               page_size = pagination.PageSize,
+                               page_number = pagination.PageNumber,
+                               status = pagination.Status
+                           },
+                           commandType: CommandType.StoredProcedure);
+                    }
 
-                    if (result == null)
-                        throw new AppException($"No record found.");
+                    if (summary.ItemType.ToLower().Equals(GenericConstants.MultiTax))
+                    {
+                        result = await sqlConnection.QueryAsync<RowDetail>(
+                          sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
+                          param: new
+                          {
+                              transactions_summary_id = summaryId,
+                              page_size = pagination.PageSize,
+                              page_number = pagination.PageNumber,
+                              status = pagination.Status,
+                              tax_type = pagination.TaxType
+                          },
+                          commandType: CommandType.StoredProcedure);
+                    }
 
                     return result;
                 }
@@ -648,6 +663,11 @@ namespace FileUploadAndValidation.Repository
                  && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_get_firs_multitax_payments_status_by_transactions_summary_id";
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                 && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            {
+                return @"sp_get_fctirs_multitax_payments_status_by_transactions_summary_id";
             }
             else return "";
         }

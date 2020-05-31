@@ -7,16 +7,12 @@ using FilleUploadCore.UploadManagers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MimeMapping;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Collections.ObjectModel;
-using MimeMapping;
-using FilleUploadCore.FileReaders;
-using System.Collections.Generic;
-using AutoMapper;
 
 namespace FileUploadApi.Controllers
 {
@@ -331,22 +327,24 @@ namespace FileUploadApi.Controllers
                     PageNumber = pagination.PageNumber
                 };
 
-            var response = new SummaryPagedResponse<BatchFileSummaryDto>()
-            {
-                PageSize = paginationFilter.PageSize,
-                PageNumber = paginationFilter.PageNumber,
-                ProductCode = paginationFilter.ProductCode,
-                ProductName = paginationFilter.ProductName,
-                StatusFilter = (paginationFilter.Status).ToString()
-            };
+            var response = new SummaryPagedResponse<BatchFileSummaryDto>();
 
             try
             {
+                var status = (Enum.IsDefined(typeof(StatusEnum), pagination.Status))
+               ? (StatusEnum)pagination.Status
+               : throw new AppException("The field 'Status' must have a value between 0 and 3.");
+
                 ValidateUserId(userId);
 
                 var result = await _genericUploadService.GetUserFilesSummary(userId, paginationFilter);
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
+                response.PageSize = paginationFilter.PageSize;
+                response.PageNumber = paginationFilter.PageNumber;
+                response.ProductCode = paginationFilter.ProductCode;
+                response.ProductName = paginationFilter.ProductName;
+                response.Status = (paginationFilter.Status).ToString();
             }
             catch (AppException ex)
             {

@@ -54,18 +54,20 @@ namespace FileUploadAndValidation.Models
             PageNumber = pageNumber;
         }
 
-        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode)
+        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode, string productName)
         {
             PageSize = pageSize;
             PageNumber = pageNumber;
             ProductCode = productCode;
+            ProductName = productName;
         }
 
-        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode, SummaryStatusEnum status)
+        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode, string productName, SummaryStatusEnum status)
         {
             PageSize = pageSize;
             PageNumber = pageNumber;
             ProductCode = productCode;
+            ProductName = productName;
             Status = status;
         }
 

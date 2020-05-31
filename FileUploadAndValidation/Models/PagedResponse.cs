@@ -67,7 +67,7 @@ namespace FileUploadAndValidation.Models
 
         public string ProductName { get; set; }
 
-        public string StatusFilter { get; set; }
+        public string Status { get; set; }
 
         public int TotalCount { get; set; }
 
@@ -97,6 +97,8 @@ namespace FileUploadAndValidation.Models
         public int PageNumber { get; set; }
 
         public StatusEnum Status { get; set; } = StatusEnum.All;
+
+        public string TaxType { get; set; }
 
         public string ContentType { get; set; }
 
