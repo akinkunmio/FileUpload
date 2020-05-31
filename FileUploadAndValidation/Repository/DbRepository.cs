@@ -452,12 +452,12 @@ namespace FileUploadAndValidation.Repository
 
                     if (paginationFilter.Status == SummaryStatusEnum.ValidAndInvalid)
                     {
-                        results = results.Where(e => e.NumOfRecords == e.NumOfValidRecords || e.NumOfValidRecords == 0);
+                        results = results.Where(e => !(e.NumOfRecords == e.NumOfValidRecords) && !(e.NumOfValidRecords == 0));
                     }
 
                     //filter by productcode
                     results = (!string.IsNullOrWhiteSpace(paginationFilter.ProductCode))
-                        ? results.Where(e => e.ProductCode.ToLower().Equals(paginationFilter.ProductCode.ToLower()))
+                        ? results.Where(e => e.ProductCode.ToLower().Equals(paginationFilter.ProductCode.ToLower())).Select(s => s)
                         : results;
 
                     result.Data = results
@@ -606,7 +606,7 @@ namespace FileUploadAndValidation.Repository
                               page_size = pagination.PageSize,
                               page_number = pagination.PageNumber,
                               status = pagination.Status,
-                              tax_type = pagination.TaxType
+                              tax_type = pagination.TaxType ?? GenericConstants.All
                           },
                           commandType: CommandType.StoredProcedure);
 

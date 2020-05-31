@@ -60,7 +60,7 @@ namespace FileUploadAndValidation.Models
             ProductName = productName;
         }
 
-        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode, string productName, SummaryStatusEnum status)
+        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode, string productName, int status)
         {
             PageSize = pageSize;
             PageNumber = pageNumber;
@@ -77,6 +77,6 @@ namespace FileUploadAndValidation.Models
 
         public string ProductName { get; set; }
 
-        public SummaryStatusEnum Status { get; set; } = SummaryStatusEnum.All;
+        public int Status { get; set; } = (int)SummaryStatusEnum.All;
     }
 }

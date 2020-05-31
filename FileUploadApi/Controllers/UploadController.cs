@@ -119,8 +119,8 @@ namespace FileUploadApi.Controllers
                                     .Replace(".", string.Empty)
                                     .ToLower(),
                     UserId = long.Parse(userId),
-                    ProductCode = Request.Form["productCode"].ToString() /*"AIRTEL"*/,
-                    ProductName = Request.Form["productName"].ToString() /*"AIRTEL"*/,
+                    ProductCode = Request.Form["productCode"].ToString(),
+                    ProductName = Request.Form["productName"].ToString(),
                     FileSize = Request.Form.Files.First().Length,
                     HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool() /*true*/
                 };
@@ -169,7 +169,9 @@ namespace FileUploadApi.Controllers
                 var paginationFilter =
                    new PaginationFilter(pagination.PageSize,
                    pagination.PageNumber,
-                   status);
+                   status,
+                   pagination.TaxType
+                   );
 
                 var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter);
 
@@ -318,20 +320,23 @@ namespace FileUploadApi.Controllers
         [HttpPost("user/uploads")]
         public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] SummaryPaginationQuery pagination)
         {
-            var paginationFilter =
-                new SummaryPaginationFilter
-                {
-                    PageSize = pagination.PageSize,
-                    PageNumber = pagination.PageNumber
-                };
-
+            
             var response = new SummaryPagedResponse<BatchFileSummaryDto>();
 
             try
             {
-                var status = (Enum.IsDefined(typeof(StatusEnum), pagination.Status))
-               ? (StatusEnum)pagination.Status
-               : throw new AppException("The field 'Status' must have a value between 0 and 3.");
+                var status = (Enum.IsDefined(typeof(SummaryStatusEnum), pagination.Status))
+                               ? (SummaryStatusEnum)pagination.Status
+                               : throw new AppException("The field 'Status' must have a value between 0 and 3.");
+
+                var paginationFilter = new SummaryPaginationFilter
+                {
+                    PageSize = pagination.PageSize,
+                    PageNumber = pagination.PageNumber,
+                    Status = (SummaryStatusEnum)pagination.Status,
+                    ProductCode = pagination.ProductCode,
+                    ProductName = pagination.ProductName
+                };
 
                 ValidateUserId(userId);
 

@@ -53,5 +53,6 @@ namespace FileUploadAndValidation.Helpers
         public static string ValidationResultFile = "ValidationResult.csv";
         public static string FirsWhtCsvTemplate = "FirsWhtCsvTemplate.csv";
         public static string FirsWvatCsvTemplate = "FirsWVATCsvTemplate.csv";
+        public static string All = "all";
     }
 }

@@ -76,11 +76,12 @@ namespace FileUploadAndValidation.Models
 
     public class PaginationFilter
     {
-        public PaginationFilter(int pageSize, int pageNumber, StatusEnum status)
+        public PaginationFilter(int pageSize, int pageNumber, StatusEnum status, string taxType)
         {
             PageSize = (pageSize > 0) ?  pageSize : 10;
             PageNumber = (pageNumber > 0) ? pageNumber : 1;
             Status = status;
+            TaxType = taxType;
         }
         public PaginationFilter(int pageSize, int pageNumber)
         {
@@ -107,11 +108,12 @@ namespace FileUploadAndValidation.Models
 
     public class SummaryPaginationFilter
     {
-        public SummaryPaginationFilter(int pageSize, int pageNumber, string productCode)
+        public SummaryPaginationFilter(int pageSize, int pageNumber, string productCode, SummaryStatusEnum status)
         {
             PageSize = (pageSize > 0) ? pageSize : 10;
             PageNumber = (pageNumber > 0) ? pageNumber : 1;
             ProductCode = productCode;
+            Status = status;
         }
 
         public SummaryPaginationFilter(int pageSize, int pageNumber)
