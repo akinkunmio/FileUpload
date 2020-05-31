@@ -248,7 +248,6 @@ namespace FileUploadApi.Controllers
                 var result = new ObjectResult(new { errorMessage = ex.Message })
                 {
                     StatusCode = ex.StatusCode,
-                    Value = response
                 };
 
                 return result;
@@ -257,8 +256,7 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                response.Message = "An error occured. Please retry!.";
-                var result = new ObjectResult(response)
+                var result = new ObjectResult(new { errorMessage = "An error occured.Please retry!." })
                 {
                     StatusCode = (int)HttpStatusCode.BadRequest
                 };
@@ -360,7 +358,7 @@ namespace FileUploadApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
+                return BadRequest(new { errorMessage = "An error occured. Please retry!." });
             }
 
             return Ok(response);

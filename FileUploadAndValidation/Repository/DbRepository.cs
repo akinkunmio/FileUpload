@@ -597,22 +597,7 @@ namespace FileUploadAndValidation.Repository
                   
                     IEnumerable<RowDetail> result = new List<RowDetail>();
 
-                    if (!summary.ItemType.ToLower().Equals(GenericConstants.MultiTax))
-                    {
-                        result = await sqlConnection.QueryAsync<RowDetail>(
-                           sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
-                           param: new
-                           {
-                               transactions_summary_id = summaryId,
-                               page_size = pagination.PageSize,
-                               page_number = pagination.PageNumber,
-                               status = pagination.Status
-                           },
-                           commandType: CommandType.StoredProcedure);
-                    }
-
-                    if (summary.ItemType.ToLower().Equals(GenericConstants.MultiTax))
-                    {
+                   
                         result = await sqlConnection.QueryAsync<RowDetail>(
                           sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
                           param: new
@@ -624,7 +609,6 @@ namespace FileUploadAndValidation.Repository
                               tax_type = pagination.TaxType
                           },
                           commandType: CommandType.StoredProcedure);
-                    }
 
                     return result;
                 }

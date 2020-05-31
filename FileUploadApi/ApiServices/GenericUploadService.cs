@@ -192,6 +192,25 @@ namespace FileUploadApi.ApiServices
                            Status = s.RowStatus
                        });
 
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.MultiTax)
+                    && fileSummary.ContentType.ToLower().Equals(GenericConstants.FctIrs))
+                    paymentStatuses.Data = paymentStatus
+                       .Select(s => new
+                       {
+                           Row = s.RowNum,
+                           s.ProductCode,
+                           s.ItemCode,
+                           s.CustomerId,
+                           s.CustomerName,
+                           s.Amount,
+                           Desc = s.TaxType,
+                           s.PhoneNumber,
+                           s.Email,
+                           Address = s.AddressInfo,
+                           s.Error,
+                           Status = s.RowStatus
+                       });
+
                 //if (paymentStatuses.Data.Count() < 1)
                 //    throw new AppException($"No result found", (int)HttpStatusCode.OK);
             }

@@ -12,7 +12,6 @@ namespace FileUploadAndValidation.Models
             PageNumber = 1;
             PageSize = 10;
             Status = (int)StatusEnum.All;
-            TaxType = "all";
         }
 
         public PaginationQuery(int pageNumber, int pageSize, int status)
@@ -20,7 +19,6 @@ namespace FileUploadAndValidation.Models
             PageSize = pageSize;
             PageNumber = pageNumber;
             Status = status;
-            TaxType = "all";
         }
 
         public PaginationQuery(int pageNumber, int pageSize, int status, string taxType)
