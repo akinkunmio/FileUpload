@@ -19,7 +19,7 @@ namespace FileUploadAndValidation.Helpers
 
             var expectedNumOfColumns = columnContracts.Count();
             if (headerRow.Columns.Count() != expectedNumOfColumns)
-                throw new ValidationException($"Invalid number of header columns. Expected: {expectedNumOfColumns}, Found: {headerRow.Columns.Count()}");
+                throw new ValidationException($"Invalid file uploaded!.");
 
             for (int i = 0; i < expectedNumOfColumns; i++)
             {
@@ -377,7 +377,7 @@ namespace FileUploadAndValidation.Helpers
         public static string GenerateBatchId(string fileName, DateTime date)
         {
             return fileName + "_" + RandomString() + "_" + date.ToString("yyyyMMddHHmmssffff");
-           // return "firs_multitax1_ZMWYAA_202005290823495638";
+            //return "firs_multitax1_ZMWYAA_202005290823495638";
         }
         
         public static string GetFileNameFromBatchId(string batchId)
