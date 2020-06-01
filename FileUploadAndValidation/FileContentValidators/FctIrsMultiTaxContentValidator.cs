@@ -34,7 +34,7 @@ namespace FileUploadAndValidation.FileContentValidators
             try
             {
                 if (!rows.Any())
-                    throw new AppException("Empty file was uploaded!.");
+                    throw new AppException("Empty file was uploaded!.", 400);
 
                 uploadResult.RowsCount = rows.Count();
                 contentRows = rows;

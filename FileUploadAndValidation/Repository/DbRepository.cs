@@ -354,7 +354,7 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogError("Error occured while inserting payment items in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("An error occured while querying the DB");
+                throw new AppException("An error occured. Please, retry!.", 400);
             }
         }
 
@@ -384,7 +384,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Update Successful Upload operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -414,7 +414,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -477,7 +477,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -507,7 +507,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -546,7 +546,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -622,7 +622,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -755,7 +755,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Update Bill Payment Validation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -842,7 +842,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Update Bill Payment Initiation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }

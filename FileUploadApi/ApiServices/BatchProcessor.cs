@@ -38,7 +38,7 @@ namespace FileUploadApi.ApiServices
                 && !request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
                 && !request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
                 && !request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
-                throw new AppException("Invalid Content Type specified");
+                throw new AppException("Invalid Content Type specified", 400);
 
             if (request.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
                 ArgumentGuard.NotNullOrWhiteSpace(request.BusinessTin, nameof(request.BusinessTin));
@@ -77,7 +77,7 @@ namespace FileUploadApi.ApiServices
                 case "xls":
                     return _fileReaders.ToArray()[3].Read(contentStream);
                 default:
-                    throw new AppException("File extension not supported!.");
+                    throw new AppException("File extension not supported!.", 400);
             }
         }
 
@@ -92,7 +92,7 @@ namespace FileUploadApi.ApiServices
                     await _fileContentValidators.ToArray()[1].Validate(request, rows, uploadResult);
                     break;
                 default:
-                    throw new AppException("Content type not supported!.");
+                    throw new AppException("Content type not supported!.", 400);
             }
         }
     }

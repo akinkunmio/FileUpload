@@ -131,18 +131,21 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { ex.Message })
-                {
-                    StatusCode = ex.StatusCode,
-                };
+                //var result = new ObjectResult(new { ex.Message })
+                //{
+                //    StatusCode = ex.StatusCode,
+                //};
 
-                return result;
+                //return result;
+                throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest(new { errorMessage = "An error occured. Please retry!." });
+                //return BadRequest(new { errorMessage = "An error occured. Please retry!." });
+                throw new AppException("An error occured. Please retry!.", 400);
+
             }
 
             return Ok(response);
@@ -202,12 +205,14 @@ namespace FileUploadApi.Controllers
                 //};
 
                 //return result;
+                throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                throw ex;
+                throw new AppException("An error occured. Please retry!.", 400);
+
                 //return BadRequest("An error occured. Please retry!");
 
             }
@@ -245,24 +250,27 @@ namespace FileUploadApi.Controllers
             {
                 // _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
-                response.Message = ex.Message;
+                //response.Message = ex.Message;
 
-                var result = new ObjectResult(new { errorMessage = ex.Message })
-                {
-                    StatusCode = ex.StatusCode,
-                };
+                //var result = new ObjectResult(new { errorMessage = ex.Message })
+                //{
+                //    StatusCode = ex.StatusCode,
+                //};
 
-                return result;
+                //return result;
+                throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { errorMessage = "An error occured.Please retry!." })
-                {
-                    StatusCode = (int)HttpStatusCode.BadRequest
-                };
-                return result;
+                //var result = new ObjectResult(new { errorMessage = "An error occured.Please retry!." })
+                //{
+                //    StatusCode = (int)HttpStatusCode.BadRequest
+                //};
+                //return result;
+                throw new AppException("An error occured. Please retry!.", 400);
+
             }
 
             return Ok(response);
@@ -287,22 +295,24 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during the Template Download File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { errorMessage = ex.Message })
-                {
-                    StatusCode = ex.StatusCode,
-                };
+                //var result = new ObjectResult(new { errorMessage = ex.Message })
+                //{
+                //    StatusCode = ex.StatusCode,
+                //};
 
-                return result;
+                //return result;
+                throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured during the Template Download File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult( new { errorMessage = "An error occured. Please retry!." } )
-                {
-                    StatusCode = (int)HttpStatusCode.BadRequest
-                };
-                return result;
+                //var result = new ObjectResult( new { errorMessage = "An error occured. Please retry!." } )
+                //{
+                //    StatusCode = (int)HttpStatusCode.BadRequest
+                //};
+                //return result;
+                throw new AppException("An error occured. Please retry!.", 400);
             }
         }
 
@@ -312,7 +322,7 @@ namespace FileUploadApi.Controllers
 
             if (!success)
             {
-                throw new AppException($"Invalid value '{id}' passed for 'id'!.");
+                throw new AppException($"Invalid value '{id}' passed for 'id'!.", 400);
             }
         }
 
@@ -353,17 +363,20 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured  {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { errorMessage = ex.Message })
-                {
-                    StatusCode = ex.StatusCode,
-                };
+                //var result = new ObjectResult(new { errorMessage = ex.Message })
+                //{
+                //    StatusCode = ex.StatusCode,
+                //};
 
-                return result;
+                //return result;
+                throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return BadRequest(new { errorMessage = "An error occured. Please retry!." });
+                //return BadRequest(new { errorMessage = "An error occured. Please retry!." });
+                throw new AppException("An error occured.Please, retry!.", 400);
+
             }
 
             return Ok(response);
@@ -388,17 +401,19 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { errorMessage = ex.Message })
-                {
-                    StatusCode = ex.StatusCode,
-                };
+                //var result = new ObjectResult(new { errorMessage = ex.Message })
+                //{
+                //    StatusCode = ex.StatusCode,
+                //};
 
-                return result;
+                //return result;
+                throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return BadRequest(new { errorMessage = "An error occured.Please, retry!." });
+                //return BadRequest(new { errorMessage = "An error occured.Please, retry!." });
+                throw new AppException("An error occured.Please, retry!.", 400);
             }
         }
     }

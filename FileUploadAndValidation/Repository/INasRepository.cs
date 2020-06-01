@@ -51,13 +51,13 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                //return await Task.FromResult(new FileProperty
+                //return new FileProperty
                 //{
                 //    BatchId = batchId,
                 //    DataStore = 1,
                 //    Url = $"validate/firs_multitax1_ZMWYAA_202005290823495638_validate.json"
-                //});
-                throw new AppException($"An error occured while saving file to NAS for validation");
+                //};
+                throw new AppException($"An error occured while saving file to NAS for validation", 400);
             }
         }
 
@@ -87,7 +87,7 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while saving file with batch id : {batchId} to NAS for validation");
+                throw new AppException($"An error occured while saving file. Please, retry!.", 400);
             }
         }
 
@@ -144,7 +144,7 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while extracting File Validation Result with BatchId : {queueMessage.BatchId} to NAS for validation", (int)HttpStatusCode.InternalServerError);
+                throw new AppException($"An error occured while extracting file validation result", 400);
             }
 
             return result;
@@ -177,7 +177,7 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while extracting Template File in path : {path} from NAS");
+                throw new AppException($"An error occured while downloading template file. Please, retry!.", 400);
             }
         }
 
@@ -206,7 +206,7 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while extracting Validation Result File in path : {path} from NAS");
+                throw new AppException($"An error occured while extracting validation result", 400);
             }
         }
 
@@ -239,7 +239,7 @@ namespace FileUploadAndValidation.Repository
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 // return "uservalidationresult/firs_wvt_X1KTNC_202005091720288960_validate.json";
-                throw new AppException($"An error occured while saving the user validation result file to NAS ");
+                throw new AppException($"An error occured while saving the validation result file", 400);
             }
 
             return fileName;
