@@ -36,49 +36,30 @@ namespace FileUploadAndValidation.Models
 
         public string BusinessTin { get; set; }
 
-        public static FileUploadRequest FromRequestForSingle(HttpRequest request)
-        {
-            var file = request.Form.Files.First();
-            var userId = /*request.Form["id"].ToString() ??*/ "255";
-            var productCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL";
-            var productName = /*request.Form["productName"].ToString() ??*/ "AIRTEL";
-            var businessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001";
+        //public static FileUploadRequest FromRequestForSingle(HttpRequest request)
+        //{
+        //    var file = request.Form.Files.First();
+        //    var userId = /*request.Form["id"].ToString() ??*/ "255";
+        //    var productCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL";
+        //    var productName = /*request.Form["productName"].ToString() ??*/ "AIRTEL";
+        //    var businessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001";
 
-            return new FileUploadRequest
-            {
-                FileRef = file,
-                AuthToken = request.Headers["Authorization"],
-                ContentType = request.Query["contentType"],
-                ItemType = request.Query["itemType"],
-                FileName = file.FileName.Split('.')[0],
-                FileSize = file.Length,
-                FileExtension = Path.GetExtension(file.FileName)
-                                    .Replace(".", string.Empty)
-                                    .ToLower(),
-                UserId = long.Parse(userId),
-                ProductCode = productCode,
-                ProductName = productName,
-                BusinessTin = businessTin,
-            };
-        }
-
-        public static FileUploadRequest FromRequestForMultiple(HttpRequest request) 
-        {
-            var userId = /*request.Form["id"].ToString() ??*/ "255";
-            
-            return new FileUploadRequest 
-            {
-                    ItemType = GenericConstants.MultiTax,
-                    ContentType = request.Query["authority"],
-                    AuthToken = request.Headers["Authorization"].ToString(),
-                    FileRef = request.Form.Files.First(),
-                    FileName = request.Form.Files.First().FileName.Split('.')[0],
-                    FileExtension = Path.GetExtension(request.Form.Files.First().FileName)
-                                    .Replace(".", string.Empty)
-                                    .ToLower(),
-                    UserId = long.Parse(userId),
-                    FileSize = request.Form.Files.First().Length
-            };
-        }
+        //    return new FileUploadRequest
+        //    {
+        //        FileRef = file,
+        //        AuthToken = request.Headers["Authorization"],
+        //        ContentType = request.Path["contentType"],
+        //        ItemType = request.Query["itemType"],
+        //        FileName = file.FileName.Split('.')[0],
+        //        FileSize = file.Length,
+        //        FileExtension = Path.GetExtension(file.FileName)
+        //                            .Replace(".", string.Empty)
+        //                            .ToLower(),
+        //        UserId = long.Parse(userId),
+        //        ProductCode = productCode,
+        //        ProductName = productName,
+        //        BusinessTin = businessTin,
+        //    };
+        //}
     }
 }

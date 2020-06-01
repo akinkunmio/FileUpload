@@ -32,8 +32,8 @@ namespace FileUploadAndValidation.Repository
         {
             try
             {
-                //var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
-                var fileLocation = @"../data/validate/";
+                var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
+                //var fileLocation = @"../data/validate/";
                 var fileName = batchId + "_validate.json";
                 var path = fileLocation + fileName;
 
@@ -51,12 +51,12 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                //return await Task.FromResult(new FileProperty
-                //{
-                //    BatchId = batchId,
-                //    DataStore = 1,
-                //    Url = $"validate/firs_wvat_X1KTNC_202005091720288960_validate.json"
-                //});
+                return await Task.FromResult(new FileProperty
+                {
+                    BatchId = batchId,
+                    DataStore = 1,
+                    Url = $"validate/firs_multitax1_ZMWYAA_202005290823495638_validate.json"
+                });
                 throw new AppException($"An error occured while saving file to NAS for validation");
             }
         }

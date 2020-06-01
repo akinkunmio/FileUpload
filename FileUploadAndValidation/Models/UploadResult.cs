@@ -177,7 +177,17 @@ namespace FileUploadAndValidation.Models
 
         public string DocumentNumber { get; set; }
 
-        public string Comment { get; internal set; }
+        public string Comment { get; set; }
+
+        public string Desc { get; set; }
+
+        public string CustomerName { get; set; }
+
+        public string PhoneNumber { get; set; }
+
+        public string Email { get; set; }
+
+        public string Address { get; set; }
     }
 
     //public class RowdDetailUtyped

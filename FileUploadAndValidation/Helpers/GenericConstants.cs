@@ -32,7 +32,7 @@ namespace FileUploadAndValidation.Helpers
        
         public const string Firs = "firs";
         public const string Lirs = "lirs";
-        public const string FCTirs = "fct-irs";
+        public const string FctIrs = "fctirs";
 
 
 

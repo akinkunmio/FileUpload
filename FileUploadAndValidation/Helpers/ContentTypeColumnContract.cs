@@ -10,10 +10,10 @@ namespace FileUploadAndValidation.Helpers
         {
             return new[]
            {
-                new ColumnContract{ ColumnName="product_code", DataType="string", Max=256, Required = true },
-                new ColumnContract{ ColumnName="item_code", DataType="string", Max=256, Required=true },
-                new ColumnContract{ ColumnName="customer_id", DataType="string", Max=15, Required=true },
-                new ColumnContract{ ColumnName="amount", DataType="integer", Max=100, Required=true },
+                new ColumnContract{ ColumnName="ProductCode", DataType="string", Max=256, Required = true },
+                new ColumnContract{ ColumnName="ItemCode", DataType="string", Max=256, Required=true },
+                new ColumnContract{ ColumnName="CustomerId", DataType="string", Max=15, Required=true },
+                new ColumnContract{ ColumnName="Amount", DataType="integer", Max=100, Required=true },
             };
         }
 
@@ -111,6 +111,38 @@ namespace FileUploadAndValidation.Helpers
                 new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Required=false, ValidateCell = true },
                 new ColumnContract{ ColumnName="PayerTin", DataType="string", Min=1, Required=true, ValidateCell = true },
                 new ColumnContract{ ColumnName="TaxType", DataType="string", Min=1, Required=true, ValidateCell = true },
+            };
+        }
+
+        public static ColumnContract[] FctIrsMultiTaxPreOp()
+        {
+            return new[]
+           {
+                new ColumnContract{ ColumnName="ProductCode", DataType="string", Max=256, Required = true },
+                new ColumnContract{ ColumnName="ItemCode", DataType="string", Max=256, Required=true },
+                new ColumnContract{ ColumnName="CustomerId", DataType="string", Max=15, Required=true },
+                new ColumnContract{ ColumnName="Amount", DataType="integer", Max=100, Required=true },
+                new ColumnContract{ ColumnName="Desc", DataType="string", Max=256, Required = true },
+                new ColumnContract{ ColumnName="CustomerName", DataType="string", Max=500, Required=true },
+                new ColumnContract{ ColumnName="PhoneNumber", DataType="string", Max=15, Required=true },
+                new ColumnContract{ ColumnName="Email", DataType="string", Max=100, Required=true },
+                new ColumnContract{ ColumnName="Address", DataType="string", Max=500, Required=true }
+            };
+        }
+
+        public static ColumnContract[] FctIrsMultiTaxWht()
+        {
+            return new[]
+           {
+                new ColumnContract{ ColumnName="ProductCode", DataType="string", Max=256, Required = true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ItemCode", DataType="string", Max=256, Required=true, ValidateCell = true  },
+                new ColumnContract{ ColumnName="CustomerId", DataType="string", Max=15, Required=true, ValidateCell = true  },
+                new ColumnContract{ ColumnName="Amount", DataType="integer", Max=100, Required=true, ValidateCell = true  },
+                new ColumnContract{ ColumnName="Desc", DataType="string", Max=256, Required = true, ValidateCell = true  },
+                new ColumnContract{ ColumnName="CustomerName", DataType="string", Max=500, Required=true, ValidateCell = true  },
+                new ColumnContract{ ColumnName="PhoneNumber", DataType="string", Max=15, Required=true },
+                new ColumnContract{ ColumnName="Email", DataType="string", Max=100, Required=true },
+                new ColumnContract{ ColumnName="Address", DataType="string", Max=500, Required=true }
             };
         }
     }

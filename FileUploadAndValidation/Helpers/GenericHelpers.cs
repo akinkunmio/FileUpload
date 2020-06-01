@@ -85,7 +85,30 @@ namespace FileUploadAndValidation.Helpers
                     ProductCode = r.ProductCode
                 };
 
-            return result;
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+                result = new
+                {
+                    RowNumber = r.RowNum,
+                    r.BeneficiaryTin,
+                    r.BeneficiaryName,
+                    r.BeneficiaryAddress,
+                    r.ContractDate,
+                    r.ContractDescription,
+                    r.ContractAmount,
+                    r.ContractType,
+                    r.PeriodCovered,
+                    r.InvoiceNumber,
+                    r.WhtRate,
+                    r.WhtAmount,
+                    r.Amount,
+                    r.Comment,
+                    r.DocumentNumber,
+                    r.PayerTin,
+                    r.TaxType
+                };
+
+                return result;
         }
 
         public static string ConstructValidationError(Failure failure)
@@ -353,8 +376,8 @@ namespace FileUploadAndValidation.Helpers
 
         public static string GenerateBatchId(string fileName, DateTime date)
         {
-            return fileName + "_" + RandomString() + "_" + date.ToString("yyyyMMddHHmmssffff");
-            //return "airtel_XTIYDO_202005102136327603";
+            //return fileName + "_" + RandomString() + "_" + date.ToString("yyyyMMddHHmmssffff");
+            return "firs_multitax1_ZMWYAA_202005290823495638";
         }
         
         public static string GetFileNameFromBatchId(string batchId)
