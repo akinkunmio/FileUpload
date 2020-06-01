@@ -103,8 +103,8 @@ namespace FileUploadApi.Controllers
             {
                 ValidateUserId(userId);
 
-                if (string.IsNullOrWhiteSpace(Request.Headers["HasHeaderRow"].ToString()))
-                    throw new AppException("Value must be passed for HasHeaderRow.");
+                if (string.IsNullOrWhiteSpace(Request.Form["HasHeaderRow"].ToString()))
+                    throw new AppException("Value must be passed for 'HasHeaderRow'.");
 
                 var request = new FileUploadRequest
                 {
@@ -122,7 +122,7 @@ namespace FileUploadApi.Controllers
                     ProductCode = Request.Form["productCode"].ToString(),
                     ProductName = Request.Form["productName"].ToString(),
                     FileSize = Request.Form.Files.First().Length,
-                    HasHeaderRow = Request.Form["hasHeaderRow"].ToString().ToBool() /*true*/
+                    HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool() /*true*/
                 };
 
                 response = await _multiTaxProcessor.UploadFileAsync(request);
