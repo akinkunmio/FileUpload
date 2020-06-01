@@ -51,12 +51,12 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return new FileProperty
-                {
-                    BatchId = batchId,
-                    DataStore = 1,
-                    Url = $"validate/firs_multitax1_ZMWYAA_202005290823495638_validate.json"
-                };
+                //return new FileProperty
+                //{
+                //    BatchId = batchId,
+                //    DataStore = 1,
+                //    Url = $"validate/firs_multitax1_ZMWYAA_202005290823495638_validate.json"
+                //};
                 throw new AppException($"An error occured while saving file for validation", 400);
             }
         }
