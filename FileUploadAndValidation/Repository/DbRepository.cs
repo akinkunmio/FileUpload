@@ -456,9 +456,11 @@ namespace FileUploadAndValidation.Repository
                     }
 
                     //filter by productcode
+                    IEnumerable<BatchFileSummary> resultList = new List<BatchFileSummary>();
+
                     if (!string.IsNullOrWhiteSpace(paginationFilter.ProductCode))
-                        results = results
-                            .Where(e => e.ProductCode.ToLower().Equals(paginationFilter.ProductCode, StringComparison.InvariantCultureIgnoreCase));
+                            results = results
+                                .Where(e => paginationFilter.ProductCode.ToLower().Equals(e.ProductCode, StringComparison.InvariantCultureIgnoreCase));
 
                     result.Data = results
                                     .Skip((paginationFilter.PageNumber - 1) * paginationFilter.PageSize)
