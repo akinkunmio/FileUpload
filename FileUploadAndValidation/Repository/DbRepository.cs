@@ -684,7 +684,9 @@ namespace FileUploadAndValidation.Repository
                         .Where(v => v.Status.ToLower()
                         .Equals("valid"));
 
-                    var totalAmount = rowsStatus
+                    decimal totalAmount = 0;
+                    if (fileSummary.ContentType.ToLower().Equals(GenericConstants.BillPayment))
+                        totalAmount = rowsStatus
                         .Where(r => valids.Any(v => v.Row == r.RowNum))
                         .Select(s => decimal.Parse(s.Amount))
                         .Sum();
@@ -782,6 +784,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_firs_multitax_payments_detail";
             }
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                 && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                return @"sp_update_fctirs_multitax_payments_detail";
+            }
             else return "";
         }
 
@@ -807,6 +814,11 @@ namespace FileUploadAndValidation.Repository
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_update_firs_multitax_detail_enterprise_error";
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            {
+                return @"sp_update_fctirs_multitax_detail_enterprise_error";
             }
             else return "";
         }
