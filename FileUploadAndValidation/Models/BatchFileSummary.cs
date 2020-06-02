@@ -37,5 +37,7 @@ namespace FileUploadAndValidation.Models
         public string ProductCode { get; set; }
 
         public string NameOfFile { get; set; }
+
+        public bool? UploadSuccessful { get; set; }
     }
 }

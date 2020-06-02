@@ -108,6 +108,7 @@ namespace FileUploadApi.ApiServices
                 paymentStatuses.InvalidCount = fileSummary.NumOfRecords - fileSummary.NumOfValidRecords;
                 paymentStatuses.ValidRowCount = fileSummary.NumOfValidRecords;
                 paymentStatuses.FileName = fileSummary.NameOfFile;
+                paymentStatuses.IsValidated = fileSummary.UploadSuccessful;
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentId)
                 || fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
