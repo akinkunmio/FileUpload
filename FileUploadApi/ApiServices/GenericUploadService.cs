@@ -241,10 +241,10 @@ namespace FileUploadApi.ApiServices
             }
 
                 //throw new AppException($"!.", (int)HttpStatusCode.NotFound);
-
-            var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, initiatePaymentOptions.ContentType, initiatePaymentOptions.ItemType, confirmedPayments);
-
             var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
+
+            var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, fileSummary.ContentType, fileSummary.ItemType, confirmedPayments);
+
 
             fileProperty.ContentType = fileSummary.ContentType;
             fileProperty.ItemType = fileSummary.ItemType;
