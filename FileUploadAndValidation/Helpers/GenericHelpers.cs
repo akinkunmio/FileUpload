@@ -403,6 +403,16 @@ namespace FileUploadAndValidation.Helpers
 
             return value.Equals("true", StringComparison.InvariantCultureIgnoreCase);
         }
+
+        public static bool ToNonNullBool(this bool? value)
+        {
+            if (value == true)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 
     public class ValidateRowResult

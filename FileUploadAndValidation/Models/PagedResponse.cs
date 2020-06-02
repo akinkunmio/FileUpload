@@ -44,6 +44,8 @@ namespace FileUploadAndValidation.Models
         public int ValidCount { get; set; }
 
         public int InvalidCount { get; set; }
+
+        public bool IsValidated { get; set; }
     }
 
     public class SummaryPagedResponse<T>

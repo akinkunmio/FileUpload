@@ -187,6 +187,7 @@ namespace FileUploadApi.Controllers
                 response.ValidCount = result.ValidRowCount;
                 response.InvalidCount = result.InvalidCount;
                 response.Status = ((StatusEnum)pagination.Status).ToString();
+                response.IsValidated = result.IsValidated.ToNonNullBool();
 
             }
             catch (AppException ex)
