@@ -106,6 +106,9 @@ namespace FileUploadApi.Controllers
                 if (string.IsNullOrWhiteSpace(Request.Form["HasHeaderRow"].ToString()))
                     throw new AppException("Value must be passed for 'HasHeaderRow'.");
 
+                if (Request.Form.Files.Count() == 0)
+                    throw new AppException("Please upload a file!."); 
+
                 var request = new FileUploadRequest
                 {
                     ItemType = GenericConstants.MultiTax,
