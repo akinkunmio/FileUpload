@@ -70,7 +70,7 @@ namespace FileUploadAndValidation.FileReaderImpl
             }
             catch (Exception ex)
             {
-                throw new AppException("An error occured while extracting content of file!." + ex.Message, (int)HttpStatusCode.InternalServerError);
+                throw new AppException("An error occured while extracting content of file. Please, retry!.", 400);
             }
 
             return rowList;

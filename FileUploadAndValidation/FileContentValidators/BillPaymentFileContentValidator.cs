@@ -35,7 +35,7 @@ namespace FileUploadAndValidation.FileServices
             try
             {
                 if (!rows.Any())
-                    throw new AppException("Empty file was uploaded!.");
+                    throw new AppException("Empty file was uploaded!.", 400);
 
                 var columnContracts = new ColumnContract[] { };
 
@@ -67,7 +67,7 @@ namespace FileUploadAndValidation.FileServices
                 var dateTimeNow = DateTime.Now;
 
                 if (uploadResult.ValidRows.Count() == 0)
-                    throw new AppException("All records are invalid");
+                    throw new AppException("All records are invalid", 400);
 
                 if (uploadResult.ValidRows.Count() > 0 || uploadResult.ValidRows.Any())
                 {
@@ -76,14 +76,14 @@ namespace FileUploadAndValidation.FileServices
                     string firstItem = productCodeList[0];
 
                     if (!string.Equals(firstItem, request.ProductCode, StringComparison.InvariantCultureIgnoreCase))
-                        throw new AppException($"Expected file Product Code to be {request.ProductCode}, but found {firstItem}!.");
+                        throw new AppException($"Expected file Product Code to be {request.ProductCode}, but found {firstItem}!.", 400);
 
                     bool allEqual = productCodeList.Skip(1)
                                                     .All(s => string
                                                     .Equals(firstItem, s, StringComparison.InvariantCultureIgnoreCase));
 
                     if (!allEqual)
-                        throw new AppException("Product Code should have same value for all records");
+                        throw new AppException("Product Code should have same value for all records", 400);
 
                     if (request.ItemType
                         .ToLower()
@@ -168,7 +168,7 @@ namespace FileUploadAndValidation.FileServices
                 }).ToList();
 
                 if (uploadResult.ValidRows.Count() == 0)
-                    throw new AppException("All records are invalid");
+                    throw new AppException("All records are invalid", 400);
 
                 return uploadResult;
             }

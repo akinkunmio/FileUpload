@@ -42,11 +42,12 @@ namespace FilleUploadCore.Exceptions
         public AppException(string message)
             : base(message)
         {
+            StatusCode = (int)HttpStatusCode.BadRequest;
         }
 
         public string FriendlyMessage { get; set; }
 
-        public int? StatusCode { get; set; } = (int)HttpStatusCode.BadRequest;
+        public int? StatusCode { get; set; } 
 
         public object Value { get; set; }
     }

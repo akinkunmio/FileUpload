@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FileUploadAndValidation.Utils;
 
 namespace FileUploadAndValidation.QueueServices
 {
@@ -34,7 +35,7 @@ namespace FileUploadAndValidation.QueueServices
         }
 
         public async Task Consume(ConsumeContext<ValidationResponseData> context)
-        {
+         {
             var queueMessage = context.Message;
             var batchId = queueMessage.RequestId;
             try
@@ -74,11 +75,11 @@ namespace FileUploadAndValidation.QueueServices
             }
             catch (AppException ex)
             {
-                _logger.LogError("Error occured while inserting payment items in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError("Error occured while updating payment items from queue in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occured while inserting payment items in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError("Error occured while updating payment items from queue in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
             }
         }
     }

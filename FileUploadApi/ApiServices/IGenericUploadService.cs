@@ -12,7 +12,7 @@ namespace FileUploadApi.ApiServices
 {
     public interface IGenericUploadService
     {
-        Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, PaginationFilter paginationFilter);
+        Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, SummaryPaginationFilter paginationFilter);
 
         Task<PagedData<dynamic>> GetPaymentsStatus(string batchId, PaginationFilter pagination);
 

@@ -21,7 +21,7 @@ namespace FileUploadAndValidation.Helpers
         public const string Wvat = "wvat";
         public const string Cit = "cit";
         public const string Edt = "edt";
-        public const string PreOpLevy = "pre-op levy";
+        public const string PreOpLevy = "pol";
         public const string Vat = "vat";
 
 
@@ -53,5 +53,6 @@ namespace FileUploadAndValidation.Helpers
         public static string ValidationResultFile = "ValidationResult.csv";
         public static string FirsWhtCsvTemplate = "FirsWhtCsvTemplate.csv";
         public static string FirsWvatCsvTemplate = "FirsWVATCsvTemplate.csv";
+        public static string All = "all";
     }
 }

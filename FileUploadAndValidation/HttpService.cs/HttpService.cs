@@ -112,23 +112,23 @@ namespace FileUploadAndValidation.UploadServices
             }
             catch(AppException ex)
             {
-                _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError("Error occured while making http request to validate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return new ValidationResponse
-                {
-                    ResponseCode = "90000",
-                    ResponseDescription = "Validation request is being processed",
-                    ResponseData = new ValidationData
-                    {
-                        NumOfRecords = 6,
-                        ResultMode = "Queue"
-                    }
-                };
-                throw new AppException("Error occured while performing bill payment validation"+ex.Message);
+                _logger.LogError("Error occured while making http request to validate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                //return new ValidationResponse
+                //{
+                //    ResponseCode = "90000",
+                //    ResponseDescription = "Validation request is being processed",
+                //    ResponseData = new ValidationData
+                //    {
+                //        NumOfRecords = 6,
+                //        ResultMode = "Queue"
+                //    }
+                //};
+                throw new AppException("Error occured while performing payment validation", 400);
             }
         }
 
@@ -260,7 +260,7 @@ namespace FileUploadAndValidation.UploadServices
             catch (Exception ex)
             {
                 _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("Unknown error occured while initiating Bill Payment Initiation"+ex.Message);
+                throw new AppException("An error occured while Initiating Payment. Please, retry!.", 400);
             }
 
         }
@@ -276,5 +276,6 @@ namespace FileUploadAndValidation.UploadServices
     public class ConfirmedBillResponse
     {
         public bool PaymentInitiated { get; set; }
+        public string errorMessage { get; set; }
     }
 }

@@ -289,5 +289,7 @@ namespace FileUploadAndValidation.Models
         public int ValidRowCount { get; set; }
 
         public int InvalidCount { get; set; }
+
+        public bool? IsValidated { get; set; }
     }
 }
