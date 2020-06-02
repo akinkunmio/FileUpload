@@ -8,8 +8,6 @@ namespace FileUploadAndValidation.Models
     {
         public PagedResponse()
         {
-            PageNumber = 1;
-            PageSize = 10;
         }
 
         public PagedResponse(IEnumerable<T> data)
@@ -28,15 +26,62 @@ namespace FileUploadAndValidation.Models
         public string Error { get; set; }
 
         public decimal ValidAmountTotal { get; set; }
+
+        public string Status { get; set; }
+
+        public string ContentType { get; set; }
+
+        public string ItemType { get; set; }
+
+        public string ProductCode { get; set; }
+
+        public string ProductName { get; set; }
+
+        public string BatchId { get; set; }
+
+        public string FileName { get; set; }
+
+        public int ValidCount { get; set; }
+
+        public int InvalidCount { get; set; }
+    }
+
+    public class SummaryPagedResponse<T>
+    {
+        public SummaryPagedResponse()
+        {
+        }
+
+        public SummaryPagedResponse(IEnumerable<T> data)
+        {
+            Data = data;
+        }
+
+        public IEnumerable<T> Data { get; set; }
+
+        public int? PageSize { get; set; }
+
+        public int? PageNumber { get; set; }
+
+        public int TotalCount { get; set; }
+
+        public string Error { get; set; }
     }
 
     public class PaginationFilter
     {
-        public PaginationFilter(int pageSize, int pageNumber)
+        public PaginationFilter(int pageSize, int pageNumber, StatusEnum status)
         {
             PageSize = (pageSize > 0) ?  pageSize : 10;
             PageNumber = (pageNumber > 0) ? pageNumber : 1;
+            Status = status;
         }
+        public PaginationFilter(int pageSize, int pageNumber)
+        {
+            PageNumber = pageNumber;
+            PageSize = pageSize;
+        }
+
         public PaginationFilter()
         {
 
@@ -44,5 +89,18 @@ namespace FileUploadAndValidation.Models
         public int PageSize { get; set; }
 
         public int PageNumber { get; set; }
+
+        public StatusEnum Status { get; set; } = StatusEnum.All;
+
+        public string ContentType { get; set; }
+
+        public string ItemType { get; set; }
+    }
+
+    public enum StatusEnum
+    {
+        All = 0,
+        Valid = 1,
+        Invalid = 2
     }
 }

@@ -8,14 +8,14 @@ using FilleUploadCore.FileReaders;
 
 namespace FileUploadAndValidation
 {
-    public class AutoPayFileContentValidator : IFileContentValidator<AutoPayRow>
+    public class AutoPayFileContentValidator : IFileContentValidator<AutoPayRow, AutoPayUploadContext>
     {
         public bool CanProcess(string contentType)
         {
             return contentType == GenericConstants.Autopay;
         }
 
-        public async Task<ValidationResult<AutoPayRow>> Validate(IEnumerable<Row> rows)
+        public async Task<ValidationResult<AutoPayRow>> Validate(IEnumerable<Row> rows, AutoPayUploadContext context)
         {
             await Task.CompletedTask;
 
@@ -27,25 +27,6 @@ namespace FileUploadAndValidation
             return new ValidationResult<AutoPayRow> {
                 ValidRows = processedRows.Where(r => r.IsValid).ToList(),
                 Failures = processedRows.Where(r => !r.IsValid).ToList()
-            };
-        }
-
-        public async Task<ValidationResult<AutoPayRow>> ValidateRemote(IEnumerable<AutoPayRow> rows)
-        {
-            await Task.CompletedTask;
-            return new ValidationResult<AutoPayRow> {
-                ValidRows = rows.ToList(),
-                Failures = new List<AutoPayRow>()
-            };
-        }
-    }
-
-    public class AutoPayFileContentRemoteValidator {
-        public async Task<ValidationResult<AutoPayRow>> Validate(IEnumerable<AutoPayRow> rows)
-        {
-            await Task.CompletedTask;
-            return new ValidationResult<AutoPayRow> {
-
             };
         }
     }

@@ -16,6 +16,7 @@ using System.Collections.ObjectModel;
 using MimeMapping;
 using FilleUploadCore.FileReaders;
 using System.Collections.Generic;
+using AutoMapper;
 
 namespace FileUploadApi.Controllers
 {
@@ -23,92 +24,156 @@ namespace FileUploadApi.Controllers
     [ApiController]
     public class UploadController : ControllerBase
     {
+        private readonly IMultiTaxProcessor _multiTaxProcessor;
+        private readonly IGenericUploadService _genericUploadService;
         private readonly IBatchProcessor _batchProcessor;
-        private readonly IApiUploadService _uploadService;
         private readonly ILogger<UploadController> _logger;
         private readonly IEnumerable<IFileReader> _fileReaders;
 
-        public UploadController(IBatchProcessor batchProcessor, IEnumerable<IFileReader> fileReaders , ILogger<UploadController> logger)
+
+        public UploadController(IBatchProcessor batchProcessor,
+            ILogger<UploadController> logger,
+            IGenericUploadService genericUploadService,
+            IMultiTaxProcessor multiTaxProcessor)
         {
             _logger = logger;
             _batchProcessor = batchProcessor;
-            _fileReaders = fileReaders;
+            _genericUploadService = genericUploadService;
+            _multiTaxProcessor = multiTaxProcessor;
         }
 
-        [HttpPost("uploadfile/{validationType}")]
-        public async Task<IActionResult> PostBulkBillPaymentAsync(string validationType)
+        [HttpPost("uploadfile/{contentType}/{itemType}")]
+        public async Task<IActionResult> PostBulkUploadPaymentAsync(string contentType, string itemType)
         {
-            var uploadResult = new UploadResult();
+            ResponseResult response;
+
+            var userId = Request.Form["id"].ToString() /*"255"*/;
 
             try
             {
-                IFileUploadRequest request = new FileUploadRequest(Request);
-                ValidateUserId(request.UserId.ToString());
-                IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");
+                ValidateUserId(userId);
 
-                using (var contentStream = request.FileRef.OpenReadStream())
-                {
-                    IEnumerable<Row> rows = fileContentReader.Read(contentStream);
-                    uploadResult = await _batchProcessor.UploadFileAsync(rows, request);
-                }
+                var request = FileUploadRequest.FromRequestForSingle(Request);
+
+                response = await _batchProcessor.UploadFileAsync(request);
             }
             catch (AppException ex)
             {
-                _logger.LogError("Could not successfully conclude the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
                 var result = new ObjectResult(new { ex.Message })
                 {
                     StatusCode = ex.StatusCode,
-                    Value = uploadResult
                 };
-                uploadResult.ErrorMessage = ex.Message;
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Unexpected Error occured during Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!."});
+                _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
             }
 
-            return Ok(uploadResult);
+            return Ok(response);
         }
+       
+
+        [HttpPost("multitax/{authority}")]
+        public async Task<IActionResult> PostMultiTaxPaymentUploadAsync(string authority)
+        {
+            ResponseResult response;
+
+            var userId = /*Request.Form["id"].ToString()*/ "255";
+
+            try
+            {
+                ValidateUserId(userId);
+
+                //if (string.IsNullOrWhiteSpace(Request.Headers["HasHeaderRow"].ToString()))
+                //    throw new AppException("Value must be passed for HasHeaderRow");
+
+                var request = new FileUploadRequest
+                {
+                    ItemType = GenericConstants.MultiTax,
+                    ContentType = authority,
+                    AuthToken = Request.Headers["Authorization"].ToString(),
+                    FileRef = Request.Form.Files.First(),
+                    FileName = Request.Form.Files
+                                        .First().FileName
+                                        .Split('.')[0],
+                    FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower(),
+                    UserId = long.Parse(userId),
+                    FileSize = Request.Form.Files.First().Length,
+                    HasHeaderRow = /*Request.Headers["HasHeaderRow"].ToString().ToBool()*/ true
+                };
+
+                response = await _multiTaxProcessor.UploadFileAsync(request);
+            }
+            catch (AppException ex)
+            {
+                _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                var result = new ObjectResult(new { ex.Message })
+                {
+                    StatusCode = ex.StatusCode,
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
+            }
+
+            return Ok(response);
+        }
+
 
         [HttpGet("{batchId}/status")]
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
             var paginationFilter =
-               new PaginationFilter(pagination.PageSize, pagination.PageNumber);
+               new PaginationFilter(pagination.PageSize,
+               pagination.PageNumber,
+               pagination.Status);
 
-            string fileName;
-
-            var response = new PagedResponse<BillPaymentRowStatus>()
+            var response = new PagedResponse<dynamic>()
             {
-                PageSize = paginationFilter.PageSize,
-                PageNumber = paginationFilter.PageNumber,
+                PageSize = pagination.PageSize,
+                PageNumber = pagination.PageNumber,
+                Status = pagination.Status.ToString()
             };
 
             try
             {
-                var result = await _uploadService.GetBillPaymentsStatus(batchId, paginationFilter);
+                var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter);
 
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
                 response.ValidAmountTotal = result.TotalAmountSum;
-
-                fileName = GenericHelpers.GetFileNameFromBatchId(batchId);
+                response.ProductName = result.ProductName;
+                response.ProductCode = result.ProductCode;
+                response.FileName = result.FileName;
+                response.BatchId = batchId;
+                response.ItemType = result.ItemType;
+                response.ContentType = result.ContentType;
+                response.ValidCount = result.ValidRowCount;
+                response.InvalidCount = result.InvalidCount;
             }
             catch (AppException ex)
             {
                 _logger.LogError("Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
-                
+
                 response.Error = ex.Message;
-                
+
                 var result = new ObjectResult(new { ex.Message })
                 {
                     StatusCode = ex.StatusCode,
-
-                    Value = response
                 };
 
                 return result;
@@ -117,42 +182,7 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest("Unknown error occured. Please retry!. |" + ex.Message);
-            }
-
-            return Ok(new { batchId, response, fileName });
-        }
-
-        [HttpGet("{batchId}/summary")]
-        public async Task<IActionResult> GetUploadFileSummary(string batchId)
-        {
-            var response = new ResponseModel();
-
-            try
-            {
-                response.Data = await _uploadService.GetFileSummary(batchId);
-            }
-            catch (AppException ex)
-            {
-                _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
-
-                response.Error = ex.Message;
-                var result = new ObjectResult(response)
-                {
-                    StatusCode = ex.StatusCode
-                };
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-
-                response.Error = "Unknown error occured. Please retry!.";
-                var result = new ObjectResult(response);
-
-                result.StatusCode = (int)HttpStatusCode.BadRequest;
-                return result;
+                return BadRequest("Unknown error occured. Please retry!");
             }
 
             return Ok(response);
@@ -173,18 +203,23 @@ namespace FileUploadApi.Controllers
                     ApprovalConfigId = request.ApprovalConfigId,
                     BusinessId = request.BusinessId,
                     UserId = request.UserId,
-                    UserName = request.UserName
+                    UserName = request.UserName,
+                    BusinessTin = request.BusinessTin,
+                    TaxTypeId = request.TaxTypeId,
+                    TaxTypeName = request.TaxTypeName,
+                    ProductId = request.ProductId,
+                    ProductCode = request.ProductCode,
+                    CurrencyCode = request.CurrencyCode
                 };
 
-                var data = await _uploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
-                response.Data = data;
+                response.Data = await _genericUploadService.PaymentInitiationConfirmed(batchId, initiatePaymentOptions);
             }
             catch (AppException ex)
             {
                 // _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
-                response.Error = ex.Message;
-                
+                response.Message = ex.Message;
+
                 var result = new ObjectResult(new { ex.Message })
                 {
                     StatusCode = ex.StatusCode,
@@ -197,7 +232,7 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                response.Error = "Unknown error occured. Please retry!.";
+                response.Message = "Unknown error occured. Please retry!.";
                 var result = new ObjectResult(response)
                 {
                     StatusCode = (int)HttpStatusCode.BadRequest
@@ -208,20 +243,20 @@ namespace FileUploadApi.Controllers
             return Ok(response);
         }
 
-        [HttpGet("template/{extension}/download")]
-        public async Task<IActionResult> GetTemplate(string extension)
+        [HttpGet("template/{contentType}/{itemType}/download")]
+        public async Task<IActionResult> GetTemplate(string contentType, string itemType)
         {
             try
             {
                 var outputStream = new MemoryStream();
 
-                var filePath = await _uploadService.GetFileTemplateContentAsync(extension, outputStream);
+                var fileName = await _genericUploadService.GetFileTemplateContentAsync(contentType, itemType, outputStream);
 
-                var contentType = MimeUtility.GetMimeMapping(filePath);
+                var extension = MimeUtility.GetMimeMapping(fileName);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
-                return File(outputStream, contentType, GenericConstants.BillPaymentTemplate + "." + extension);
+                return File(outputStream, extension, fileName);
             }
             catch (AppException ex)
             {
@@ -248,15 +283,26 @@ namespace FileUploadApi.Controllers
 
         private void ValidateUserId(string id)
         {
+            bool success = long.TryParse(id, out long number);
+
+            if (!success)
+            {
+                throw new AppException($"Invalid value '{id}' passed for 'id'!.");
+            }
         }
 
+
         [HttpPost("user/uploads")]
-        public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] PaginationQuery pagination)
+        public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] SummaryPaginationQuery pagination)
         {
             var paginationFilter =
-                new PaginationFilter(pagination.PageSize, pagination.PageNumber);
+                new PaginationFilter
+                {
+                    PageSize = pagination.PageSize,
+                    PageNumber = pagination.PageNumber
+                };
 
-            var response = new PagedResponse<BatchFileSummaryDto>()
+            var response = new SummaryPagedResponse<BatchFileSummaryDto>()
             {
                 PageSize = paginationFilter.PageSize,
                 PageNumber = paginationFilter.PageNumber
@@ -266,31 +312,25 @@ namespace FileUploadApi.Controllers
             {
                 ValidateUserId(userId);
 
-                var result = await _uploadService.GetUserFilesSummary(userId, paginationFilter);
+                var result = await _genericUploadService.GetUserFilesSummary(userId, paginationFilter);
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
             }
             catch (AppException ex)
             {
-                _logger.LogError("An Error occured during the Upload File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+                _logger.LogError("An Error occured  {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                response.Error = ex.Message;
-                var result = new ObjectResult(response)
+                var result = new ObjectResult(new { ex.Message })
                 {
-                    StatusCode = ex.StatusCode
+                    StatusCode = ex.StatusCode,
                 };
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-
-                response.Error = "Unknown error occured. Please retry!.";
-                var result = new ObjectResult(response);
-
-                result.StatusCode = (int)HttpStatusCode.BadRequest;
-                return result;
+                _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
             }
 
             return Ok(response);
@@ -303,17 +343,17 @@ namespace FileUploadApi.Controllers
             {
                 var outputStream = new MemoryStream();
 
-                var fileName = await _uploadService.GetFileValidationResultAsync(batchId, outputStream);
+                var resultModel = await _genericUploadService.GetFileValidationResultAsync(batchId, outputStream);
 
-                var contentType = MimeUtility.GetMimeMapping(fileName);
+                var contentType = MimeUtility.GetMimeMapping(resultModel.NasValidationFileName);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
-                return File(outputStream, contentType, GenericConstants.ValidationResultFile);
+                return File(outputStream, contentType, resultModel.RawFileName + '_' + GenericConstants.ValidationResultFile);
             }
             catch (AppException ex)
             {
-                _logger.LogError("An Error occured during the Template Download File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+                _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
                 var result = new ObjectResult(new { ex.Message })
                 {
@@ -324,13 +364,8 @@ namespace FileUploadApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Error occured during the Template Download File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-
-                var result = new ObjectResult("Unknown error occured. Please retry!.")
-                {
-                    StatusCode = (int)HttpStatusCode.BadRequest
-                };
-                return result;
+                _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                return BadRequest(new { errorMessage = "Unknown error occured.!." });
             }
         }
     }

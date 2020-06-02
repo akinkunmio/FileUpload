@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using Swashbuckle.AspNetCore.Swagger;
-using FileUploadApi.Services;
 using FileUploadAndValidation.FileReaders;
 using FileUploadAndValidation.FileReaderImpl;
 using FilleUploadCore.FileReaders;
@@ -24,9 +22,17 @@ using MassTransit;
 using GreenPipes;
 using DbUp;
 using System.Reflection;
+
 using AutoMapper;
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation;
+
+using FileUploadAndValidation.FileServices;
+using FileUploadAndValidation.FileContentValidators;
+using Hellang.Middleware.ProblemDetails;
+using FileUploadApi.Services;
+using FileUploadApi.Processors;
+using FileUploadAndValidation.BillPayments;
 
 namespace FileUploadApi
 {
@@ -44,12 +50,12 @@ namespace FileUploadApi
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            //services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
-            //services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
+            services.AddProblemDetails();
+            services.AddScoped<IGenericUploadService, GenericUploadService>();
 
             services.AddSingleton<IAppConfig, AppConfig>();
-            services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
-            services.AddScoped<IDbRepository<BillPayment, FailedBillPayment>, BillPaymentRepository>();
+            //services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
+            //services.AddScoped<IDbRepository<BillPayment, FailedBillPayment>, BillPaymentRepository>();
             services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IBatchProcessor, BatchProcessor>();
@@ -58,12 +64,19 @@ namespace FileUploadApi
             //services.AddScoped<FirsWhtFileService>();
             //services.AddScoped<AutoPayFileService>();
             //services.AddScoped<BulkSmsFileService>();
-            services.AddScoped<BillPaymentFileService>();
-            services.AddScoped<AutoPayFileContentRemoteValidator>();
+            //services.AddScoped<BillPaymentFileService>();
+
+            #region File Content Remote Validators
+            services.AddScoped<IFileContentValidator<AutoPayRow, AutoPayUploadContext>, AutoPayFileContentValidator>();
+            services.AddScoped<IRemoteFileContentValidator<AutoPayRow>, AutoPayRemoteFileContentValidator>();
+            services.AddScoped<IFileContentValidator<ManualCaptureRow, ManualCustomerCaptureContext>, ManualCaptureFileContentValidator>();
+            services.AddScoped<IRemoteFileContentValidator<ManualCaptureRow>, ManualCaptureRemoteFileContentValidator>();
+            #endregion
+
             services.AddScoped<BatchFileSummaryDbRepository>();
 
-            //Setup File Content Validators
-            //services.AddScoped<IFileContentValidator<BillPayment>, BillPaymentFileService>();
+            services.AddScoped<IBatchProcessor, BatchProcessor>();
+            services.AddScoped<IMultiTaxProcessor, MultiTaxProcessor>();
 
             //Setup File Readers per file extension
             services.AddScoped<IFileReader, TxtFileReader>();
@@ -72,13 +85,29 @@ namespace FileUploadApi
             services.AddScoped<IFileReader, XlsxFileReader>();
 
             services.AddScoped<IBatchFileProcessor<AutoPayUploadContext>, AutoPayBatchFileProcessor>();
-            services.AddScoped<IFileContentValidator<AutoPayRow>, AutoPayFileContentValidator>();
+            services.AddScoped<IBatchFileProcessor<ManualCustomerCaptureContext>, ManualCustomerCaptureBatchProcessor>();
 
             //Details tables repositories
             services.AddScoped<IDetailsDbRepository<AutoPayRow>, AutoPayDetailsDbRepository>();
+            services.AddScoped<IDetailsDbRepository<ManualCaptureRow>, ManualCaptureDbRepository>();
 
             services.AddAutoMapper(typeof(Startup));
 
+            services.AddScoped<IFileContentValidator, BillPaymentFileContentValidator>();
+            services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
+            services.AddScoped<IFileContentValidator, FirsMultiTaxContentValidator>();
+
+            services.AddScoped<IBatchRepository, BatchRepository>();
+            services.AddScoped<IBatchRepository, MultiTaxBatchRepository>();
+            
+            services.AddScoped<IDbRepository, DbRepository>();
+
+            services.AddHttpClient<IHttpService, HttpService>();
+
+            services.AddScoped<INasRepository, NasRepository>();
+
+            services.AddSingleton<IAppConfig, AppConfig>();
+            
             services.AddHealthChecks();
             services.AddSwaggerGen(config =>
             {
@@ -138,26 +167,28 @@ namespace FileUploadApi
 
         private void PerformScriptUpdate()
         {
-                var connString = Configuration["ConnectionStrings:UploadServiceConnectionString"];
-                var upgraderTran = DeployChanges.To
-                    .SqlDatabase(connString)
-                    .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly(),
-                        name => name.StartsWith("FileUploadApi.Scripts"))
-                    .LogToConsole()
-                    .Build();
+            var connString = Configuration["ConnectionStrings:UploadServiceConnectionString"];
+            var upgraderTran = DeployChanges.To
+                .SqlDatabase(connString)
+                .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly(),
+                    name => name.StartsWith("FileUploadApi.Scripts"))
+                .LogToConsole()
+                .Build();
 
-                var resultEnt = upgraderTran.PerformUpgrade();
-                if (!resultEnt.Successful)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(resultEnt.Error);
-                    Console.ResetColor();
-                }
+            var resultEnt = upgraderTran.PerformUpgrade();
+            if (!resultEnt.Successful)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(resultEnt.Error);
+                Console.ResetColor();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            app.UseProblemDetails();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

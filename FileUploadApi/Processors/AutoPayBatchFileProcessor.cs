@@ -2,6 +2,7 @@ using FileUploadAndValidation;
 using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation.Repository;
+using FileUploadApi.Processors;
 using FileUploadApi.Services;
 using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
@@ -14,13 +15,13 @@ namespace FileUploadApi.ApiServices
 {
     public class AutoPayBatchFileProcessor : IBatchFileProcessor<AutoPayUploadContext>
     {
-        private readonly IFileContentValidator<AutoPayRow> _fileContentValidator;
+        private readonly IFileContentValidator<AutoPayRow, AutoPayUploadContext> _fileContentValidator;
         private readonly INasRepository nasRepository;
         private readonly IDetailsDbRepository<AutoPayRow> dbRepository;
-        private readonly AutoPayFileContentRemoteValidator remoteValidator;
+        private readonly IRemoteFileContentValidator<AutoPayRow> remoteValidator;
 
-        public AutoPayBatchFileProcessor(IFileContentValidator<AutoPayRow> fileContentValidator,
-                                        AutoPayFileContentRemoteValidator remoteValidator,
+        public AutoPayBatchFileProcessor(IFileContentValidator<AutoPayRow, AutoPayUploadContext> fileContentValidator,
+                                        IRemoteFileContentValidator<AutoPayRow> remoteValidator,
                                         INasRepository nasRepository,
                                         IDetailsDbRepository<AutoPayRow> dbRepository)
         {
@@ -29,12 +30,13 @@ namespace FileUploadApi.ApiServices
             this.nasRepository = nasRepository;
             this.dbRepository = dbRepository;
         }
+
         public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, AutoPayUploadContext context)
         {
             if(rows.Count() == 0)
                 throw new AppException("No records found");
 
-            var localValidationResult = await _fileContentValidator.Validate(rows);//, null);
+            var localValidationResult = await _fileContentValidator.Validate(rows, context);
             if(!localValidationResult.ValidRows.Any())
                 throw new AppException("No valid rows");
 
@@ -42,16 +44,16 @@ namespace FileUploadApi.ApiServices
 
             FileProperty fileProperty = await nasRepository.SaveFileToValidate(batchId, localValidationResult.ValidRows);
 
-            var remoteValidationResult = await _fileContentValidator.ValidateRemote(localValidationResult.ValidRows);
+            var remoteValidationResult = await remoteValidator.Validate(localValidationResult.ValidRows);
 
             var finalResult = MergeResults(remoteValidationResult, localValidationResult);
 
-            var batch = new BatchFileSummary() { BatchId = batchId };
-            batch.SetResults(finalResult);
-
-            await dbRepository.InsertAllUploadRecords(new UploadSummaryDto{
+            var batch = new Batch<AutoPayRow>(finalResult.ValidRows, finalResult.Failures)
+            {
                 BatchId = batchId
-            }, finalResult.ValidRows, finalResult.Failures);
+            };
+
+            await dbRepository.InsertAllUploadRecords(batch, "");
                 
             // validator needs the rows and the context (security, request)
             // validator needs the rules to validate (this can be inside the row)
@@ -67,7 +69,4 @@ namespace FileUploadApi.ApiServices
             return remoteValidationResult;
         }
     }
-    
-   
-    
 }

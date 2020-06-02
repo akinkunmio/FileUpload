@@ -9,11 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ApiServices\ApiUploadService.cs" />
+    <Compile Remove="ApiServices\IApiUploadService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="dbup" Version="4.2.0" />
     <PackageReference Include="EPPlus" Version="4.5.3.2" />
     <PackageReference Include="EPPlus.Core.Extensions" Version="2.3.2" />
     <PackageReference Include="FluentValidation" Version="8.6.0" />
+    <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="4.5.0" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="5.5.5" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="5.5.5" />
     <PackageReference Include="Microsoft.AspNetCore.App" />

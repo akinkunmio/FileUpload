@@ -1,5 +1,4 @@
-﻿using FileUploadApi.Services;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace FileUploadAndValidation
 {
@@ -15,6 +14,6 @@ namespace FileUploadAndValidation
 
         public int? Max { get; set; }
 
-        public bool? Id { get; set; }
+        public bool? ValidateCell { get; set; }
     }
 }

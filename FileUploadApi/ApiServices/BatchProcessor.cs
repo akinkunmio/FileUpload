@@ -1,90 +1,99 @@
-﻿using FileUploadAndValidation.FileReaderImpl;
-using FileUploadAndValidation.FileReaders;
-using FileUploadAndValidation.Models;
-using FileUploadAndValidation.UploadServices;
-using FileUploadApi.Services;
+﻿using FileUploadAndValidation.Models;
 using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
 using FilleUploadCore.Helpers;
-using FilleUploadCore.UploadManagers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
-using FileUploadApi.Models;
 using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Repository;
-using FileUploadApi.Controllers;
-using System.Net;
-using Microsoft.AspNetCore.Http;
+using FileUploadAndValidation.FileServices;
 
 namespace FileUploadApi.ApiServices
 {
     public class BatchProcessor : IBatchProcessor
     {
-        private readonly IEnumerable<IFileContentValidator<BillPayment>> _fileContentValidators;
         private readonly IBatchRepository _batchRepository;
+        private readonly IEnumerable<IFileContentValidator> _fileContentValidators;
+        private readonly IEnumerable<IFileReader> _fileReaders;
 
-        public BatchProcessor(IBatchRepository batchRepository, IEnumerable<IFileContentValidator<BillPayment>> fileContentValidators)
+        public BatchProcessor(IEnumerable<IBatchRepository> batchRepositories,
+            IEnumerable<IFileContentValidator> fileContentValidators,
+            IEnumerable<IFileReader> fileReaders)
         {
-            _batchRepository = batchRepository;
+            _batchRepository = batchRepositories.ToArray()[0];
             _fileContentValidators = fileContentValidators;
+            _fileReaders = fileReaders;
         }
 
-        public async Task<ValidationResult<BillPayment>> UploadFileAsync(IEnumerable<Row> rows, IFileUploadRequest request)
+        public async Task<ResponseResult> UploadFileAsync(FileUploadRequest request)
         {
-            #region commented for now
-            //ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
+            ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
+            ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
+            ArgumentGuard.NotNullOrWhiteSpace(request.AuthToken, nameof(request.AuthToken));
 
-            //if (!ContentSupported(request.ContentType))
-            //    throw new AppException("Invalid Content Type specified");
+            if (!request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
+                && !request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
+                && !request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
+                && !request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
+                throw new AppException("Invalid Content Type specified");
 
-            ////use either validationtype or contentype name
-            //if (request.ContentType.ToLower().Equals(GenericConstants.WHT.ToLower())
-            //    || request.ContentType.ToLower().Equals(GenericConstants.WVAT.ToLower()))
-            //    request.ContentType = GenericConstants.Firs;
-            #endregion
-
-            var batchId = GenericHelpers.GenerateBatchId("QTB", DateTime.Now);
-            var fileContentValidator = _fileContentValidators.First();//.FirstOrDefault(r => r.CanProcess(request.ContentType)) ?? throw new AppException("Invalid file content");
-            var uploadResult = await fileContentValidator.Validate(rows);//, request);
-            //await _batchRepository.Save(batchId, request, uploadResult.ValidRows, uploadResult.Failures);
-
-            return uploadResult;
-        }
-
-        private bool ContentSupported(string contentType)
-        {
-            if (string.IsNullOrEmpty(contentType)) return false;
-
-            var supported = new[] {
-                GenericConstants.BillPaymentIdPlusItem.ToLower(),
-                GenericConstants.BillPaymentId.ToLower(),
-                GenericConstants.WVAT.ToLower(),
-                GenericConstants.WHT.ToLower()
+            if (request.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+                ArgumentGuard.NotNullOrWhiteSpace(request.BusinessTin, nameof(request.BusinessTin));
+            
+            var uploadResult = new UploadResult
+            { 
+                ProductCode = request.ProductCode, 
+                ProductName = request.ProductName, 
+                FileName = request.FileName 
             };
 
-            return supported.Any(c => c == contentType.ToLower());
+            uploadResult.BatchId = GenericHelpers.GenerateBatchId(request.FileName, DateTime.Now);
+
+            using (var contentStream = request.FileRef.OpenReadStream())
+            {
+                IEnumerable<Row> rows = ExctractFileContent(request.FileExtension, contentStream);
+
+                await ValidateFileContentAsync(request, rows, uploadResult);
+
+                await _batchRepository.Save(uploadResult, request);
+
+                return ResponseResult.CreateResponseResult(uploadResult, request.ContentType, request.ItemType);
+            }
         }
 
-
-        private void Test()
+        private IEnumerable<Row> ExctractFileContent(string fileExtension, Stream contentStream)
         {
-            // FILE CONTENT TYPES
-            //autopay
-            //firs
-            //enterprise
-            //bulk-sms
-
-            // var rows = ReadFromFile();
-            // var validationResults = val.Validate(rows);//Rows and error message
-            // db.Save(validationResults); ::: firs, autopay, etc
+            switch (fileExtension)
+            {
+                case "txt":
+                    return _fileReaders.ToArray()[0].Read(contentStream);
+                case "csv":
+                    return _fileReaders.ToArray()[1].Read(contentStream);
+                case "xlsx":
+                    return _fileReaders.ToArray()[2].Read(contentStream);
+                case "xls":
+                    return _fileReaders.ToArray()[3].Read(contentStream);
+                default:
+                    throw new AppException("File extension not supported!.");
+            }
         }
 
-        Task<UploadResult> IBatchProcessor.UploadFileAsync(IEnumerable<Row> rows, IFileUploadRequest request)
+        private async Task ValidateFileContentAsync(FileUploadRequest request, IEnumerable<Row> rows, UploadResult uploadResult)
         {
-            throw new NotImplementedException();
+            switch (request.ContentType.ToLower())
+            {
+                case "billpayment":
+                    await _fileContentValidators.ToArray()[0].Validate(request, rows, uploadResult);
+                    break;
+                case "firs":
+                    await _fileContentValidators.ToArray()[1].Validate(request, rows, uploadResult);
+                    break;
+                default:
+                    throw new AppException("Content type not supported!.");
+            }
         }
     }
 }

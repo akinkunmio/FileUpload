@@ -8,6 +8,7 @@ using FilleUploadCore.Exceptions;
 using System.Net;
 using FileUploadAndValidation.Utils;
 using Microsoft.Extensions.Logging;
+using FileUploadAndValidation.Models;
 
 namespace FileUploadAndValidation.Repository
 {
@@ -25,7 +26,7 @@ namespace FileUploadAndValidation.Repository
             _logger = logger;        
             _batchRepository = batchRepository;
         }
-        public async Task<string> InsertAllUploadRecords(UploadSummaryDto fileDetail, IList<AutoPayRow> validRows, IList<AutoPayRow> invalidRows, string itemType = null)
+        public async Task<string> InsertAllUploadRecords(Batch<AutoPayRow> batch, string itemType = null)
         {
             try
             {
@@ -37,9 +38,10 @@ namespace FileUploadAndValidation.Repository
                     {
                         try
                         {
-                            var transactionSummaryId = await _batchRepository.CreateBatchSummary((connection, sqlTransaction), fileDetail);
+                            var batchSummary = this.FromBatch(batch);
+                            var batchId = await _batchRepository.CreateBatchSummary((connection, sqlTransaction), batchSummary);
 
-                            foreach (var row in validRows)
+                            foreach (var row in batch.Rows)
                             {
                                 await connection.ExecuteAsync(sql: "sp_insert_valid_bill_payments",
                                     param: new
@@ -51,36 +53,16 @@ namespace FileUploadAndValidation.Repository
                                         row_status = "Invalid",
                                         created_date =  DateTime.Now,//row.CreatedDate,
                                         row_num =  "0",//row.RowNumber,
-                                        transactions_summary_Id = transactionSummaryId,
+                                        transactions_summary_Id = batchId,
                                         initial_validation_status = "Invalid",
                                         error =  "0",//row.Error
                                     },
                                     transaction: sqlTransaction,
                                     commandType: System.Data.CommandType.StoredProcedure);
-                            }
-
-                            foreach (var row in invalidRows)
-                            {
-                                await connection.ExecuteAsync(sql: "sp_insert_invalid_bill_payments",
-                                    param: new
-                                    {
-                                        product_code = "0",//row.ProductCode,
-                                        item_code =  "0",//.ItemCode,
-                                        customer_id =  "0",//row.CustomerId,
-                                        amount = row.Amount,
-                                        row_status = "Invalid",
-                                        created_date =  DateTime.Now,//row.CreatedDate,
-                                        row_num =  "0",//row.RowNumber,
-                                        transactions_summary_Id = transactionSummaryId,
-                                        initial_validation_status = "Invalid",
-                                        error =  "0",//row.Error
-                                    },
-                                    transaction: sqlTransaction,
-                                    commandType: System.Data.CommandType.StoredProcedure);
-                            }
+                            };
 
                             sqlTransaction.Commit();
-                            return fileDetail.BatchId;
+                            return batch.BatchId;
                         }
                         catch (Exception exception)
                         {
@@ -95,6 +77,23 @@ namespace FileUploadAndValidation.Repository
                 _logger.LogError("Error occured while inserting payment items in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
             }
+        }     
+
+        private UploadSummaryDto FromBatch(Batch<AutoPayRow> batch){
+            return new UploadSummaryDto
+            {
+                BatchId = batch.BatchId,
+                NumOfAllRecords = batch.NumOfRecords,
+                Status = batch.TransactionStatus,
+                UploadDate = batch.UploadDate,
+                CustomerFileName = "",
+                ItemType = batch.ItemType,
+                ContentType = batch.ContentType,
+                UserId = batch.UserId, //
+                ProductName = batch.ProductName,
+                ProductCode = batch.ProductCode
+            };
+
         }
     }
 }

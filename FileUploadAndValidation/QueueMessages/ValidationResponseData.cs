@@ -8,6 +8,7 @@ namespace Qb.BillPaymentTransaction.Shared.Contracts
     {
         public string RequestId { get; set; }
         public string ResultLocation { get; set; }
+        public string PaymentType { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

@@ -12,13 +12,37 @@
 </head>
 
 <body>
-
-</body>
-	<form method="post" action="https://localhost:5001/qbupload/api/v1/autopay/file"  enctype="multipart/form-data">
+	<!-- https://localhost:5001/qbupload/api/v1/autopay/file -->
+<h1>Bill Payment</h1>
+	<form method="post" action="https://localhost:5001/qbupload/api/v1/upload/uploadfile/wht/wht?contenttype=billpayment&itemtype=wht"  enctype="multipart/form-data">
 		<br><input type="file" name="file" />
 		<br><input name="id" value="1" />
-		<br><input name="contentType" value="billpayment" />
+		<br><input name="contentType" value="wht" />
 		
 		<input type="submit" />
 	</form>
+
+
+<hr />
+<h1>AutoPAY</h1>
+	<form method="post" action="https://localhost:5001/qbupload/api/v1/autopay/file"  enctype="multipart/form-data">
+		<br><input type="file" name="file" />
+		<br><input name="id" value="1" />
+		<br><input name="contentType" value="wht" />
+		
+		<input type="submit" />
+	</form>
+
+
+<hr />
+<h1>FCT-IRS</h1>
+	<form method="post" action="https://localhost:5001/qbupload/api/v1/billpayment/fct-irs/file"  enctype="multipart/form-data">
+		<br><input type="file" name="file" />
+		<br><input name="id" value="1" />
+		<br><input name="contentType" value="wht" />
+		
+		<input type="submit" />
+	</form>
+</body>
+
 </html>

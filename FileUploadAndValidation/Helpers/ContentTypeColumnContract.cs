@@ -21,14 +21,14 @@ namespace FileUploadAndValidation.Helpers
         {
             return new[]
            {
-                new ColumnContract{ ColumnName="product_code", DataType="string", Max=256, Required=true },
-                new ColumnContract{ ColumnName="item_code", DataType="string", Max=256 },
-                new ColumnContract{ ColumnName="customer_id", DataType="string", Max=15, Required=true },
-                new ColumnContract{ ColumnName="amount", DataType="integer", Max=100, Required=true },
+                new ColumnContract{ ColumnName="ProductCode", DataType="string", Max=256, Required=true },
+                new ColumnContract{ ColumnName="ItemCode", DataType="string", Max=256 },
+                new ColumnContract{ ColumnName="CustomerId", DataType="string", Max=15, Required=true },
+                new ColumnContract{ ColumnName="Amount", DataType="integer", Max=100, Required=true },
             };
         }
 
-        public static ColumnContract[] WVAT()
+        public static ColumnContract[] FirsWvat()
         {
             return new[]
            {
@@ -36,33 +36,81 @@ namespace FileUploadAndValidation.Helpers
                 new ColumnContract{ ColumnName="ContractorAddress", DataType="string", Required=true },
                 new ColumnContract{ ColumnName="ContractorTIN", DataType="string", Max=15, Required=true },
                 new ColumnContract{ ColumnName="ContractDescription", DataType="string", Required=true },
-                new ColumnContract{ ColumnName="TransactionNature", DataType="string", Max=100, Required=true },
+                new ColumnContract{ ColumnName="NatureOfTransaction", DataType="string", Max=100, Required=true },
                 new ColumnContract{ ColumnName="TransactionDate", DataType="datetime", Required=true },
-                new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Max=25, Required=true },
+                new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Max=25, Required=false },
                 new ColumnContract{ ColumnName="TransactionCurrency", DataType="string", Max=6, Required=true },
-                new ColumnContract{ ColumnName="TransactionInvoicedValue", DataType="decimal", Max=15, Required=true },
-                new ColumnContract{ ColumnName="CurrencyExchangeRate", DataType="decimal", Max=4, Required=true },
                 new ColumnContract{ ColumnName="CurrencyInvoicedValue", DataType="decimal", Max=15, Required=true },
+                new ColumnContract{ ColumnName="CurrencyExchangeRate", DataType="decimal", Max=4, Required=true },
+                new ColumnContract{ ColumnName="TransactionInvoicedValue", DataType="decimal", Max=15, Required=true },
                 new ColumnContract{ ColumnName="WVATRate", DataType="decimal", Max=4, Required=true },
                 new ColumnContract{ ColumnName="WVATValue", DataType="decimal", Max=12, Required=true },
                 new ColumnContract{ ColumnName="TaxAccountNumber", DataType="string", Max=20, Required=true }
             };
         }
 
-        public static ColumnContract[] WHT()
+        public static ColumnContract[] FirsWht()
         {
             return new[]
             {
-                new ColumnContract{ ColumnName="BeneficiaryTin", DataType="string", Required=true, Min = 15 },
+                new ColumnContract{ ColumnName="BeneficiaryTin", DataType="string", Required=true, Min = 13 },
                 new ColumnContract{ ColumnName="BeneficiaryName", DataType="string", Required=true },
                 new ColumnContract{ ColumnName="BeneficiaryAddress", DataType="string", Required=true },
                 new ColumnContract{ ColumnName="ContractDate", DataType="datetime", Required=true },
+                new ColumnContract{ ColumnName="ContractDescription", DataType="string", Required=true },
                 new ColumnContract{ ColumnName="ContractAmount", DataType="decimal", Required=true },
-                new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Required=true },
                 new ColumnContract{ ColumnName="ContractType", DataType="string", Required=true },
                 new ColumnContract{ ColumnName="PeriodCovered", DataType="string", Required=true },
+                new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Required=false },
                 new ColumnContract{ ColumnName="WhtRate", DataType="decimal", Required=true },
-                new ColumnContract{ ColumnName="WhtAmount", DataType="datetime", Required=true }
+                new ColumnContract{ ColumnName="WhtAmount", DataType="decimal", Required=true },
+
+            };
+        }
+
+        public static ColumnContract[] FirsMultiTaxWht()
+        {
+            return new[]
+            {
+                new ColumnContract{ ColumnName="BeneficiaryTin", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="BeneficiaryName", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="BeneficiaryAddress", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ContractDate", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ContractDescription", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ContractAmount", DataType="decimal", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ContractType", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="PeriodCovered", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Required=false, ValidateCell = true },
+                new ColumnContract{ ColumnName="WhtRate", DataType="decimal", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="WhtAmount", DataType="decimal", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="Amount", DataType="decimal", Required=false },
+                new ColumnContract{ ColumnName="Comment", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="PayerTin", DataType="string", Min=1, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="TaxType", DataType="string", Min=1, Required=true, ValidateCell = true },
+            };
+        }
+
+        public static ColumnContract[] FirsMultiTaxOther()
+        {
+            return new[]
+            {
+                new ColumnContract{ ColumnName="BeneficiaryTin", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="BeneficiaryName", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="BeneficiaryAddress", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="ContractDate", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="ContractDescription", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="ContractAmount", DataType="decimal", Required=false },
+                new ColumnContract{ ColumnName="ContractType", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="PeriodCovered", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="InvoiceNumber", DataType="string", Required=false },
+                new ColumnContract{ ColumnName="WhtRate", DataType="decimal", Required=false },
+                new ColumnContract{ ColumnName="WhtAmount", DataType="decimal", Required=false },
+                new ColumnContract{ ColumnName="Amount ", DataType="decimal", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="Comment", DataType="string", Required=false, ValidateCell = true },
+                new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Required=false, ValidateCell = true },
+                new ColumnContract{ ColumnName="PayerTin", DataType="string", Min=1, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="TaxType", DataType="string", Min=1, Required=true, ValidateCell = true },
             };
         }
     }

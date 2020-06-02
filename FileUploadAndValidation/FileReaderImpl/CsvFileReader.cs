@@ -29,7 +29,7 @@ namespace FileUploadAndValidation.FileReaderImpl
 
             try
             {
-                using (var reader = new StreamReader(stream))
+                using (var reader = new StreamReader(stream, true))
                 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                     while (csv.Read())
                     {

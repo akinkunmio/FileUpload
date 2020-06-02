@@ -1,9 +1,6 @@
-using FileUploadApi.ApiServices;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using FileUploadAndValidation.Models;
-using FileUploadApi.Models;
 using FilleUploadCore.FileReaders;
 using System;
 using FilleUploadCore.Exceptions;
@@ -11,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using FileUploadAndValidation;
+using FileUploadApi.Processors;
 
 namespace FileUploadApi.Controllers
 {
@@ -22,24 +20,22 @@ namespace FileUploadApi.Controllers
         private readonly ILogger<AutoPayController> _logger;
         private readonly IEnumerable<IFileReader> _fileReaders;
 
-        public AutoPayController(IBatchFileProcessor<AutoPayUploadContext> batchProcessor, IEnumerable<IFileReader> fileReaders, ILogger<AutoPayController> logger)
+        public AutoPayController(IBatchFileProcessor<AutoPayUploadContext> batchProcessor,
+                                 IEnumerable<IFileReader> fileReaders,
+                                 ILogger<AutoPayController> logger)
         {
-            // controller needs a reader
-            // controller needs raw request
-
             _batchProcessor = batchProcessor;
             _logger = logger;
             _fileReaders = fileReaders;
         }
 
         [HttpPost("file")]
-        public async Task<IActionResult> UploadFile(DateTime t)
+        public async Task<IActionResult> UploadFile()
         {
-            var uploadResult = new BatchFileSummary();
-
             try
             {
-                IFileUploadRequest request = new FileUploadRequest(Request);
+                var uploadResult = new BatchFileSummary();
+                var request = FileUploadRequest.FromRequestForSingle(Request);
                 ValidateUserId(request.UserId.ToString());
                 IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");
 
@@ -49,33 +45,19 @@ namespace FileUploadApi.Controllers
                     var context = new AutoPayUploadContext();
                     uploadResult = await _batchProcessor.UploadAsync(rows, context);
                 }
+                
+                return Ok(uploadResult);
             }
             catch (AppException ex)
             {
-                _logger.LogError($"Could not successfully conclude the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-
-                var problemDetails = new ProblemDetails
-                {
-                    Status = ex.StatusCode,
-                    Type = $"https://httpstatuses.com/{ex.StatusCode}",
-                    Title = ex.Message,
-                    Detail = ex.Message,
-                    Instance = HttpContext.Request.Path
-                };
-
-                return new ObjectResult(problemDetails)
-                {
-                    ContentTypes = { "application/problem+json" },
-                    StatusCode = ex.StatusCode,
-                };
-           }
+                return Utils.ResponseHandler.HandleException(ex);
+            }
             catch (Exception ex)
-            {                
-                _logger.LogError("An Unexpected Error occured during Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return BadRequest(new { uploadResult, errorMessage = "Unknown error occured. Please retry!."});
+            {
+                _logger.LogError(ex, ex.Message);
+                return Utils.ResponseHandler.HandleException(ex);
             }
 
-            return Ok(uploadResult);
         }
 
         private void ValidateUserId(string userId)

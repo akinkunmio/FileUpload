@@ -1,22 +1,23 @@
+using System;
 using System.Collections.Generic;
 using FilleUploadCore.FileReaders;
 
 namespace FileUploadAndValidation
 {
-    public class AutoPayRow
+    public class AutoPayRow : ValidatedRow
     {
         public AutoPayRow(Row row)
         {
             this.Index = row.Index;
-            this.Validate(row.Columns);
+            this.SetupFields(row.Columns);
         }
 
-        private void Validate(List<Column> columns)
+        private void SetupFields(List<Column> columns)
         {
             if(string.IsNullOrWhiteSpace(columns[0].Value))
             {
                 IsValid = false;
-                this.ErrorMessage = "COVID-19 Error";
+                this.ErrorMessages.Add("COVID-19 Error");
             }
             else
             {
@@ -24,9 +25,7 @@ namespace FileUploadAndValidation
             }
         }
 
-        public int Index { get; }
-        public bool IsValid {get; private set; }
-        public string ErrorMessage { get; private set; }
+        
         public string PaymentReference { get; set; }
         public string BeneficiaryCode { get; set; }
         public string BeneficiaryName { get; set; }
@@ -35,7 +34,6 @@ namespace FileUploadAndValidation
         public string CBNCode { get; set; }
         public string IsCashCard { get; set; }
         public string Narration { get; set; }
-        public decimal Amount { get; set; }
         public string CurrencyCode { get; set; }
 
         #region For Consolidated Upload Only

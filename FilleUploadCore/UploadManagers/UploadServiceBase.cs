@@ -72,5 +72,21 @@ namespace FilleUploadCore.UploadManagers
         public string UserName { get; set; }
 
         public long? BusinessId { get; set; }
+
+        public string ItemType { get; set; }
+
+        public string ContentType { get; set; }
+
+        public string BusinessTin { get; set; }
+
+        public string TaxTypeId { get; set; }
+
+        public string TaxTypeName { get; set; }
+
+        public string ProductId { get; set; }
+
+        public string ProductCode { get; set; }
+
+        public string CurrencyCode { get; set; }
     }
 }

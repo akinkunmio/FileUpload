@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using CsvHelper;
 using System.Globalization;
+using FileUploadAndValidation.Helpers;
+using FilleUploadCore.Helpers;
 
 namespace FileUploadAndValidation.Repository
 {
@@ -26,79 +28,61 @@ namespace FileUploadAndValidation.Repository
             _appConfig = appConfig;
         }
 
-        public async Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> records)
+        public async Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation + @"validate\";
+                //var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
+                var fileLocation = @"../data/validate/";
                 var fileName = batchId + "_validate.json";
-
-                string json = JsonConvert.SerializeObject(records);
-
                 var path = fileLocation + fileName;
 
-                //File.WriteAllText(path, json);
-                
-                return await Task.FromResult(new FileProperty 
-                { 
-                    BatchId = batchId, 
+                string jsonString = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails));
+
+                await File.WriteAllTextAsync(path, jsonString);
+
+                return new FileProperty
+                {
+                    BatchId = batchId,
                     DataStore = 1,
                     Url = $"validate/{fileName}"
-                });
+                };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while saving file with batch id : {batchId} to NAS for validation");
+                //return await Task.FromResult(new FileProperty
+                //{
+                //    BatchId = batchId,
+                //    DataStore = 1,
+                //    Url = $"validate/firs_wvat_X1KTNC_202005091720288960_validate.json"
+                //});
+                throw new AppException($"An error occured while saving file to NAS for validation");
             }
         }
 
-        public async Task<FileProperty> SaveFileToValidate<T>(string batchId, IEnumerable<T> records)
+      
+
+        public async Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
         {
             try
             {
-                var fileLocation = _appConfig.NasFolderLocation + @"validate\";
-                var fileName = batchId + "_validate.json";
-
-                string json = JsonConvert.SerializeObject(records);
-
-                var path = fileLocation + fileName;
-
-                //File.WriteAllText(path, json);
-                
-                return await Task.FromResult(new FileProperty 
-                { 
-                    BatchId = batchId, 
-                    DataStore = 1,
-                    Url = $"validate/{fileName}"
-                });
-            }
-            catch(Exception ex)
-            {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while saving file with batch id : {batchId} to NAS for validation");
-            }
-        }
-
-        public async Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> records)
-        {
-            try
-            {
-                var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
+                //var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
+                var fileLocation = @"../data/raw/";
                 var fileName = batchId + "_confirmed.json";
 
-                string json = JsonConvert.SerializeObject(records);
+                string json = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails));
 
                 var path = fileLocation + fileName;
 
                 await File.WriteAllTextAsync(path, json);
 
-                return await Task.FromResult(new FileProperty
+                return new FileProperty
                 {
                     BatchId = batchId,
                     DataStore = 1,
                     Url = $"confirmed/{fileName}"
-                });
+                };
             }
             catch (Exception ex)
             {
@@ -112,9 +96,9 @@ namespace FileUploadAndValidation.Repository
             var fileLocation = @"../data/raw/";
             var fileName = batchId + "_raw." + extension;
 
-            var path = fileLocation + fileName;
+            //var path = fileLocation + fileName;
 
-            //string path = Path.Combine(fileLocation + fileName);
+            string path = Path.Combine(fileLocation + fileName);
 
             try
             {
@@ -134,25 +118,25 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(PaymentValidateMessage queueMessage)
         {
-            var result = new List<RowValidationStatus>();
-            //  var location = @"../data/";
-            var location = _appConfig.NasFolderLocation;
+            IEnumerable<RowValidationStatus> result; 
+            var location = @"../data/";
+            //var location = _appConfig.NasFolderLocation;
 
-            var path = location + queueMessage.ResultLocation;
+            //var path = location + queueMessage.ResultLocation;
 
-           // var path = Path.Combine(location, queueMessage.ResultLocation);
-         
+            var path = Path.Combine(location, queueMessage.ResultLocation);
+
             try
             {
                 if (File.Exists(path))
                 {
                     var extractedContent = await System.IO.File.ReadAllTextAsync(path, Encoding.Unicode);
-                    result = JsonConvert.DeserializeObject<List<RowValidationStatus>>(extractedContent);
+                    result = JsonConvert.DeserializeObject<IEnumerable<RowValidationStatus>>(extractedContent);
                 }
                 else
                     throw new AppException($"Validation file not found at {path}", (int)HttpStatusCode.NotFound);
             }
-            catch(AppException ex)
+            catch (AppException ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
@@ -163,11 +147,13 @@ namespace FileUploadAndValidation.Repository
                 throw new AppException($"An error occured while extracting File Validation Result with BatchId : {queueMessage.BatchId} to NAS for validation", (int)HttpStatusCode.InternalServerError);
             }
 
-            return result?.AsEnumerable();
+            return result;
         }
 
-        public async Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream)
+        public async Task GetTemplateFileContentAsync(string fileName, MemoryStream outputStream)
         {
+            ArgumentGuard.NotNullOrWhiteSpace(fileName, nameof(fileName));
+
             var location = @"../data/template/";
             var path = Path.Combine(location, fileName);
 
@@ -177,14 +163,13 @@ namespace FileUploadAndValidation.Repository
                 {
                     using (FileStream fsSource = new FileStream(path, FileMode.Open, FileAccess.Read))
                     {
-                       await fsSource.CopyToAsync(outputStream);
+                        await fsSource.CopyToAsync(outputStream);
                     }
-                    return path;
                 }
                 else
                     throw new AppException($"Template file not found at {path}", (int)HttpStatusCode.NotFound);
             }
-            catch(AppException ex)
+            catch (AppException ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
@@ -225,9 +210,9 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<string> SaveValidationResultFile(string batchId, IEnumerable<BillPaymentRowStatus> content)
+        public async Task<string> SaveValidationResultFile(string batchId, string itemType, string contentType, IEnumerable<RowDetail> content)
         {
-            var location = @"../data/uservalidationresult/";
+            var location = _appConfig.NasFolderLocation + @"\uservalidationresult\";
             var fileName = batchId + "_validationresult.csv";
 
             var path = Path.Combine(location, fileName);
@@ -240,38 +225,144 @@ namespace FileUploadAndValidation.Repository
                 using (var writer = new StreamWriter(path))
                 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
-                    await csv.WriteRecordsAsync<BillPaymentRowStatus>(content);
+                    await csv.WriteRecordsAsync(MapToValidationResultFilePOCO(itemType, contentType, content));
                 }
             }
-            catch(AppException ex)
+            catch (AppException ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while saving the user file validation result with batch id : {batchId} to NAS ");
+                // return "uservalidationresult/firs_wvt_X1KTNC_202005091720288960_validate.json";
+                throw new AppException($"An error occured while saving the user validation result file to NAS ");
             }
 
             return fileName;
         }
+
+        private dynamic MapToValidationResultFilePOCO(string itemType, string contentType, IEnumerable<RowDetail> rowDetails)
+        {
+            dynamic result = default;
+
+            if (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem) 
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentId))
+            {
+                result = rowDetails
+                    .Select(s => new
+                    {
+                        Row = s.RowNum,
+                        s.Error,
+                        Status = s.RowStatus,
+                        s.Amount,
+                        s.CustomerId,
+                        s.ItemCode,
+                        s.ProductCode
+                    });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Wht) 
+                && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                result = rowDetails
+                    .Select(r => new FirsWhtRowStatusUntyped
+                    {
+                        Row = r.RowNum,
+                        Error = r.Error,
+                        Status = r.RowStatus,
+                        BeneficiaryTin = r.BeneficiaryTin,
+                        BeneficiaryName = r.BeneficiaryName,
+                        BeneficiaryAddress = r.BeneficiaryAddress,
+                        ContractDescription = r.ContractDescription,
+                        ContractDate = r.ContractDate,
+                        ContractAmount = r.ContractAmount,
+                        InvoiceNumber = r.InvoiceNumber,
+                        ContractType = r.ContractType,
+                        PeriodCovered = r.PeriodCovered,
+                        WhtRate = r.WhtRate,
+                        WhtAmount = r.WhtAmount
+                    });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Wvat)
+                && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                result = rowDetails
+                    .Select(r => new FirsWVatRowStatusUntyped
+                    {
+                        Row = r.RowNum,
+                        Error = r.Error,
+                        Status = r.RowStatus,
+                        ContractorName = r.ContractorName,
+                        ContractorAddress = r.ContractorAddress,
+                        ContractorTin = r.ContractorTin,
+                        ContractDescription = r.ContractDescription,
+                        TransactionDate = r.TransactionDate,
+                        NatureOfTransaction = r.NatureOfTransaction,
+                        InvoiceNumber = r.InvoiceNumber,
+                        TransactionCurrency = r.TransactionCurrency,
+                        CurrencyInvoicedValue = r.CurrencyInvoicedValue,
+                        TransactionInvoicedValue = r.TransactionInvoicedValue,
+                        CurrencyExchangeRate = r.CurrencyExchangeRate,
+                        TaxAccountNumber = r.TaxAccountNumber,
+                        WvatRate = r.WvatRate,
+                        WvatValue = r.WvatValue
+                    });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+               && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                result = rowDetails.Select(r => new 
+                { 
+                    Row = r.RowNum,
+                    r.Error,
+                    Status = r.RowStatus,
+                    r.BeneficiaryTin,
+                    r.BeneficiaryName,
+                    r.BeneficiaryAddress,
+                    r.ContractDescription,
+                    r.ContractDate,
+                    r.ContractAmount,
+                    r.InvoiceNumber,
+                    r.ContractType,
+                    r.PeriodCovered,
+                    r.WhtRate,
+                    r.WhtAmount,
+                    r.Amount,
+                    r.Comment,
+                    r.DocumentNumber,
+                    r.PayerTin,
+                    r.TaxType
+                });
+            }
+
+            return result;
+        }
+
+        public Task<FileProperty> SaveFileToValidate<T>(string batchId, IList<T> rowDetails)
+        {
+            return Task.FromResult(new FileProperty());
+        }
     }
+
     public interface INasRepository
     {
-        Task<FileProperty> SaveFileToValidate<T>(string batchId, IEnumerable<T> records);
+        Task<FileProperty> SaveFileToValidate<T>(string batchId, IList<T> rowDetails);
 
-        Task<FileProperty> SaveFileToValidate(string batchId, IEnumerable<NasBillPaymentDto> records);
+        Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
 
-        Task<FileProperty> SaveFileToConfirmed(string batchId, IEnumerable<NasBillPaymentDto> records);
+        Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
 
         Task<string> SaveRawFile(string batchId, Stream stream, string extension);
 
         Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(PaymentValidateMessage queueMessage);
 
-        Task<string> GetTemplateFileContentAsync(string fileName, MemoryStream outputStream);
+        Task GetTemplateFileContentAsync(string fileName, MemoryStream outputStream);
 
-        Task<string> SaveValidationResultFile(string batchId, IEnumerable<BillPaymentRowStatus> content);
+        Task<string> SaveValidationResultFile(string batchId, string itemType, string contentType, IEnumerable<RowDetail> content);
 
         Task GetUserValidationResultAsync(string fileName, MemoryStream outputStream);
     }

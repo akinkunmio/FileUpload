@@ -4,15 +4,12 @@ using System.Text;
 
 namespace FileUploadAndValidation.Models
 {
-    public class SuccessInitiatePaymentResponse
+    public class InitiatePaymentResponse
     {
         public string ResponseCode { get; set; }
         public object ResponseData { get; set; }
+        public string ResponseDescription { get; set; }
+
     }
 
-    public class FailedInitiatePaymentResponse
-    {
-        public string ResponseCode { get; set; }
-        public string ResponseDescription { get; set; }
-    }
 }
