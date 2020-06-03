@@ -684,13 +684,8 @@ namespace FileUploadAndValidation.Repository
                         .Where(v => v.Status.ToLower()
                         .Equals("valid"));
 
-                    decimal totalAmount = 0;
-                    if (fileSummary.ContentType.ToLower().Equals(GenericConstants.BillPayment))
-                        totalAmount = rowsStatus
-                        .Where(r => valids.Any(v => v.Row == r.RowNum))
-                        .Select(s => decimal.Parse(s.Amount))
-                        .Sum();
-
+                    decimal totalAmount = GenericHelpers.GetAmountSum(fileSummary.ContentType, fileSummary.ItemType, rowsStatus, valids);
+                    
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
                         try
