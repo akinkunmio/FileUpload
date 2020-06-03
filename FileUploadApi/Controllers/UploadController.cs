@@ -106,6 +106,9 @@ namespace FileUploadApi.Controllers
                 if (string.IsNullOrWhiteSpace(Request.Form["HasHeaderRow"].ToString()))
                     throw new AppException("Value must be passed for 'HasHeaderRow'.");
 
+                if (Request.Form.Files.Count() == 0)
+                    throw new AppException("Please upload a file!."); 
+
                 var request = new FileUploadRequest
                 {
                     ItemType = GenericConstants.MultiTax,
@@ -221,7 +224,7 @@ namespace FileUploadApi.Controllers
             try
             {
                 if (HttpContext.Request.Headers["Authorization"].ToString() == null)
-                    throw new AppException("'Auth Token' cannot be null or empty", (int)HttpStatusCode.Unauthorized);
+                    throw new AppException("'Auth Token' cannot be null or empty!.", (int)HttpStatusCode.Unauthorized);
 
                 var initiatePaymentOptions = new InitiatePaymentOptions()
                 {

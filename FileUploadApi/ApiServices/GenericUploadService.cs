@@ -235,13 +235,8 @@ namespace FileUploadApi.ApiServices
             var confirmedPayments = await _dbRepository.GetConfirmedPayments(batchId);
 
             if (confirmedPayments.Count() < 1 || !confirmedPayments.Any())
-            { 
-                result.errorMessage = "No records found, to initiate payment on!.";
-                result.PaymentInitiated = false;
-                return result;
-            }
+                throw new AppException($"No records found, to initiate payment on!.", (int)HttpStatusCode.BadRequest);
 
-                //throw new AppException($"!.", (int)HttpStatusCode.NotFound);
             var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
             var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, fileSummary.ContentType, fileSummary.ItemType, confirmedPayments);

@@ -28,7 +28,7 @@ namespace FileUploadApi
                     Name = "file",
                     In = "formData",
                     Description = "Upload File",
-                    Required = true,
+                    Required = false,
                     Type = "file"
                 });
 

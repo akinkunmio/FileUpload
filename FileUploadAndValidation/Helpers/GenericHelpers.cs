@@ -215,8 +215,8 @@ namespace FileUploadAndValidation.Helpers
                 var result = new List<ValidateFileNasModel>();
 
                 var whtRows = rowDetails
-                    .Where(r => r.TaxType.ToLower()
-                    .Equals(GenericConstants.Wht))
+                    .Where(r => GenericConstants.Wht
+                    .Equals(r.TaxType.ToLower()))
                     .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wht, s));
 
                 result.Add(new ValidateFileNasModel
@@ -227,8 +227,8 @@ namespace FileUploadAndValidation.Helpers
                 });
 
                 var citRows = rowDetails
-                    .Where(r => r.TaxType.ToLower()
-                    .Equals(GenericConstants.Cit))
+                    .Where(r => GenericConstants.Cit
+                    .Equals(r.TaxType.ToLower()))
                     .Select(s => MapToNasValidateObject(contentType, GenericConstants.Cit, s));
 
                 result.Add(new ValidateFileNasModel
@@ -239,8 +239,8 @@ namespace FileUploadAndValidation.Helpers
                 });
 
                 var edtRows = rowDetails
-                   .Where(r => r.TaxType.ToLower()
-                   .Equals(GenericConstants.Edt))
+                   .Where(r => GenericConstants.Edt
+                   .Equals(r.TaxType.ToLower()))
                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Edt, s));
 
                 result.Add(new ValidateFileNasModel
@@ -251,8 +251,8 @@ namespace FileUploadAndValidation.Helpers
                 });
 
                 var preOpLevyRows = rowDetails
-                   .Where(r => r.TaxType.ToLower()
-                   .Equals(GenericConstants.PreOpLevy))
+                   .Where(r => GenericConstants.PreOpLevy
+                   .Equals(r.TaxType.ToLower()))
                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.PreOpLevy, s));
 
                 result.Add(new ValidateFileNasModel
@@ -263,15 +263,15 @@ namespace FileUploadAndValidation.Helpers
                 });
 
                 var vatRows = rowDetails
-                  .Where(r => r.TaxType.ToLower()
-                  .Equals(GenericConstants.Vat))
+                  .Where(r => GenericConstants.Vat
+                  .Equals(r.TaxType.ToLower()))
                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Vat, s));
 
                 result.Add(new ValidateFileNasModel
                 {
                     Authority = contentType,
                     TaxType = GenericConstants.Vat,
-                    Taxes = preOpLevyRows
+                    Taxes = vatRows
                 });
 
                 return result;
