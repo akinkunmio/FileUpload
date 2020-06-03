@@ -232,10 +232,10 @@ namespace FileUploadAndValidation.UploadServices
                     var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
                     return new ConfirmedBillResponse 
                     {
-                         approvalStatusKey = approvalResult.ResponseData.approvalStatusKey,
-                         noOfApprovals = approvalResult.ResponseData.noOfApprovals,
-                         status = approvalResult.ResponseData.status,
-                         verdict = approvalResult.ResponseData.verdict
+                         ApprovalStatusKey = approvalResult.ResponseData.approvalStatusKey,
+                         NoOfApprovals = approvalResult.ResponseData.noOfApprovals,
+                         Status = approvalResult.ResponseData.status,
+                         Verdict = approvalResult.ResponseData.verdict
                     };
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
@@ -281,9 +281,9 @@ namespace FileUploadAndValidation.UploadServices
 
     public class ConfirmedBillResponse
     {
-        public object approvalStatusKey { get; set; }
-        public string status { get; set; }
-        public string verdict { get; set; }
-        public string noOfApprovals { get; set; }
+        public object ApprovalStatusKey { get; set; }
+        public string Status { get; set; }
+        public string Verdict { get; set; }
+        public string NoOfApprovals { get; set; }
     }
 }

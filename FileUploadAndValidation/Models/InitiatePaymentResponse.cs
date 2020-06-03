@@ -28,7 +28,7 @@ namespace FileUploadAndValidation.Models
 
         public object userIds { get; set; }
 
-        public string nextUserIds { get; set; }
+        public object nextUserIds { get; set; }
     }
 
 }
