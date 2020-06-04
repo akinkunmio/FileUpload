@@ -118,7 +118,7 @@ namespace FileUploadAndValidation.Helpers
             {
                 result.Append($"{failure.ColumnValidationErrors[i].PropertyName}: {failure.ColumnValidationErrors[i].ErrorMessage}");
 
-                if (failure.ColumnValidationErrors[i+1] != null)
+                if (i < failure.ColumnValidationErrors.Count() - 1)
                     result.Append(", ");
             }
 
