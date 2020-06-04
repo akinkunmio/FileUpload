@@ -51,12 +51,12 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                //return new FileProperty
-                //{
-                //    BatchId = batchId,
-                //    DataStore = 1,
-                //    Url = $"validate/firs_multitax1_ZMWYAA_202005290823495638_validate.json"
-                //};
+                return new FileProperty
+                {
+                    BatchId = batchId,
+                    DataStore = 1,
+                    Url = $"validate/firs_multitax1_ZMWYAA_202005290823495638_validate.json"
+                };
                 throw new AppException($"An error occured while saving file for validation", 400);
             }
         }
@@ -119,12 +119,12 @@ namespace FileUploadAndValidation.Repository
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(PaymentValidateMessage queueMessage)
         {
             IEnumerable<RowValidationStatus> result; 
-            var location = @"../data/";
+            //var location = @"../data/";
             //var location = _appConfig.NasFolderLocation;
 
             //var path = location + queueMessage.ResultLocation;
 
-            var path = Path.Combine(location, queueMessage.ResultLocation);
+            var path = queueMessage.ResultLocation;
 
             try
             {
@@ -319,6 +319,33 @@ namespace FileUploadAndValidation.Repository
             {
                 result = rowDetails.Select(r => new 
                 { 
+                    Row = r.RowNum,
+                    r.Error,
+                    Status = r.RowStatus,
+                    r.BeneficiaryTin,
+                    r.BeneficiaryName,
+                    r.BeneficiaryAddress,
+                    r.ContractDescription,
+                    r.ContractDate,
+                    r.ContractAmount,
+                    r.InvoiceNumber,
+                    r.ContractType,
+                    r.PeriodCovered,
+                    r.WhtRate,
+                    r.WhtAmount,
+                    r.Amount,
+                    r.Comment,
+                    r.DocumentNumber,
+                    r.PayerTin,
+                    r.TaxType
+                });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+               && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            {
+                result = rowDetails.Select(r => new
+                {
                     Row = r.RowNum,
                     r.Error,
                     Status = r.RowStatus,

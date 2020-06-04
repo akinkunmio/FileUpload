@@ -164,10 +164,11 @@ namespace FileUploadApi.Controllers
                 
             try
             {
-
                 var status = (Enum.IsDefined(typeof(StatusEnum), pagination.Status))
                 ? (StatusEnum)pagination.Status
                 : throw new AppException("The field 'Status' must have a value between 0 and 2.");
+
+                string auth = Request.Headers["Authorization"].ToString();
 
                 var paginationFilter =
                    new PaginationFilter(pagination.PageSize,
@@ -176,7 +177,7 @@ namespace FileUploadApi.Controllers
                    pagination.TaxType
                    );
 
-                var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter);
+                var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter, auth);
 
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
@@ -373,7 +374,6 @@ namespace FileUploadApi.Controllers
                 _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 return BadRequest(new { errorMessage = "An error occured. Please retry!." });
                 //throw new AppException("An error occured.Please, retry!.", 400);
-
             }
 
             return Ok(response);
@@ -404,7 +404,6 @@ namespace FileUploadApi.Controllers
                 };
 
                 return result;
-                //throw ex;
             }
             catch (Exception ex)
             {

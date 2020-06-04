@@ -87,7 +87,7 @@ namespace FileUploadApi.ApiServices
             return pagedData;
         }
 
-        public async Task<PagedData<dynamic>> GetPaymentsStatus(string batchId, PaginationFilter pagination)
+        public async Task<PagedData<dynamic>> GetPaymentsStatus(string batchId, PaginationFilter pagination, string url)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
 
@@ -96,6 +96,15 @@ namespace FileUploadApi.ApiServices
             try
             {
                 var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
+
+                if(fileSummary.TransactionStatus.Equals(GenericConstants.PendingValidation))
+                    _httpService.ValidateRecords(new FileProperty 
+                    {  
+                        BatchId = batchId, 
+                        ContentType = fileSummary.ContentType, 
+                        ItemType = fileSummary.ItemType,  
+                        Url = fileSummary.NasToValidateFile
+                    }, )
 
                 var paymentStatus = await _dbRepository.GetPaymentRowStatuses(batchId, pagination);
 
@@ -270,8 +279,13 @@ namespace FileUploadApi.ApiServices
             {
                 fileName = GenericConstants.BillPaymentCsvTemplate;
             }
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+            {
+                fileName = GenericConstants.FirsMultitaxPaymentCsvTemplate;
+            }
             else
-                throw new AppException("Template not found");
+                throw new AppException("Template not found!.");
 
             await _nasRepository.GetTemplateFileContentAsync(fileName, outputStream);
 
@@ -283,10 +297,10 @@ namespace FileUploadApi.ApiServices
             var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
             if (fileSummary == null)
-                throw new AppException($"Batch Upload Summary for BatchId: {batchId} not found", (int)HttpStatusCode.NotFound);
+                throw new AppException($"Batch Upload Summary for BatchId: {batchId} not found!.", (int)HttpStatusCode.NotFound);
 
             if (string.IsNullOrWhiteSpace(fileSummary.NasUserValidationFile))
-                throw new AppException($"Validation file not found for batch with Id : {batchId}", (int)HttpStatusCode.NotFound);
+                throw new AppException($"Validation file not found for batch with Id '{batchId}'!.", (int)HttpStatusCode.NotFound);
 
             await _nasRepository.GetUserValidationResultAsync(fileSummary.NasUserValidationFile, outputStream);
 

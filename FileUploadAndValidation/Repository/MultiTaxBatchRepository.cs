@@ -51,6 +51,8 @@ namespace FileUploadAndValidation.Repository
             fileProperty.ContentType = request.ContentType;
             fileProperty.ItemType = request.ItemType;
 
+            // save url to db
+
             await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
         }
     }

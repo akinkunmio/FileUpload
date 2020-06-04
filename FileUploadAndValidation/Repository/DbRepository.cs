@@ -684,7 +684,7 @@ namespace FileUploadAndValidation.Repository
                         .Where(v => v.Status.ToLower()
                         .Equals("valid"));
 
-                    decimal totalAmount = GenericHelpers.GetAmountSum(fileSummary.ContentType, fileSummary.ItemType, rowsStatus, valids);
+                    decimal totalAmount = GenericHelpers.GetAmountSum(fileSummary.ContentC:\Interswitch\Quick-Teller-for-Business\qb-upload-service\FileUploadAndValidation\Repository\DbRepository.csType, fileSummary.ItemType, rowsStatus, valids);
                     
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
