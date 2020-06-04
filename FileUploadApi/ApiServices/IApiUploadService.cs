@@ -2,6 +2,7 @@
 using FileUploadAndValidation.UploadServices;
 using FileUploadApi.Controllers;
 using FileUploadApi.Models;
+using FilleUploadCore.FileReaders;
 using FilleUploadCore.UploadManagers;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
@@ -25,8 +26,14 @@ namespace FileUploadApi.ApiServices
         Task<string> GetFileValidationResultAsync(string extension, MemoryStream outputStream);
     }
 
-    public interface IBatchProcessor
-    {
-        Task<UploadResult> UploadFileAsync(HttpRequest httpRequest);
-    }
+    // public interface IBatchProcessor
+    // {
+    //     Task<UploadResult> UploadFileAsync(IEnumerable<Row> rows, IFileUploadRequest request);
+    // }
+
+    // public interface IBatchFileProcessor<T>
+    // {
+    //     Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, T request);
+    // }
+
 }

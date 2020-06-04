@@ -5,6 +5,7 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <UserSecretsId>340a2f70-32c1-4dbd-a329-3ba65ac8fb64</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,7 @@
     <PackageReference Include="EPPlus" Version="4.5.3.2" />
     <PackageReference Include="EPPlus.Core.Extensions" Version="2.3.2" />
     <PackageReference Include="FluentValidation" Version="8.6.0" />
-    <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="3.0.0" />
+    <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="4.5.0" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="5.5.5" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="5.5.5" />
     <PackageReference Include="Microsoft.AspNetCore.App" />

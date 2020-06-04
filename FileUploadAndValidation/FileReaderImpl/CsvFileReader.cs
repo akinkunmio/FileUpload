@@ -15,6 +15,12 @@ namespace FileUploadAndValidation.FileReaderImpl
 {
     public class CsvFileReader : IFileReader
     {
+
+        public bool CanRead(string fileExtension)
+        {
+            return fileExtension.ToLower() == "csv";
+        }
+
         public IEnumerable<Row> Read(Stream stream)
         {
             var rowList = new List<Row>();

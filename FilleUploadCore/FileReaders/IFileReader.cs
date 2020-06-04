@@ -8,6 +8,7 @@ namespace FilleUploadCore.FileReaders
 {
     public interface IFileReader
     {
+        bool CanRead(string fileExtension);
         IEnumerable<Row> Read(Stream stream);
     }
 
