@@ -53,7 +53,7 @@ namespace FileUploadApi.ApiServices
                 BatchId = batchId
             };
 
-            await dbRepository.InsertAllUploadRecords(batch, "");
+            await dbRepository.InsertAllUploadRecords(batch);
                 
             // validator needs the rows and the context (security, request)
             // validator needs the rules to validate (this can be inside the row)

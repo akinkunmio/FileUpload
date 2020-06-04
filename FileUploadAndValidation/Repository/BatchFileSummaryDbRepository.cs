@@ -67,12 +67,15 @@ namespace FileUploadAndValidation.Repository
                 upload_date = fileDetail.UploadDate,
                 content_type = fileDetail.ContentType,
                 nas_raw_file = fileDetail.NasRawFile,
-                userid = fileDetail.UserId
+                userid = fileDetail.UserId,
+                product_code = fileDetail.ProductCode,
+                product_name = fileDetail.ProductName,
+                file_name = fileDetail.FileName, 
             },
             transaction: connectionDetails.transaction,
             commandType: System.Data.CommandType.StoredProcedure);
 
-            return fileDetail.BatchId;  
+            return transactionSummaryId.ToString();  
         }
 
         public async Task<BatchFileSummary> GetBatchUploadSummary(string batchId)

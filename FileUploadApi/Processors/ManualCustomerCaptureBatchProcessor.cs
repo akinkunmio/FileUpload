@@ -57,10 +57,10 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             ModifiedDate = DateTime.Now.ToShortDateString(),
             ProductCode = "FCT-IRS",
             ProductName = "FCT-IRS",
-            //uploadedBy = userId            
+            //UplodedBy =  context.UserName,           
         };
 
-        await dbRepository.InsertAllUploadRecords(batch, "");
+        await dbRepository.InsertAllUploadRecords(batch);
 
         return batch;
     }

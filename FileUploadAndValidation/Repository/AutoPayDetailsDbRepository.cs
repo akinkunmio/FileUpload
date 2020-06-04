@@ -26,7 +26,7 @@ namespace FileUploadAndValidation.Repository
             _logger = logger;        
             _batchRepository = batchRepository;
         }
-        public async Task<string> InsertAllUploadRecords(Batch<AutoPayRow> batch, string itemType = null)
+        public async Task<string> InsertAllUploadRecords(Batch<AutoPayRow> batch)
         {
             try
             {

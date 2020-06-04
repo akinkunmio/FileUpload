@@ -37,9 +37,11 @@ namespace FileUploadApi.Controllers
             try
             {
                 var fctIRSProductCode = "FCT-IRS";
-                var request = FileUploadRequest.FromRequestForSingle(Request);
+                var request = FileUploadRequest.FromRequestForFCTIRS(Request);
+                request.ProductCode = fctIRSProductCode;
+                request.ProductName = fctIRSProductCode;
+
                 IEnumerable<Row> rows = new List<Row>();
-                //ValidateUserId(request.UserId.ToString());
                 IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");
 
                 using (var contentStream = request.FileRef.OpenReadStream())

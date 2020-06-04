@@ -28,6 +28,7 @@ namespace FileUploadAndValidation.Models
         public string RawFileLocation { get; set; }
 
         public long? UserId { get; set; }
+        public UserContext User {get;set;}
 
         public string ProductCode { get; set; }
 
@@ -65,6 +66,29 @@ namespace FileUploadAndValidation.Models
             };
         }
 
+        public static FileUploadRequest FromRequestForFCTIRS(HttpRequest request)
+        {
+            var file = request.Form.Files.FirstOrDefault();
+            if(file == null) throw new AppException("No file uploaded", "No file uploaded");
+
+            return new FileUploadRequest 
+            {
+                    ItemType = GenericConstants.FCTirs,
+                    ContentType = GenericConstants.FCTirs,
+                    AuthToken = request.Headers["Authorization"].ToString(),
+                    FileRef = file,
+                    FileName = file.FileName.Split('.')[0],
+                    FileExtension = Path.GetExtension(file.FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower(),
+                    UserId = 0,
+                    User = new UserContext {
+                        Username = request.Headers["userName"]
+                    },
+                    FileSize = file.Length
+            };
+        }
+
         public static FileUploadRequest FromRequestForMultiple(HttpRequest request) 
         {
             var userId = /*request.Form["id"].ToString() ??*/ "255";
@@ -83,5 +107,13 @@ namespace FileUploadAndValidation.Models
                     FileSize = request.Form.Files.First().Length
             };
         }
+    }
+
+    public class UserContext
+    {
+        public string Username { get; set;}
+        public string InstitutionCode {get; set; }
+        public string InstitutionType { get;set; }
+        public string RoleName { get; set; }
     }
 }

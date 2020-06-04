@@ -7,7 +7,6 @@ namespace FileUploadAndValidation.Repository
 {
     public interface IDetailsDbRepository<T> where T : ValidatedRow
     {
-        Task<string> InsertAllUploadRecords(Batch<T> batch,
-                                            string itemType = null);
+        Task<string> InsertAllUploadRecords(Batch<T> batch);
     }
 }
