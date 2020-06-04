@@ -59,7 +59,7 @@ namespace FileUploadApi.ApiServices
             return batchFileSummaryDto;
         }
 
-        public async Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, PaginationFilter paginationFilter)
+        public async Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, SummaryPaginationFilter paginationFilter)
         {
             var userFileSummaries = new PagedData<BatchFileSummary>();
             var pagedData = new PagedData<BatchFileSummaryDto>();
@@ -108,6 +108,7 @@ namespace FileUploadApi.ApiServices
                 paymentStatuses.InvalidCount = fileSummary.NumOfRecords - fileSummary.NumOfValidRecords;
                 paymentStatuses.ValidRowCount = fileSummary.NumOfValidRecords;
                 paymentStatuses.FileName = fileSummary.NameOfFile;
+                paymentStatuses.IsValidated = fileSummary.UploadSuccessful;
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentId)
                 || fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
@@ -192,8 +193,27 @@ namespace FileUploadApi.ApiServices
                            Status = s.RowStatus
                        });
 
-                if (paymentStatuses.Data.Count() < 1)
-                    throw new AppException($"No result found for Batch Id '{batchId}'", (int)HttpStatusCode.NotFound);
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.MultiTax)
+                    && fileSummary.ContentType.ToLower().Equals(GenericConstants.FctIrs))
+                    paymentStatuses.Data = paymentStatus
+                       .Select(s => new
+                       {
+                           Row = s.RowNum,
+                           s.ProductCode,
+                           s.ItemCode,
+                           s.CustomerId,
+                           s.CustomerName,
+                           s.Amount,
+                           Desc = s.TaxType,
+                           s.PhoneNumber,
+                           s.Email,
+                           Address = s.AddressInfo,
+                           s.Error,
+                           Status = s.RowStatus
+                       });
+
+                //if (paymentStatuses.Data.Count() < 1)
+                //    throw new AppException($"No result found", (int)HttpStatusCode.OK);
             }
             catch (AppException appEx)
             {
@@ -210,16 +230,17 @@ namespace FileUploadApi.ApiServices
 
         public async Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions)
         {
-            ConfirmedBillResponse result;
+            ConfirmedBillResponse result = default;
 
             var confirmedPayments = await _dbRepository.GetConfirmedPayments(batchId);
 
             if (confirmedPayments.Count() < 1 || !confirmedPayments.Any())
-                throw new AppException($"Records awaiting payment initiation not found for batch Id: {batchId}", (int)HttpStatusCode.NotFound);
-
-            var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, initiatePaymentOptions.ContentType, initiatePaymentOptions.ItemType, confirmedPayments);
+                throw new AppException($"No records found, to initiate payment on!.", (int)HttpStatusCode.BadRequest);
 
             var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
+
+            var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, fileSummary.ContentType, fileSummary.ItemType, confirmedPayments);
+
 
             fileProperty.ContentType = fileSummary.ContentType;
             fileProperty.ItemType = fileSummary.ItemType;

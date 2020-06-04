@@ -84,7 +84,7 @@ namespace FileUploadAndValidation.FileReaderImpl
             {
                 _logger.LogError("Could not successfully Extract Txt file : {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                throw new AppException("An error occured while extracting content of file!." + ex.Message, (int)HttpStatusCode.InternalServerError);
+                throw new AppException("An error occured while extracting content of file!.", 400);
             }
 
             return rowList;

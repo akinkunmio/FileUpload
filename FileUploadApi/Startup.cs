@@ -51,6 +51,7 @@ namespace FileUploadApi
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             services.AddProblemDetails();
+
             services.AddScoped<IGenericUploadService, GenericUploadService>();
 
             services.AddSingleton<IAppConfig, AppConfig>();
@@ -96,6 +97,8 @@ namespace FileUploadApi
             services.AddScoped<IFileContentValidator, BillPaymentFileContentValidator>();
             services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
             services.AddScoped<IFileContentValidator, FirsMultiTaxContentValidator>();
+            services.AddScoped<IFileContentValidator, FctIrsMultiTaxContentValidator>();
+
 
             services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<IBatchRepository, MultiTaxBatchRepository>();
@@ -131,6 +134,7 @@ namespace FileUploadApi
             });
            
             services.AddCors();
+            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2).AddViewComponentsAsServices();
             
             services.AddScoped<SendBillPaymentValidateMessageConsumer>();
@@ -195,6 +199,7 @@ namespace FileUploadApi
             }
             else
             {
+                app.UseExceptionHandler(err => err.UseCustomErrors(env));
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
@@ -211,6 +216,7 @@ namespace FileUploadApi
                .AllowCredentials()
                );
 
+           // app.UseProblemDetails();
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUI(c => {

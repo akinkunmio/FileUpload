@@ -117,7 +117,7 @@ namespace FileUploadAndValidation.FileServices
             try
             {
                 if (!rows.Any())
-                    throw new AppException("Empty file was uploaded!.");
+                    throw new AppException("Empty file was uploaded!.", 400);
 
                 var columnContract = new ColumnContract[] { };
 

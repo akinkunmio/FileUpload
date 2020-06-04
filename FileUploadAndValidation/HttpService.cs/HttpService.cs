@@ -112,13 +112,23 @@ namespace FileUploadAndValidation.UploadServices
             }
             catch(AppException ex)
             {
-                _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError("Error occured while making http request to validate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw ex;
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("Error occured while performing bill payment validation"+ex.Message);
+                _logger.LogError("Error occured while making http request to validate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                //return new ValidationResponse
+                //{
+                //    ResponseCode = "90000",
+                //    ResponseDescription = "Validation request is being processed",
+                //    ResponseData = new ValidationData
+                //    {
+                //        NumOfRecords = 6,
+                //        ResultMode = "Queue"
+                //    }
+                //};
+                throw new AppException("Error occured while performing payment validation", 400);
             }
         }
 
@@ -220,16 +230,22 @@ namespace FileUploadAndValidation.UploadServices
                 if (response.IsSuccessStatusCode)
                 {
                     var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
-                    return new ConfirmedBillResponse { PaymentInitiated = true };
+                    return new ConfirmedBillResponse 
+                    {
+                         ApprovalStatusKey = approvalResult.ResponseData.approvalStatusKey,
+                         NoOfApprovals = approvalResult.ResponseData.noOfApprovals,
+                         Status = approvalResult.ResponseData.status,
+                         Verdict = approvalResult.ResponseData.verdict
+                    };
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
                     var approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
-                    throw new AppException(approvalResult.ResponseDescription, (int)HttpStatusCode.BadRequest, new ConfirmedBillResponse { PaymentInitiated = false });
+                    throw new AppException(approvalResult.ResponseDescription, (int)HttpStatusCode.BadRequest);
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new AppException("Unauthorized", (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
+                    throw new AppException("Unauthorized", (int)HttpStatusCode.Unauthorized);
                 }
                 else
                 {
@@ -237,9 +253,9 @@ namespace FileUploadAndValidation.UploadServices
                     if (responseResult != null)
                     {
                         approvalResult = JsonConvert.DeserializeObject<InitiatePaymentResponse>(responseResult);
-                        throw new AppException(approvalResult.ResponseDescription, (int)response.StatusCode, new ConfirmedBillResponse { PaymentInitiated = false });
+                        throw new AppException(approvalResult.ResponseDescription, (int)response.StatusCode);
                     }
-                    throw new AppException("Unable to initiate bill transaction payment.", (int)HttpStatusCode.Unauthorized, new ConfirmedBillResponse { PaymentInitiated = false });
+                    throw new AppException("Unable to initiate payment. Please, retry!.", (int)HttpStatusCode.BadRequest);
                 }
             }
             catch (AppException ex)
@@ -250,7 +266,7 @@ namespace FileUploadAndValidation.UploadServices
             catch (Exception ex)
             {
                 _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("Unknown error occured while initiating Bill Payment Initiation"+ex.Message);
+                throw new AppException("An error occured while initiating payment. Please, retry!.", 400);
             }
 
         }
@@ -265,6 +281,9 @@ namespace FileUploadAndValidation.UploadServices
 
     public class ConfirmedBillResponse
     {
-        public bool PaymentInitiated { get; set; }
+        public object ApprovalStatusKey { get; set; }
+        public string Status { get; set; }
+        public string Verdict { get; set; }
+        public string NoOfApprovals { get; set; }
     }
 }

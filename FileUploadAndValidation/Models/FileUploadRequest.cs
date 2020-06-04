@@ -73,8 +73,8 @@ namespace FileUploadAndValidation.Models
 
             return new FileUploadRequest 
             {
-                    ItemType = GenericConstants.FCTirs,
-                    ContentType = GenericConstants.FCTirs,
+                    ItemType = GenericConstants.FctIrs,
+                    ContentType = GenericConstants.FctIrs,
                     AuthToken = request.Headers["Authorization"].ToString(),
                     FileRef = file,
                     FileName = file.FileName.Split('.')[0],
@@ -107,6 +107,32 @@ namespace FileUploadAndValidation.Models
                     FileSize = request.Form.Files.First().Length
             };
         }
+
+        //public static FileUploadRequest FromRequestForSingle(HttpRequest request)
+        //{
+        //    var file = request.Form.Files.First();
+        //    var userId = /*request.Form["id"].ToString() ??*/ "255";
+        //    var productCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL";
+        //    var productName = /*request.Form["productName"].ToString() ??*/ "AIRTEL";
+        //    var businessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001";
+
+        //    return new FileUploadRequest
+        //    {
+        //        FileRef = file,
+        //        AuthToken = request.Headers["Authorization"],
+        //        ContentType = request.Path["contentType"],
+        //        ItemType = request.Query["itemType"],
+        //        FileName = file.FileName.Split('.')[0],
+        //        FileSize = file.Length,
+        //        FileExtension = Path.GetExtension(file.FileName)
+        //                            .Replace(".", string.Empty)
+        //                            .ToLower(),
+        //        UserId = long.Parse(userId),
+        //        ProductCode = productCode,
+        //        ProductName = productName,
+        //        BusinessTin = businessTin,
+        //    };
+        //}
     }
 
     public class UserContext

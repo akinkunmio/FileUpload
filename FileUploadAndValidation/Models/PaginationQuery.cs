@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FilleUploadCore.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,21 +11,31 @@ namespace FileUploadAndValidation.Models
         {
             PageNumber = 1;
             PageSize = 10;
-            Status = StatusEnum.All;
+            Status = (int)StatusEnum.All;
         }
 
-        public PaginationQuery(int pageNumber, int pageSize, StatusEnum status)
+        public PaginationQuery(int pageNumber, int pageSize, int status)
         {
             PageSize = pageSize;
             PageNumber = pageNumber;
             Status = status;
         }
 
+        public PaginationQuery(int pageNumber, int pageSize, int status, string taxType)
+        {
+            PageSize = pageSize;
+            PageNumber = pageNumber;
+            Status = status;
+            TaxType = taxType;
+        }
+
         public int PageNumber { get; set; }
 
         public int PageSize { get; set; }
 
-        public StatusEnum Status { get; set; }
+        public int Status { get; set; }
+
+        public string TaxType { get; set; }
     }
 
     public class SummaryPaginationQuery
@@ -41,8 +52,31 @@ namespace FileUploadAndValidation.Models
             PageNumber = pageNumber;
         }
 
+        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode, string productName)
+        {
+            PageSize = pageSize;
+            PageNumber = pageNumber;
+            ProductCode = productCode;
+            ProductName = productName;
+        }
+
+        public SummaryPaginationQuery(int pageNumber, int pageSize, string productCode, string productName, int status)
+        {
+            PageSize = pageSize;
+            PageNumber = pageNumber;
+            ProductCode = productCode;
+            ProductName = productName;
+            Status = status;
+        }
+
         public int PageNumber { get; set; }
 
         public int PageSize { get; set; }
+
+        public string ProductCode { get; set; }
+
+        public string ProductName { get; set; }
+
+        public int Status { get; set; } = (int)SummaryStatusEnum.All;
     }
 }

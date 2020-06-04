@@ -3,20 +3,18 @@ using FileUploadAndValidation.Models;
 using FileUploadApi.ApiServices;
 using FileUploadApi.Models;
 using FilleUploadCore.Exceptions;
+using FilleUploadCore.FileReaders;
 using FilleUploadCore.UploadManagers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MimeMapping;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Collections.ObjectModel;
-using MimeMapping;
-using FilleUploadCore.FileReaders;
-using System.Collections.Generic;
-using AutoMapper;
 
 namespace FileUploadApi.Controllers
 {
@@ -53,7 +51,25 @@ namespace FileUploadApi.Controllers
             {
                 ValidateUserId(userId);
 
-                var request = FileUploadRequest.FromRequestForSingle(Request);
+                var request = new FileUploadRequest
+                {
+                    ItemType = itemType,
+                    ContentType = contentType,
+                    AuthToken = Request.Headers["Authorization"].ToString(),
+                    FileRef = Request.Form.Files.First(),
+                    FileName = Request.Form.Files
+                                        .First().FileName
+                                        .Split('.')[0],
+                    FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower(),
+                    UserId = long.Parse(userId),
+                    ProductCode = Request.Form["productCode"].ToString() ??"AIRTEL",
+                    ProductName = Request.Form["productName"].ToString() ?? "AIRTEL",
+                    BusinessTin = Request.Form["businessTin"].ToString() ?? "00771252-0001",
+                    FileSize = Request.Form.Files.First().Length,
+                    HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool()
+                };
 
                 response = await _batchProcessor.UploadFileAsync(request);
             }
@@ -72,7 +88,7 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
+                return BadRequest(new { errorMessage = "An error occured. Please retry!." });
             }
 
             return Ok(response);
@@ -84,14 +100,17 @@ namespace FileUploadApi.Controllers
         {
             ResponseResult response;
 
-            var userId = /*Request.Form["id"].ToString()*/ "255";
+            var userId = Request.Form["id"].ToString() /*"255"*/;
 
             try
             {
                 ValidateUserId(userId);
 
-                //if (string.IsNullOrWhiteSpace(Request.Headers["HasHeaderRow"].ToString()))
-                //    throw new AppException("Value must be passed for HasHeaderRow");
+                if (string.IsNullOrWhiteSpace(Request.Form["HasHeaderRow"].ToString()))
+                    throw new AppException("Value must be passed for 'HasHeaderRow'.");
+
+                if (Request.Form.Files.Count() == 0)
+                    throw new AppException("Please upload a file!."); 
 
                 var request = new FileUploadRequest
                 {
@@ -106,8 +125,10 @@ namespace FileUploadApi.Controllers
                                     .Replace(".", string.Empty)
                                     .ToLower(),
                     UserId = long.Parse(userId),
+                    ProductCode = Request.Form["productCode"].ToString(),
+                    ProductName = Request.Form["productName"].ToString(),
                     FileSize = Request.Form.Files.First().Length,
-                    HasHeaderRow = /*Request.Headers["HasHeaderRow"].ToString().ToBool()*/ true
+                    HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool() /*true*/
                 };
 
                 response = await _multiTaxProcessor.UploadFileAsync(request);
@@ -116,7 +137,7 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { ex.Message })
+                var result = new ObjectResult(new { errorMessage = ex.Message })
                 {
                     StatusCode = ex.StatusCode,
                 };
@@ -127,7 +148,7 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
+                return BadRequest(new { errorMessage = "An error occured. Please retry!." });
             }
 
             return Ok(response);
@@ -137,20 +158,27 @@ namespace FileUploadApi.Controllers
         [HttpGet("{batchId}/status")]
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
         {
-            var paginationFilter =
-               new PaginationFilter(pagination.PageSize,
-               pagination.PageNumber,
-               pagination.Status);
 
             var response = new PagedResponse<dynamic>()
             {
                 PageSize = pagination.PageSize,
                 PageNumber = pagination.PageNumber,
-                Status = pagination.Status.ToString()
             };
-
+                
             try
             {
+
+                var status = (Enum.IsDefined(typeof(StatusEnum), pagination.Status))
+                ? (StatusEnum)pagination.Status
+                : throw new AppException("The field 'Status' must have a value between 0 and 2.");
+
+                var paginationFilter =
+                   new PaginationFilter(pagination.PageSize,
+                   pagination.PageNumber,
+                   status,
+                   pagination.TaxType
+                   );
+
                 var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter);
 
                 response.Data = result.Data;
@@ -164,14 +192,15 @@ namespace FileUploadApi.Controllers
                 response.ContentType = result.ContentType;
                 response.ValidCount = result.ValidRowCount;
                 response.InvalidCount = result.InvalidCount;
+                response.Status = ((StatusEnum)pagination.Status).ToString();
+                response.IsValidated = result.IsValidated.ToNonNullBool();
+
             }
             catch (AppException ex)
             {
                 _logger.LogError("Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
-                response.Error = ex.Message;
-
-                var result = new ObjectResult(new { ex.Message })
+                var result = new ObjectResult(new { errorMessage = ex.Message })
                 {
                     StatusCode = ex.StatusCode,
                 };
@@ -182,7 +211,10 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest("Unknown error occured. Please retry!");
+                //throw new AppException("An error occured. Please retry!.", 400);
+
+                return BadRequest("An error occured. Please retry!");
+
             }
 
             return Ok(response);
@@ -195,7 +227,7 @@ namespace FileUploadApi.Controllers
             try
             {
                 if (HttpContext.Request.Headers["Authorization"].ToString() == null)
-                    throw new AppException("'Auth Token' cannot be null or empty", (int)HttpStatusCode.Unauthorized);
+                    throw new AppException("'Auth Token' cannot be null or empty!.", (int)HttpStatusCode.Unauthorized);
 
                 var initiatePaymentOptions = new InitiatePaymentOptions()
                 {
@@ -218,26 +250,27 @@ namespace FileUploadApi.Controllers
             {
                 // _logger.LogError("Could not get the required Initiate Payment for Batch with Id {batchid} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
 
-                response.Message = ex.Message;
+                //response.Message = ex.Message;
 
-                var result = new ObjectResult(new { ex.Message })
+                var result = new ObjectResult(new { errorMessage = ex.Message })
                 {
                     StatusCode = ex.StatusCode,
-                    Value = response
                 };
 
                 return result;
+                //throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                response.Message = "Unknown error occured. Please retry!.";
-                var result = new ObjectResult(response)
+                var result = new ObjectResult(new { errorMessage = "An error occured.Please retry!." })
                 {
                     StatusCode = (int)HttpStatusCode.BadRequest
                 };
                 return result;
+                // throw new AppException("An error occured. Please retry!.", 400);
+
             }
 
             return Ok(response);
@@ -262,22 +295,24 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured during the Template Download File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { ex.Message })
+                var result = new ObjectResult(new { errorMessage = ex.Message })
                 {
                     StatusCode = ex.StatusCode,
                 };
 
                 return result;
+               // throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured during the Template Download File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult("Unknown error occured. Please retry!.")
+                var result = new ObjectResult(new { errorMessage = "An error occured. Please retry!." })
                 {
                     StatusCode = (int)HttpStatusCode.BadRequest
                 };
                 return result;
+                //throw new AppException("An error occured. Please retry!.", 400);
             }
         }
 
@@ -287,7 +322,7 @@ namespace FileUploadApi.Controllers
 
             if (!success)
             {
-                throw new AppException($"Invalid value '{id}' passed for 'id'!.");
+                throw new AppException($"Invalid value '{id}' passed for 'id'!.", 400);
             }
         }
 
@@ -295,42 +330,53 @@ namespace FileUploadApi.Controllers
         [HttpPost("user/uploads")]
         public async Task<IActionResult> GetUserUploadedFilesSummary([FromBody] string userId, [FromQuery] SummaryPaginationQuery pagination)
         {
-            var paginationFilter =
-                new PaginationFilter
-                {
-                    PageSize = pagination.PageSize,
-                    PageNumber = pagination.PageNumber
-                };
-
-            var response = new SummaryPagedResponse<BatchFileSummaryDto>()
-            {
-                PageSize = paginationFilter.PageSize,
-                PageNumber = paginationFilter.PageNumber
-            };
+            
+            var response = new SummaryPagedResponse<BatchFileSummaryDto>();
 
             try
             {
+                var status = (Enum.IsDefined(typeof(SummaryStatusEnum), pagination.Status))
+                               ? (SummaryStatusEnum)pagination.Status
+                               : throw new AppException("The field 'Status' must have a value between 0 and 3.");
+
+                var paginationFilter = new SummaryPaginationFilter
+                {
+                    PageSize = pagination.PageSize,
+                    PageNumber = pagination.PageNumber,
+                    Status = (SummaryStatusEnum)pagination.Status,
+                    ProductCode = pagination.ProductCode,
+                    ProductName = pagination.ProductName
+                };
+
                 ValidateUserId(userId);
 
                 var result = await _genericUploadService.GetUserFilesSummary(userId, paginationFilter);
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
+                response.PageSize = paginationFilter.PageSize;
+                response.PageNumber = paginationFilter.PageNumber;
+                response.ProductCode = paginationFilter.ProductCode;
+                response.ProductName = paginationFilter.ProductName;
+                response.Status = (paginationFilter.Status).ToString();
             }
             catch (AppException ex)
             {
                 _logger.LogError("An Error occured  {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { ex.Message })
+                var result = new ObjectResult(new { errorMessage = ex.Message })
                 {
                     StatusCode = ex.StatusCode,
                 };
 
                 return result;
+                //throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return BadRequest(new { errorMessage = "Unknown error occured. Please retry!." });
+                return BadRequest(new { errorMessage = "An error occured. Please retry!." });
+                //throw new AppException("An error occured.Please, retry!.", 400);
+
             }
 
             return Ok(response);
@@ -355,17 +401,19 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { ex.Message })
+                var result = new ObjectResult(new { errorMessage = ex.Message })
                 {
                     StatusCode = ex.StatusCode,
                 };
 
                 return result;
+                //throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                return BadRequest(new { errorMessage = "Unknown error occured.!." });
+                return BadRequest(new { errorMessage = "An error occured.Please, retry!." });
+                //throw new AppException("An error occured.Please, retry!.", 400);
             }
         }
     }

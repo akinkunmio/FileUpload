@@ -286,6 +286,60 @@ namespace FileUploadAndValidation.Repository
                                 }
                             }
 
+                            if (fileDetail.ContentType.ToLower().Equals(GenericConstants.FctIrs)
+                              && fileDetail.ItemType.ToLower().Equals(GenericConstants.MultiTax))
+                            {
+                                foreach (var valid in payments)
+                                {
+                                    //create sp sp_insert_valid_fctirs_multitax
+                                    await connection.ExecuteAsync(sql: "sp_insert_valid_fctirs_multitax",
+                                        param: new
+                                        {
+                                            product_code = valid.ProductCode,
+                                            item_code = valid.ItemCode,
+                                            customer_id = valid.CustomerId,
+                                            amount = valid.Amount,
+                                            desc = valid.Desc,
+                                            customer_name = valid.CustomerName,
+                                            phone_number = valid.PhoneNumber,
+                                            email = valid.Email,
+                                            address = valid.Address,
+                                            created_date = valid.CreatedDate,
+                                            row_num = valid.RowNum,
+                                            transactions_summary_Id = transactionSummaryId,
+                                            initial_validation_status = "Valid"
+                                        },
+                                        transaction: sqlTransaction,
+                                        commandType: System.Data.CommandType.StoredProcedure);
+                                }
+
+                                foreach (var inValid in invalidPayments)
+                                {
+                                    // create sp_insert_invalid_fctirs_multitax
+                                    await connection.ExecuteAsync(sql: "sp_insert_invalid_fctirs_multitax",
+                                        param: new
+                                        {
+                                            product_code = inValid.Row.ProductCode,
+                                            item_code = inValid.Row.ItemCode,
+                                            customer_id = inValid.Row.CustomerId,
+                                            amount = inValid.Row.Amount,
+                                            desc = inValid.Row.Desc,
+                                            customer_name = inValid.Row.CustomerName,
+                                            phone_number = inValid.Row.PhoneNumber,
+                                            email = inValid.Row.Email,
+                                            address = inValid.Row.Address,
+                                            created_date = inValid.Row.CreatedDate,
+                                            row_num = inValid.Row.RowNum,
+                                            transactions_summary_Id = transactionSummaryId,
+                                            row_status = "Invalid",
+                                            initial_validation_status = "Invalid",
+                                            error = inValid.Row.Error
+                                        },
+                                        transaction: sqlTransaction,
+                                        commandType: System.Data.CommandType.StoredProcedure);
+                                }
+                            }
+
                             sqlTransaction.Commit();
                             return fileDetail.BatchId;
                         }
@@ -300,7 +354,7 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogError("Error occured while inserting payment items in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("An error occured while querying the DB");
+                throw new AppException("An error occured. Please, retry!.", 400);
             }
         }
 
@@ -330,7 +384,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Update Successful Upload operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -360,12 +414,12 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
 
-        public async Task<PagedData<BatchFileSummary>> GetUploadSummariesByUserId(string userId, PaginationFilter paginationFilter)
+        public async Task<PagedData<BatchFileSummary>> GetUploadSummariesByUserId(string userId, SummaryPaginationFilter paginationFilter)
         {
             var result = new PagedData<BatchFileSummary>();
 
@@ -382,8 +436,31 @@ namespace FileUploadAndValidation.Repository
                         },
                         commandType: CommandType.StoredProcedure);
 
-                    if (results == null)
-                        throw new AppException($"No file has been uploaded by user!.", (int)HttpStatusCode.NotFound);
+                    //if (results == null)
+                    //    throw new AppException($"No file has been uploaded by user!.", (int)HttpStatusCode.NotFound);
+
+                    //filter by status
+                    if (paginationFilter.Status == SummaryStatusEnum.Valid)
+                    {
+                        results = results.Where(e => e.NumOfRecords == e.NumOfValidRecords);
+                    }
+
+                    if(paginationFilter.Status == SummaryStatusEnum.Invalid)
+                    {
+                        results = results.Where(e => e.NumOfValidRecords == 0); 
+                    }
+
+                    if (paginationFilter.Status == SummaryStatusEnum.ValidAndInvalid)
+                    {
+                        results = results.Where(e => !(e.NumOfRecords == e.NumOfValidRecords) && !(e.NumOfValidRecords == 0));
+                    }
+
+                    //filter by productcode
+                    IEnumerable<BatchFileSummary> resultList = new List<BatchFileSummary>();
+
+                    if (!string.IsNullOrWhiteSpace(paginationFilter.ProductCode))
+                            results = results
+                                .Where(e => paginationFilter.ProductCode.ToLower().Equals(e.ProductCode, StringComparison.InvariantCultureIgnoreCase));
 
                     result.Data = results
                                     .Skip((paginationFilter.PageNumber - 1) * paginationFilter.PageSize)
@@ -400,7 +477,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -430,7 +507,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -469,7 +546,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -497,6 +574,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_confirmed_firs_multitax_by_transactions_summary_id";
             }
+            else if (contentType.ToLower().Equals(GenericConstants.FctIrs)
+                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+            {
+                return @"sp_get_confirmed_fctirs_multitax_by_transactions_summary_id";
+            }
             else return "";
         }
 
@@ -515,21 +597,20 @@ namespace FileUploadAndValidation.Repository
                    
                     BatchFileSummary summary = await GetBatchUploadSummary(batchId);
                   
-                    IEnumerable<RowDetail> result;
+                    IEnumerable<RowDetail> result = new List<RowDetail>();
 
-                    result = await sqlConnection.QueryAsync<RowDetail>(
-                       sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
-                       param: new
-                       {
-                           transactions_summary_id = summaryId,
-                           page_size = pagination.PageSize,
-                           page_number = pagination.PageNumber,
-                           status = pagination.Status
-                       },
-                       commandType: CommandType.StoredProcedure);
-
-                    if (result == null)
-                        throw new AppException($"No records found for file with batchId '{batchId}'");
+                   
+                        result = await sqlConnection.QueryAsync<RowDetail>(
+                          sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
+                          param: new
+                          {
+                              transactions_summary_id = summaryId,
+                              page_size = pagination.PageSize,
+                              page_number = pagination.PageNumber,
+                              status = pagination.Status,
+                              tax_type = pagination.TaxType ?? GenericConstants.All
+                          },
+                          commandType: CommandType.StoredProcedure);
 
                     return result;
                 }
@@ -541,7 +622,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -568,6 +649,11 @@ namespace FileUploadAndValidation.Repository
                  && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_get_firs_multitax_payments_status_by_transactions_summary_id";
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                 && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            {
+                return @"sp_get_fctirs_multitax_payments_status_by_transactions_summary_id";
             }
             else return "";
         }
@@ -598,11 +684,8 @@ namespace FileUploadAndValidation.Repository
                         .Where(v => v.Status.ToLower()
                         .Equals("valid"));
 
-                    var totalAmount = rowsStatus
-                        .Where(r => valids.Any(v => v.Row == r.RowNum))
-                        .Select(s => decimal.Parse(s.Amount))
-                        .Sum();
-
+                    decimal totalAmount = GenericHelpers.GetAmountSum(fileSummary.ContentType, fileSummary.ItemType, rowsStatus, valids);
+                    
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
                         try
@@ -669,7 +752,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Update Bill Payment Validation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }
@@ -696,6 +779,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_firs_multitax_payments_detail";
             }
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                 && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                return @"sp_update_fctirs_multitax_payments_detail";
+            }
             else return "";
         }
 
@@ -721,6 +809,11 @@ namespace FileUploadAndValidation.Repository
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_update_firs_multitax_detail_enterprise_error";
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            {
+                return @"sp_update_fctirs_multitax_detail_enterprise_error";
             }
             else return "";
         }
@@ -756,7 +849,7 @@ namespace FileUploadAndValidation.Repository
                 catch (Exception ex)
                 {
                     _logger.LogError("Error occured while performing Update Bill Payment Initiation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB");
+                    throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
         }

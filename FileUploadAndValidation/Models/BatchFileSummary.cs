@@ -45,6 +45,8 @@ namespace FileUploadAndValidation.Models
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string NameOfFile { get; set; }
+
+        public bool? UploadSuccessful { get; set; }
     }
 
     public class Batch<T> : BatchFileSummary where T:ValidatedRow
