@@ -439,7 +439,7 @@ namespace FileUploadAndValidation.Helpers
         private static decimal GetAmountFromMultiTaxRow(RowDetail s)
         {
             if (GenericConstants.Wht.Equals(s.TaxType))
-                return decimal.Parse(s.ContractAmount);
+                return decimal.Parse(s.WhtAmount);
 
             if (GenericConstants.Cit.Equals(s.TaxType.ToLower())
                 || GenericConstants.Edt.Equals(s.TaxType.ToLower())
