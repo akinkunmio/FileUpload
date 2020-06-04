@@ -7,7 +7,7 @@ namespace FileUploadAndValidation
 {
     public class AutoPayRemoteFileContentValidator : IRemoteFileContentValidator<AutoPayRow>
     {
-        public async Task<ValidationResult<AutoPayRow>> Validate(IEnumerable<AutoPayRow> validRows)
+        public async Task<ValidationResult<AutoPayRow>> Validate(string requestIdentifier, IEnumerable<AutoPayRow> validRows)
         {
             await Task.CompletedTask;
             return new ValidationResult<AutoPayRow> {

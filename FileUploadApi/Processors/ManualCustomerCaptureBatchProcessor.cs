@@ -44,7 +44,7 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
 
         var batchId = GenericHelpers.GenerateBatchId("QTB", DateTime.Now);
 
-        var remoteValidationResult = await remoteValidator.Validate(localValidationResult.ValidRows);
+        var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows);
 
         var finalResult = localValidationResult.MergeResults(remoteValidationResult);
 
@@ -57,6 +57,7 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             ModifiedDate = DateTime.Now.ToShortDateString(),
             ProductCode = "FCT-IRS",
             ProductName = "FCT-IRS",
+            UserId = context.UserId,
             //UplodedBy =  context.UserName,           
         };
 

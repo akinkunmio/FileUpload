@@ -14,5 +14,6 @@ namespace FileUploadAndValidation
             Configuration = new ManualCaptureRowConfig();
         }
         public ManualCaptureRowConfig Configuration { get; set; }
+        public long UserId {get;set;}
     }
 }

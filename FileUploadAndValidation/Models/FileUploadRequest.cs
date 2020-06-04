@@ -70,7 +70,7 @@ namespace FileUploadAndValidation.Models
         {
             var file = request.Form.Files.FirstOrDefault();
             if(file == null) throw new AppException("No file uploaded", "No file uploaded");
-
+            
             return new FileUploadRequest 
             {
                     ItemType = GenericConstants.FctIrs,
@@ -81,7 +81,7 @@ namespace FileUploadAndValidation.Models
                     FileExtension = Path.GetExtension(file.FileName)
                                     .Replace(".", string.Empty)
                                     .ToLower(),
-                    UserId = 0,
+                    UserId = long.Parse(request.Form["id"]),
                     User = new UserContext {
                         Username = request.Headers["userName"]
                     },

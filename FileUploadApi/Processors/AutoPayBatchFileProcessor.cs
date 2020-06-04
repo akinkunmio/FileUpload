@@ -42,9 +42,7 @@ namespace FileUploadApi.ApiServices
 
             var batchId = GenericHelpers.GenerateBatchId("QTB", DateTime.Now);
 
-            FileProperty fileProperty = await nasRepository.SaveFileToValidate(batchId, localValidationResult.ValidRows);
-
-            var remoteValidationResult = await remoteValidator.Validate(localValidationResult.ValidRows);
+            var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows);
 
             var finalResult = MergeResults(remoteValidationResult, localValidationResult);
 

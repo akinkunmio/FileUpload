@@ -56,7 +56,8 @@ namespace FileUploadApi.Controllers
 
                 var context = new ManualCustomerCaptureContext
                 {
-                    Configuration = GetFCTIRSConfiguration()
+                    Configuration = GetFCTIRSConfiguration(),
+                    UserId = request.UserId ?? 0
                 };
 
                 var uploadResult = await _batchProcessor.UploadAsync(rows, context);

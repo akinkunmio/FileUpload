@@ -65,7 +65,7 @@ namespace FileUploadAndValidation.Models
         public IList<T> ValidRows { get; private set; }
         public IList<T> FailedRows { get; private set; }
         public IEnumerable<T> Rows { get; private set; }
-        public long UserId { get; private set; }
+        public long UserId { get; set; }
     }
 
 }

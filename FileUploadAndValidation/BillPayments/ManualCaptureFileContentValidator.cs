@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FileUploadAndValidation.Repository;
 using FileUploadApi.Services;
 using FilleUploadCore.FileReaders;
 
@@ -31,25 +30,6 @@ namespace FileUploadAndValidation.BillPayments
             return new ValidationResult<ManualCaptureRow> {
                 ValidRows = processedRows.Where(r => r.IsValid).ToList(),
                 Failures = processedRows.Where(r => !r.IsValid).ToList()
-            };
-        }
-    }
-
-    public class ManualCaptureRemoteFileContentValidator : IRemoteFileContentValidator<ManualCaptureRow>
-    {
-        private readonly INasRepository _nasRepository;
-
-        public ManualCaptureRemoteFileContentValidator(INasRepository nasRepository)
-        {
-            _nasRepository = nasRepository;
-        }
-        public async Task<ValidationResult<ManualCaptureRow>> Validate(IEnumerable<ManualCaptureRow> validRows)
-        {
-            await _nasRepository.SaveFileToValidate<ManualCaptureRow>(batchId: "", rowDetails: validRows.ToList());
-            
-            return new ValidationResult<ManualCaptureRow> {
-                ValidRows = validRows.ToList(),
-                Failures = new List<ManualCaptureRow>()
             };
         }
     }
