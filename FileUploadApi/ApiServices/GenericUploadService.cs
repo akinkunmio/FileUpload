@@ -98,7 +98,8 @@ namespace FileUploadApi.ApiServices
             {
                 var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
-                if (fileSummary.TransactionStatus.Equals(GenericConstants.PendingValidation))
+                if (fileSummary.TransactionStatus.Equals(GenericConstants.PendingValidation, StringComparison.InvariantCultureIgnoreCase))
+                {
                     await _httpService.ValidateRecords(new FileProperty
                     {
                         BatchId = batchId,
@@ -106,6 +107,9 @@ namespace FileUploadApi.ApiServices
                         ItemType = fileSummary.ItemType,
                         Url = fileSummary.NasToValidateFile
                     }, authToken);
+
+                    return paymentStatuses;
+                }
 
                 var paymentStatus = await _dbRepository.GetPaymentRowStatuses(batchId, pagination);
 
