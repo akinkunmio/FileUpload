@@ -87,9 +87,10 @@ namespace FileUploadApi.ApiServices
             return pagedData;
         }
 
-        public async Task<PagedData<dynamic>> GetPaymentsStatus(string batchId, PaginationFilter pagination, string url)
+        public async Task<PagedData<dynamic>> GetPaymentsStatus(string batchId, PaginationFilter pagination, string authToken)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
+            ArgumentGuard.NotNullOrWhiteSpace(authToken, nameof(authToken));
 
             var paymentStatuses = new PagedData<dynamic>();
 
@@ -97,14 +98,14 @@ namespace FileUploadApi.ApiServices
             {
                 var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
-                if(fileSummary.TransactionStatus.Equals(GenericConstants.PendingValidation))
-                    _httpService.ValidateRecords(new FileProperty 
-                    {  
-                        BatchId = batchId, 
-                        ContentType = fileSummary.ContentType, 
-                        ItemType = fileSummary.ItemType,  
+                if (fileSummary.TransactionStatus.Equals(GenericConstants.PendingValidation))
+                    await _httpService.ValidateRecords(new FileProperty
+                    {
+                        BatchId = batchId,
+                        ContentType = fileSummary.ContentType,
+                        ItemType = fileSummary.ItemType,
                         Url = fileSummary.NasToValidateFile
-                    }, )
+                    }, authToken);
 
                 var paymentStatus = await _dbRepository.GetPaymentRowStatuses(batchId, pagination);
 

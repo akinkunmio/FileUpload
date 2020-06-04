@@ -67,7 +67,7 @@ namespace FileUploadAndValidation.UploadServices
             return "";
         }
 
-        public async Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
+        public async Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty = true)
         {
             var validateResponse =  new ValidationResponse();
             try
@@ -263,7 +263,7 @@ namespace FileUploadAndValidation.UploadServices
 
     public interface IHttpService
     {
-        Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty);
+        Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty = true);
 
         Task<ConfirmedBillResponse> InitiatePayment(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
     }
