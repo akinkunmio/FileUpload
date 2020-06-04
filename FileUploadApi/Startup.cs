@@ -70,9 +70,13 @@ namespace FileUploadApi
             #region File Content Remote Validators
             services.AddScoped<IFileContentValidator<AutoPayRow, AutoPayUploadContext>, AutoPayFileContentValidator>();
             services.AddScoped<IRemoteFileContentValidator<AutoPayRow>, AutoPayRemoteFileContentValidator>();
+
             services.AddScoped<IFileContentValidator<ManualCaptureRow, ManualCustomerCaptureContext>, ManualCaptureFileContentValidator>();
             services.AddScoped<IRemoteFileContentValidator<ManualCaptureRow>, ManualCaptureRemoteFileContentValidator>();
-            #endregion
+
+            services.AddScoped<IFileContentValidator<LASGPaymentRow, LASGPaymentContext>, LASGPaymentFileContentValidator>();
+            services.AddScoped<IRemoteFileContentValidator<LASGPaymentRow>, LASGPaymentRemoteFileContentValidator>();
+           #endregion
 
             services.AddScoped<BatchFileSummaryDbRepository>();
 
@@ -87,10 +91,12 @@ namespace FileUploadApi
 
             services.AddScoped<IBatchFileProcessor<AutoPayUploadContext>, AutoPayBatchFileProcessor>();
             services.AddScoped<IBatchFileProcessor<ManualCustomerCaptureContext>, ManualCustomerCaptureBatchProcessor>();
+            services.AddScoped<IBatchFileProcessor<LASGPaymentContext>, LASGPaymentBatchProcessor>();
 
             //Details tables repositories
             services.AddScoped<IDetailsDbRepository<AutoPayRow>, AutoPayDetailsDbRepository>();
             services.AddScoped<IDetailsDbRepository<ManualCaptureRow>, ManualCaptureDbRepository>();
+            services.AddScoped<IDetailsDbRepository<LASGPaymentRow>, LasgPaymentDbRepository>();
 
             services.AddAutoMapper(typeof(Startup));
 

@@ -8,10 +8,16 @@
   <title>Swagger UI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-
+  <style type="text/css">
+     .row div { width: 45%; float:left; height: 200px }
+  </style>
 </head>
 
 <body>
+
+<div class="row">
+
+<div>
 	<!-- https://localhost:5001/qbupload/api/v1/autopay/file -->
 <h1>Bill Payment</h1>
 	<form method="post" action="https://localhost:5001/qbupload/api/v1/upload/uploadfile/wht/wht?contenttype=billpayment&itemtype=wht"  enctype="multipart/form-data">
@@ -21,9 +27,9 @@
 		
 		<input type="submit" />
 	</form>
+</div>
 
-
-<hr />
+<div>
 <h1>AutoPAY</h1>
 	<form method="post" action="https://localhost:5001/qbupload/api/v1/autopay/file"  enctype="multipart/form-data">
 		<br><input type="file" name="file" />
@@ -32,9 +38,12 @@
 		
 		<input type="submit" />
 	</form>
+</div>
+</div>
 
+<div class="row">
 
-<hr />
+<div>
 <h1>FCT-IRS</h1>
 	<form method="post" action="https://localhost:5001/qbupload/api/v1/billpayment/fct-irs/file"  enctype="multipart/form-data">
 		<br><input type="file" name="file" />
@@ -43,6 +52,21 @@
 		
 		<input type="submit" />
 	</form>
+</div>
+
+
+<div>
+<h1>LASG - LIRS</h1>
+	<form method="post" action="https://localhost:5001/qbupload/api/v1/billpayment/lasg/file"  enctype="multipart/form-data">
+		<br><input type="file" name="file" />
+		<br><input name="contentType" value="wht" />
+		<br><input name="id" value="7777" />
+		
+		<input type="submit" />
+	</form>
+</div>
+
+</div>
 </body>
 
 </html>
