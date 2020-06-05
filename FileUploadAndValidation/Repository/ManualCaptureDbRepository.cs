@@ -100,7 +100,8 @@ namespace FileUploadAndValidation.Repository
                 ItemType = batch.ItemType,                
                 ContentType = batch.ContentType,
                 ProductName = batch.ProductName,
-                ProductCode = batch.ProductCode
+                ProductCode = batch.ProductCode,
+                //Status = batch.TransactionStatus
             };
 
         }

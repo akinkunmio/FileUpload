@@ -7,15 +7,15 @@ namespace FileUploadAndValidation.BillPayments
     public class ManualCaptureRow : ValidatedRow
     {
         private readonly ManualCaptureRowConfig _config;
-        const int INDEX_PRODUCT_CODE = 0;
-        const int INDEX_CUSTOMER_ID = 1;
-        const int INDEX_ITEM_CODE = 2;
-        const int INDEX_AMOUNT = 3;
-        const int INDEX_CUSTOMER_NAME = 4;
-        const int INDEX_EMAIL = 5;
-        const int INDEX_PHONE = 6;
-        const int INDEX_CUST_ADDRESS = 7;
-
+        const int INDEX_OF_PRODUCT_CODE = 0;
+        const int INDEX_OF_ITEM_CODE = 1;
+        const int INDEX_OF_CUSTOMER_ID = 2;
+        const int INDEX_OF_AMOUNT = 3;
+        const int INDEX_OF_DESCRIPTION = 4;
+        const int INDEX_OF_CUSTOMER_NAME = 5;
+        const int INDEX_OF_PHONE = 6;
+        const int INDEX_OF_EMAIL = 7;
+        const int INDEX_OF_CUST_ADDRESS = 8;
 
         public ManualCaptureRow(Row row, ManualCaptureRowConfig config)
         {
@@ -28,19 +28,19 @@ namespace FileUploadAndValidation.BillPayments
 
         private void SetupFields(List<Column> columns)
         {
-            ProductCode = GetColumnValue(columns, INDEX_PRODUCT_CODE, "");
-            CustomerId = GetColumnValue(columns, INDEX_CUSTOMER_ID, "");
-            ItemCode = GetColumnValue(columns, INDEX_ITEM_CODE, "");
+            ProductCode = GetColumnValue(columns, INDEX_OF_PRODUCT_CODE, "");
+            CustomerId = GetColumnValue(columns, INDEX_OF_CUSTOMER_ID, "");
+            ItemCode = GetColumnValue(columns, INDEX_OF_ITEM_CODE, "");
 
-            if (decimal.TryParse(GetColumnValue(columns, INDEX_AMOUNT, ""), out decimal _amount))
+            if (decimal.TryParse(GetColumnValue(columns, INDEX_OF_AMOUNT, ""), out decimal _amount))
             {
                 Amount = _amount;
             }
 
-            CustomerName = GetColumnValue(columns, INDEX_CUSTOMER_NAME, "");
-            Email = GetColumnValue(columns, INDEX_EMAIL, "");
-            PhoneNumber = GetColumnValue(columns, INDEX_PHONE, "");
-            Address = GetColumnValue(columns, INDEX_CUST_ADDRESS, "");
+            CustomerName = GetColumnValue(columns, INDEX_OF_CUSTOMER_NAME, "");
+            Email = GetColumnValue(columns, INDEX_OF_EMAIL, "");
+            PhoneNumber = GetColumnValue(columns, INDEX_OF_PHONE, "");
+            Address = GetColumnValue(columns, INDEX_OF_CUST_ADDRESS, "");
 
             var errors = new List<string>();
             if (string.IsNullOrWhiteSpace(ProductCode))

@@ -89,14 +89,37 @@ namespace FileUploadAndValidation.Models
             };
         }
 
+        public static FileUploadRequest FromRequestForLASG(HttpRequest request)
+        {
+            var file = request.Form.Files.FirstOrDefault();
+            if(file == null) throw new AppException("No file uploaded", "No file uploaded");
+            
+            return new FileUploadRequest 
+            {
+                    ItemType = GenericConstants.FctIrs,
+                    ContentType = GenericConstants.FctIrs,
+                    AuthToken = request.Headers["Authorization"].ToString(),
+                    FileRef = file,
+                    FileName = file.FileName.Split('.')[0],
+                    FileExtension = Path.GetExtension(file.FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower(),
+                    UserId = long.Parse(request.Form["id"]),
+                    User = new UserContext {
+                        Username = request.Headers["userName"]
+                    },
+                    FileSize = file.Length
+            };
+        }
+
         public static FileUploadRequest FromRequestForMultiple(HttpRequest request) 
         {
             var userId = /*request.Form["id"].ToString() ??*/ "255";
             
             return new FileUploadRequest 
             {
-                    ItemType = GenericConstants.MultiTax,
-                    ContentType = request.Query["authority"],
+                    ItemType = GenericConstants.Lasg,
+                    ContentType = GenericConstants.Lasg,
                     AuthToken = request.Headers["Authorization"].ToString(),
                     FileRef = request.Form.Files.First(),
                     FileName = request.Form.Files.First().FileName.Split('.')[0],

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +6,7 @@ using FilleUploadCore.FileReaders;
 
 namespace FileUploadAndValidation.BillPayments
 {
+
     public class ManualCaptureFileContentValidator : IFileContentValidator<ManualCaptureRow, ManualCustomerCaptureContext>
     {
         private ManualCaptureRowConfig config;

@@ -37,7 +37,7 @@ namespace FileUploadApi.ApiServices
             ArgumentGuard.NotNullOrWhiteSpace(request.AuthToken, nameof(request.AuthToken));
 
             if (!request.ContentType.ToLower().Equals(GenericConstants.Firs)
-               && !request.ContentType.ToLower().Equals(GenericConstants.Lirs)
+               && !request.ContentType.ToLower().Equals(GenericConstants.Lasg)
                && !request.ContentType.ToLower().Equals(GenericConstants.FctIrs))
                 throw new AppException("Invalid Authority Type specified");
 
