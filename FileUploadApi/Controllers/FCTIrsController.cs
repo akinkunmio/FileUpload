@@ -60,8 +60,7 @@ namespace FileUploadApi.Controllers
                 var context = new ManualCustomerCaptureContext
                 {
                     Configuration = GetFCTIRSConfiguration(),
-                    UserId = request.UserId ?? 0,
-                    FileName = request.FileName
+                    UserId = request.UserId ?? 0
                 };
 
                 var uploadResult = await _batchProcessor.UploadAsync(rows, context, HttpContext.Request.Headers["Authorization"]);
