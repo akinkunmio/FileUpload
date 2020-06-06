@@ -30,7 +30,7 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
         this.dbRepository = dbRepository;
     }
 
-    public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, LASGPaymentContext context)
+    public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, LASGPaymentContext context, string token = "")
     {
         if (rows.Count() == 0) throw new AppException("No records found");
 

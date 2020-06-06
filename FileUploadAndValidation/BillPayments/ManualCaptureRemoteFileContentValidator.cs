@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Repository;
+using FileUploadAndValidation.UploadServices;
 using FileUploadApi.Services;
 
 namespace FileUploadAndValidation.BillPayments
@@ -9,15 +11,27 @@ namespace FileUploadAndValidation.BillPayments
     public class ManualCaptureRemoteFileContentValidator : IRemoteFileContentValidator<ManualCaptureRow>
     {
         private readonly INasRepository _nasRepository;
+        private readonly IHttpService _httpService;
 
-        public ManualCaptureRemoteFileContentValidator(INasRepository nasRepository)
+        public ManualCaptureRemoteFileContentValidator(INasRepository nasRepository, IHttpService httpService)
         {
             _nasRepository = nasRepository;
+            _httpService = httpService;
         }
-        public async Task<ValidationResult<ManualCaptureRow>> Validate(string requestIdentifier, IEnumerable<ManualCaptureRow> validRows)
+
+        public bool IsBackground()
         {
-            await _nasRepository.SaveFileToValidate<ManualCaptureRow>(batchId: requestIdentifier, rowDetails: validRows.ToList());
-            
+            return true;
+        }
+
+        public async Task<ValidationResult<ManualCaptureRow>> Validate(string requestIdentifier, IEnumerable<ManualCaptureRow> validRows, string clientToken)
+        {
+            var result = await _nasRepository.SaveFileToValidate<ManualCaptureRow>(batchId: requestIdentifier, rowDetails: validRows.ToList());
+
+            result.ItemType = GenericConstants.ManualCapture;
+            result.ContentType = GenericConstants.ManualCapture;
+            var remoteResponse = await _httpService.ValidateRecords(result, clientToken, true);
+
             return new ValidationResult<ManualCaptureRow> {
                 ValidRows = validRows.ToList(),
                 Failures = new List<ManualCaptureRow>()

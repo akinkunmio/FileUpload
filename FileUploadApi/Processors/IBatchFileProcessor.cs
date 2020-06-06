@@ -10,6 +10,6 @@ namespace FileUploadApi.Processors
 {
     public interface IBatchFileProcessor<TContext>
     {
-        Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, TContext context);
+        Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, TContext context, string clientToken = "");
     }
 }

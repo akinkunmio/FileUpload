@@ -23,7 +23,7 @@ namespace FileUploadAndValidation.BillPayments
 
         public LASGPaymentRow(Row row)
         {
-            this.Index = row.Index;
+            this.Row = row.Index;
 
             SetupFields(row.Columns);
         }

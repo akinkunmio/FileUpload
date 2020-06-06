@@ -41,13 +41,20 @@ namespace FileUploadApi.Controllers
                 request.ProductCode = productCode;
                 request.ProductName = productCode;
 
+<<<<<<< HEAD
+=======
+                IEnumerable<Row> tempRows = new List<Row>();
+>>>>>>> dev
                 IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");
                 IEnumerable<Row> rows = new List<Row>();
 
                 using (var contentStream = request.FileRef.OpenReadStream())
                 {
-                    rows = fileContentReader.Read(contentStream);
+                    tempRows = fileContentReader.Read(contentStream);
                 }
+
+                var rows = tempRows.ToList();                
+                rows.RemoveAt(0);
 
                 foreach (var row in rows)
                 {
@@ -60,7 +67,7 @@ namespace FileUploadApi.Controllers
                     UserId = request.UserId ?? 0
                 };
 
-                var uploadResult = await _batchProcessor.UploadAsync(rows, context);
+                var uploadResult = await _batchProcessor.UploadAsync(rows, context, HttpContext.Request.Headers["Authorization"]);
 
                 return Ok(uploadResult);
             }

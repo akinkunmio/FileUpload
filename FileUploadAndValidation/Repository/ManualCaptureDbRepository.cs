@@ -58,7 +58,7 @@ namespace FileUploadAndValidation.Repository
                                         email = row.Email,
                                         address = row.Address,
                                         transactions_summary_id = transactionSummaryId,
-                                        row_num = row.Index,
+                                        row_num = row.Row,
                                         row_status = row.IsValid ? "Valid" : "Invalid",
                                         created_date = batch.UploadDate,
                                         initial_validation_status = "validation-in-progress",
@@ -101,7 +101,7 @@ namespace FileUploadAndValidation.Repository
                 ContentType = batch.ContentType,
                 ProductName = batch.ProductName,
                 ProductCode = batch.ProductCode,
-                //Status = batch.TransactionStatus
+                FileName = batch.NameOfFile
             };
 
         }
