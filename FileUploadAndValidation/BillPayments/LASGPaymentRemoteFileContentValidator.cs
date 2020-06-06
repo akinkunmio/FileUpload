@@ -14,6 +14,12 @@ namespace FileUploadAndValidation.BillPayments
         {
             _nasRepository = nasRepository;
         }
+
+        public bool IsBackground()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public async Task<ValidationResult<LASGPaymentRow>> Validate(string requestIdentifier, IEnumerable<LASGPaymentRow> validRows)
         {
             await _nasRepository.SaveFileToValidate<LASGPaymentRow>(batchId: requestIdentifier, rowDetails: validRows.ToList());
@@ -22,6 +28,11 @@ namespace FileUploadAndValidation.BillPayments
                 ValidRows = validRows.ToList(),
                 Failures = new List<LASGPaymentRow>()
             };
+        }
+
+        public Task<ValidationResult<LASGPaymentRow>> Validate(string requestIdentifier, IEnumerable<LASGPaymentRow> validRows, string clientToken = "")
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

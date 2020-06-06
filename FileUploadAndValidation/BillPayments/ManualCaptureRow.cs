@@ -21,7 +21,7 @@ namespace FileUploadAndValidation.BillPayments
         {
             _config = config;
 
-            this.Index = row.Index;
+            this.Row = row.Index;
 
             SetupFields(row.Columns);
         }

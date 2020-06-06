@@ -23,7 +23,7 @@ namespace FileUploadApi.Services
             //update the valid records with data from remote
             foreach (var row in otherResult.ValidRows)
             {
-                var originalRow = this.ValidRows.FirstOrDefault(r => r.Index == row.Index);
+                var originalRow = this.ValidRows.FirstOrDefault(r => r.Row == row.Row);
                 if (originalRow != null)
                 {
                     //set the Extra data from remote
@@ -33,7 +33,7 @@ namespace FileUploadApi.Services
             //update the status of earlier valid records. they are failed by remote validation
             foreach (var row in otherResult.Failures)
             {
-                var originalRow = this.ValidRows.FirstOrDefault(r => r.Index == row.Index);
+                var originalRow = this.ValidRows.FirstOrDefault(r => r.Row == row.Row);
                 if (originalRow != null){
                     originalRow.IsValid = false;
                     originalRow.ErrorMessages = row.ErrorMessages;

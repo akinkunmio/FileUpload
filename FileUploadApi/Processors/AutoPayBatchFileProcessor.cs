@@ -31,7 +31,7 @@ namespace FileUploadApi.ApiServices
             this.dbRepository = dbRepository;
         }
 
-        public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, AutoPayUploadContext context)
+        public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, AutoPayUploadContext context, string token = "")
         {
             if(rows.Count() == 0)
                 throw new AppException("No records found");

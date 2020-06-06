@@ -8,7 +8,7 @@ namespace FileUploadAndValidation
     {
         public AutoPayRow(Row row)
         {
-            this.Index = row.Index;
+            this.Row = row.Index;
             this.SetupFields(row.Columns);
         }
 
