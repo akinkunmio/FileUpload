@@ -17,6 +17,10 @@ namespace FileUploadAndValidation.BillPayments
         const int INDEX_OF_PERIOD_TO = 7;
         const int INDEX_OF_DESCRIPTION = 8;
 
+        public LASGPaymentRow() {
+            
+        }
+
         public LASGPaymentRow(Row row)
         {
             this.Index = row.Index;

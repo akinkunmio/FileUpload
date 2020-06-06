@@ -23,6 +23,7 @@ namespace FileUploadAndValidation.Models
         public int Row { get; set; }
         public string Status { get; set; }
         public string Error { get; set; }
+        public string ExtraData { get; set;}
     }
 
     public class FileProperty

@@ -35,9 +35,9 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
         if (rows.Count() == 0) throw new AppException("No records found");
 
         var localValidationResult = await _fileContentValidator.Validate(rows, context);//, null);
-        Console.WriteLine(JsonConvert.SerializeObject(localValidationResult));
 
-        Console.WriteLine(JsonConvert.SerializeObject(localValidationResult));
+        // Console.WriteLine(JsonConvert.SerializeObject(localValidationResult));
+        
         if (!localValidationResult.ValidRows.Any()){
             var errors = localValidationResult.Failures.SelectMany(e => e.ErrorMessages);
             throw new AppException("No valid rows");
@@ -56,9 +56,10 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
             ContentType = "lasg",
             UploadDate = DateTime.Now.ToShortDateString(),
             ModifiedDate = DateTime.Now.ToShortDateString(),
-            ProductCode = "LASG",
-            ProductName = "LASG",
+            ProductCode = context.ProductCode,
+            ProductName = context.ProductName,
             UserId = context.UserId,
+            Status = GenericConstants.PendingValidation,
             //UplodedBy =  context.UserName,           
         };
 
