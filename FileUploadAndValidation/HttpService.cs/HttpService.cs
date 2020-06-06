@@ -116,7 +116,7 @@ namespace FileUploadAndValidation.UploadServices
                 //        ResultMode = "Queue"
                 //    }
                 //};
-                throw new AppException("Error occured while performing payment validation", 400);
+                throw new AppException("Error occured while performing payment validation. Please, retry validating the file!.", 400);
             }
         }
 

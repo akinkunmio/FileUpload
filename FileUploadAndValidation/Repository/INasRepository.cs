@@ -75,7 +75,10 @@ namespace FileUploadAndValidation.Repository
 
                 var path = fileLocation + fileName;
 
-                await File.WriteAllTextAsync(path, json);
+                if (!File.Exists(path))
+                {
+                    await File.WriteAllTextAsync(path, json);
+                }
 
                 return new FileProperty
                 {

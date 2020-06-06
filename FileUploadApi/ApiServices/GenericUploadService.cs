@@ -261,7 +261,7 @@ namespace FileUploadApi.ApiServices
 
             result = await _httpService.InitiatePayment(fileProperty, initiatePaymentOptions);
 
-            await _dbRepository.UpdateBillPaymentInitiation(batchId);
+            await _dbRepository.UpdatePaymentInitiation(batchId);
 
             return result;
         }
@@ -302,7 +302,7 @@ namespace FileUploadApi.ApiServices
             var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
             if (fileSummary == null)
-                throw new AppException($"Batch Upload Summary for BatchId: {batchId} not found!.", (int)HttpStatusCode.NotFound);
+                throw new AppException($"Batch Upload Summary for BatchId '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
 
             if (string.IsNullOrWhiteSpace(fileSummary.NasUserValidationFile))
                 throw new AppException($"Validation file not found for batch with Id '{batchId}'!.", (int)HttpStatusCode.NotFound);

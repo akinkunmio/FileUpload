@@ -169,41 +169,41 @@ namespace FileUploadAndValidation.FileContentValidators
                 if (uploadResult.ValidRows.Count() == 0)
                     throw new AppException("All records are invalid", 400, uploadResult);
 
-               // if (uploadResult.ValidRows.Count() > 0
-               //     && uploadResult.ValidRows.Any())
-               // {
+                if (uploadResult.ValidRows.Count() > 0
+                    && uploadResult.ValidRows.Any())
+                {
 
-               //     var whtRowDetails = uploadResult.ValidRows
-               //               .Where(u => u.TaxType.ToLower().Equals(GenericConstants.Wht))
-               //               .Select(v => v);
+                    var whtRowDetails = uploadResult.ValidRows
+                              .Where(u => GenericConstants.Wht.Equals(u.TaxType, StringComparison.InvariantCultureIgnoreCase))
+                              .Select(v => v);
 
-               //     failBeneficiaryTinValidation = whtRowDetails
-               //               ?.GroupBy(b => new { b.BeneficiaryTin })
-               //               .Where(g => g.Count() > 1)
-               //               .SelectMany(r => r);
+                    failBeneficiaryTinValidation = whtRowDetails
+                              ?.GroupBy(b => new { b.BeneficiaryTin })
+                              .Where(g => g.Count() > 1)
+                              .SelectMany(r => r);
 
-               //     foreach (var nonDistinct in failBeneficiaryTinValidation)
-               //         uploadResult.Failures.Add(new Failure
-               //         {
-               //             Row = nonDistinct,
-               //             ColumnValidationErrors = new List<ValidationError>
-               //                 {
-               //                     new ValidationError
-               //                     {
-               //                         PropertyName = "Beneficiary Tin",
-               //                         ErrorMessage = "Value should be unique for wht tax type"
-               //                     }
-               //                 }
-               //         });
-               // };
-                
+                    foreach (var nonDistinct in failBeneficiaryTinValidation)
+                        uploadResult.Failures.Add(new Failure
+                        {
+                            Row = nonDistinct,
+                            ColumnValidationErrors = new List<ValidationError>
+                                {
+                                    new ValidationError
+                                    {
+                                        PropertyName = "Beneficiary Tin",
+                                        ErrorMessage = "Value should be unique for wht tax type"
+                                    }
+                                }
+                        });
+                };
 
-               //uploadResult.ValidRows = uploadResult.ValidRows
-               //         .Where(b => !failBeneficiaryTinValidation.Any(n => n.RowNum == b.RowNum))
-               //         .Select(r => r)
-               //         .ToList();
 
-                if(uploadResult.Failures.Any()) 
+                uploadResult.ValidRows = uploadResult.ValidRows
+                         .Where(b => !failBeneficiaryTinValidation.Any(n => n.RowNum == b.RowNum))
+                         .Select(r => r)
+                         .ToList();
+
+                if (uploadResult.Failures.Any()) 
                     foreach (var failure in uploadResult.Failures)
                     {
                         failure.Row.Error = GenericHelpers.ConstructValidationError(failure);
@@ -222,7 +222,7 @@ namespace FileUploadAndValidation.FileContentValidators
             }
             catch (Exception exception)
             {
-                _logger.LogError("Error occured while uploading bill payment file with error message {ex.message} | {ex.StackTrace}", exception.Message, exception.StackTrace);
+                _logger.LogError("Error occured while uploading firs multitax payment file with error message {ex.message} | {ex.StackTrace}", exception.Message, exception.StackTrace);
                 uploadResult.ErrorMessage = exception.Message;
                 throw new AppException(exception.Message, 400, uploadResult);
             }

@@ -818,7 +818,7 @@ namespace FileUploadAndValidation.Repository
             else return "";
         }
 
-        public async Task UpdateBillPaymentInitiation(string batchId)
+        public async Task UpdatePaymentInitiation(string batchId)
         {
             using (var connection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {

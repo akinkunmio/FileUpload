@@ -19,7 +19,7 @@ namespace FileUploadApi
 
         Task<IEnumerable<RowDetail>> GetConfirmedPayments(string batchId);
 
-        Task UpdateBillPaymentInitiation(string batchId);
+        Task UpdatePaymentInitiation(string batchId);
 
         Task UpdateUploadSuccess(string batchId, string userValidationFileName);
 
