@@ -41,13 +41,16 @@ namespace FileUploadApi.Controllers
                 request.ProductCode = fctIRSProductCode;
                 request.ProductName = fctIRSProductCode;
 
-                IEnumerable<Row> rows = new List<Row>();
+                IEnumerable<Row> tempRows = new List<Row>();
                 IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");
 
                 using (var contentStream = request.FileRef.OpenReadStream())
                 {
-                    rows = fileContentReader.Read(contentStream);
+                    tempRows = fileContentReader.Read(contentStream);
                 }
+
+                var rows = tempRows.ToList();                
+                rows.RemoveAt(0);
 
                 foreach (var row in rows)
                 {
@@ -57,10 +60,11 @@ namespace FileUploadApi.Controllers
                 var context = new ManualCustomerCaptureContext
                 {
                     Configuration = GetFCTIRSConfiguration(),
-                    UserId = request.UserId ?? 0
+                    UserId = request.UserId ?? 0,
+                    FileName = request.FileName
                 };
 
-                var uploadResult = await _batchProcessor.UploadAsync(rows, context);
+                var uploadResult = await _batchProcessor.UploadAsync(rows, context, HttpContext.Request.Headers["Authorization"]);
 
                 return Ok(uploadResult);
             }

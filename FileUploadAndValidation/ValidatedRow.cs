@@ -4,7 +4,7 @@ using FilleUploadCore.FileReaders;
 namespace FileUploadAndValidation
 {
     public class ValidatedRow {
-        public int Index { get; set; }
+        public int Row { get; set; }
         public bool IsValid {get; set; }
         public IList<string> ErrorMessages { get; set; }
         public decimal Amount { get; set; }

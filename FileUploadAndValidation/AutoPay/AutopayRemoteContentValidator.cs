@@ -7,6 +7,11 @@ namespace FileUploadAndValidation
 {
     public class AutoPayRemoteFileContentValidator : IRemoteFileContentValidator<AutoPayRow>
     {
+        public bool IsBackground()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public async Task<ValidationResult<AutoPayRow>> Validate(string requestIdentifier, IEnumerable<AutoPayRow> validRows)
         {
             await Task.CompletedTask;
@@ -14,6 +19,11 @@ namespace FileUploadAndValidation
                 ValidRows = validRows.ToList(),
                 Failures = new List<AutoPayRow>()
             };
+        }
+
+        public Task<ValidationResult<AutoPayRow>> Validate(string requestIdentifier, IEnumerable<AutoPayRow> validRows, string clientToken = "")
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

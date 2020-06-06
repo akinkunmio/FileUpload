@@ -30,7 +30,7 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
         this.dbRepository = dbRepository;
     }
 
-    public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, ManualCustomerCaptureContext context)
+    public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, ManualCustomerCaptureContext context, string clientToken)
     {
         if (rows.Count() == 0) throw new AppException("No records found");
 
@@ -44,9 +44,11 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
 
         var batchId = GenericHelpers.GenerateBatchId("QTB", DateTime.Now);
 
-        var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows);
+        var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows, clientToken);
 
-        var finalResult = localValidationResult.MergeResults(remoteValidationResult);
+        var isBackground = remoteValidator.IsBackground();
+
+        var finalResult = isBackground ? localValidationResult : localValidationResult.MergeResults(remoteValidationResult);
 
         var batch = new Batch<ManualCaptureRow>(finalResult.ValidRows, finalResult.Failures)
         {
@@ -58,6 +60,8 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             ProductCode = "FCT-IRS",
             ProductName = "FCT-IRS",
             UserId = context.UserId,
+            TransactionStatus = GenericConstants.PendingValidation,
+            NameOfFile = context.FileName
             //UplodedBy =  context.UserName,           
         };
 

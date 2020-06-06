@@ -353,6 +353,9 @@ namespace FileUploadAndValidation.Repository
                 var fileName = batchId + "_validate.json";
                 var path = fileLocation + fileName;
 
+                if (!Directory.Exists(fileLocation))
+                    Directory.CreateDirectory(fileLocation);
+
                 string jsonString = JsonConvert.SerializeObject(rowDetails);
 
                 await File.WriteAllTextAsync(path, jsonString);
