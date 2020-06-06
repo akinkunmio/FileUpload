@@ -61,7 +61,7 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             ProductName = "FCT-IRS",
             UserId = context.UserId,
             TransactionStatus = GenericConstants.PendingValidation,
-            NameOfFile = context.FileName
+            NameOfFile = string.Empty
             //UplodedBy =  context.UserName,           
         };
 
