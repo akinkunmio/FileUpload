@@ -21,6 +21,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 end
 GO
+
 /****** Object:  Table [dbo].[tbl_fctirs_multi_tax_transactions_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF OBJECT_ID('tbl_fctirs_multi_tax_transactions_detail','U') IS NULL 
 begin
@@ -45,6 +46,7 @@ CREATE TABLE [dbo].[tbl_fctirs_multi_tax_transactions_detail](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 end
 GO
+
 /****** Object:  Table [dbo].[tbl_firs_multi_tax_transactions_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF OBJECT_ID('tbl_firs_multi_tax_transactions_detail','U') IS NULL 
 begin
@@ -88,6 +90,7 @@ CREATE TABLE [dbo].[tbl_firs_multi_tax_transactions_detail](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 end
 GO
+
 /****** Object:  Table [dbo].[tbl_firs_wht_transactions_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF OBJECT_ID('tbl_firs_wht_transactions_detail','U') IS NULL 
 begin
@@ -118,6 +121,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 end
 GO
+
 /****** Object:  Table [dbo].[tbl_firs_wvat_transactions_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF OBJECT_ID('tbl_firs_wvat_transactions_detail','U') IS NULL 
 begin
@@ -151,6 +155,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 end
 GO
+
 /****** Object:  Table [dbo].[tbl_lirs_multi_tax_transactions_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF OBJECT_ID('tbl_lirs_multi_tax_transactions_detail','U') IS NULL 
 begin
@@ -167,6 +172,7 @@ CREATE TABLE [dbo].[tbl_lirs_multi_tax_transactions_detail](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 end
 GO
+
 /****** Object:  Table [dbo].[tbl_transactions_summary]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF OBJECT_ID('tbl_transactions_summary','U') IS NULL 
 begin
@@ -230,6 +236,7 @@ CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_by_batch_id]
 AS
 	SELECT * FROM tbl_transactions_summary WHERE batch_id = @batch_id;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_batch_upload_summary_id_by_batch_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_batch_upload_summary_id_by_batch_id') IS NOT NULL)
 BEGIN
@@ -244,6 +251,7 @@ AS
 	FROM tbl_transactions_summary 
 	WHERE batch_id = @batch_id;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_bill_payments_status_by_transactions_summary_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_bill_payments_status_by_transactions_summary_id') IS NOT NULL)
 BEGIN
@@ -266,6 +274,7 @@ AS
 			ORDER BY RowNum
 		
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_confirmed_bill_payments_by_transactions_summary_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_confirmed_bill_payments_by_transactions_summary_id') IS NOT NULL)
 BEGIN
@@ -280,6 +289,7 @@ AS
 	FROM tbl_bill_payment_transactions_detail 
 	WHERE [transactions_summary_id] = @transactions_summary_id and row_status = 'Valid';
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_confirmed_firs_multitax_by_transactions_summary_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_confirmed_firs_multitax_by_transactions_summary_id') IS NOT NULL)
 BEGIN
@@ -313,6 +323,7 @@ AS
 	FROM tbl_firs_multi_tax_transactions_detail 
 	WHERE [transactions_summary_id] = @transactions_summary_id and row_status = 'Valid';
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_confirmed_firs_wvat_by_transactions_summary_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_confirmed_firs_wvat_by_transactions_summary_id') IS NOT NULL)
 BEGIN
@@ -343,6 +354,7 @@ AS
 	FROM tbl_firs_wvat_transactions_detail 
 	WHERE [transactions_summary_id] = @transactions_summary_id and row_status = 'Valid';
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_fctirs_multitax_payments_status_by_transactions_summary_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_fctirs_multitax_payments_status_by_transactions_summary_id') IS NOT NULL)
 BEGIN
@@ -515,6 +527,7 @@ AS
 			end
 		end
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_firs_multitax_payments_status_by_transactions_summary_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_firs_multitax_payments_status_by_transactions_summary_id') IS NOT NULL)
 BEGIN
@@ -730,6 +743,7 @@ AS
 			end
 		end
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_firs_wht_payments_status_by_transactions_summary_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_firs_wht_payments_status_by_transactions_summary_id') IS NOT NULL)
 BEGIN
@@ -780,6 +794,7 @@ AS
 				end
 		end
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_firs_wvat_payments_status_by_transactions_summary_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_firs_wvat_payments_status_by_transactions_summary_id') IS NOT NULL)
 BEGIN
@@ -881,6 +896,7 @@ AS
 				end
 		end
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_get_payments_status_by_transactions_summary_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_get_payments_status_by_transactions_summary_id') IS NOT NULL)
 BEGIN
@@ -933,6 +949,7 @@ AS
 				end
 		end
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_bill_payment_transaction_summary]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_bill_payment_transaction_summary') IS NOT NULL)
 BEGIN
@@ -957,6 +974,7 @@ AS
 	VALUES(@batch_id,@status,@item_type,@num_of_records,@upload_date,@content_type,@nas_raw_file,@userid, @product_code, @product_name, @file_name) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_bill_payments]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_bill_payments') IS NOT NULL)
 BEGIN
@@ -986,6 +1004,7 @@ AS
 	VALUES(@product_code,@item_code,@customer_id,@amount,@transactions_summary_id,@row_status,@row_num,@created_date) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_invalid_bill_payments]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_invalid_bill_payments') IS NOT NULL)
 BEGIN
@@ -1087,6 +1106,7 @@ address_info,
 	@error) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_invalid_firs_multitax]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_invalid_firs_multitax') IS NOT NULL)
 BEGIN
@@ -1165,6 +1185,7 @@ AS
 	@error) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_invalid_firs_wht]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_invalid_firs_wht') IS NOT NULL)
 BEGIN
@@ -1228,6 +1249,7 @@ AS
 	@error) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_invalid_firs_wvat]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_invalid_firs_wvat') IS NOT NULL)
 BEGIN
@@ -1300,6 +1322,7 @@ AS
 	@error) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_valid_bill_payments]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_valid_bill_payments') IS NOT NULL)
 BEGIN
@@ -1328,6 +1351,7 @@ AS
 	VALUES(@product_code,@item_code,@customer_id,@amount,@transactions_summary_id,@row_num,@created_date,@initial_validation_status) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_valid_fctirs_multitax]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_valid_fctirs_multitax') IS NOT NULL)
 BEGIN
@@ -1382,6 +1406,7 @@ AS
 	@initial_validation_status) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_valid_firs_multitax]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_valid_firs_multitax') IS NOT NULL)
 BEGIN
@@ -1456,6 +1481,7 @@ AS
 	@initial_validation_status) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_valid_firs_wht]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_valid_firs_wht') IS NOT NULL)
 BEGIN
@@ -1510,6 +1536,7 @@ AS
 	@invoice_number,@transactions_summary_id,@row_num,@created_date,@initial_validation_status) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_insert_valid_firs_wvat]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_insert_valid_firs_wvat') IS NOT NULL)
 BEGIN
@@ -1577,6 +1604,7 @@ AS
 	@initial_validation_status) 
 	SELECT SCOPE_IDENTITY();
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_bill_payment_summary_status]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_bill_payment_summary_status') IS NOT NULL)
 BEGIN
@@ -1593,6 +1621,7 @@ AS
 	SET transaction_status=@status, modified_date=@modified_date
 	WHERE batch_id=@batch_id;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_bill_payment_upload_summary]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_bill_payment_upload_summary') IS NOT NULL)
 BEGIN
@@ -1614,6 +1643,7 @@ AS
 	OUTPUT INSERTED.Id
 	WHERE batch_id=@batch_id;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_bill_payments]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_bill_payments') IS NOT NULL)
 BEGIN
@@ -1632,6 +1662,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and  row_num=@row_num;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_bill_payments_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_bill_payments_detail') IS NOT NULL)
 BEGIN
@@ -1650,6 +1681,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and row_num=@row_num;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_bill_payments_detail_enterprise_error]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_bill_payments_detail_enterprise_error') IS NOT NULL)
 BEGIN
@@ -1669,6 +1701,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and initial_validation_status = 'Valid';
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_fctirs_multitax_detail_enterprise_error]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_fctirs_multitax_detail_enterprise_error') IS NOT NULL)
 BEGIN
@@ -1686,6 +1719,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and initial_validation_status = 'Valid';
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_fctirs_multitax_payments_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_fctirs_multitax_payments_detail') IS NOT NULL)
 BEGIN
@@ -1706,6 +1740,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and row_num=@row_num;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_firs_multitax_detail_enterprise_error]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_firs_multitax_detail_enterprise_error') IS NOT NULL)
 BEGIN
@@ -1725,6 +1760,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and initial_validation_status = 'Valid';
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_firs_multitax_payments_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_firs_multitax_payments_detail') IS NOT NULL)
 BEGIN
@@ -1745,6 +1781,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and row_num=@row_num;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_firs_wht_detail_enterprise_error]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_firs_wht_detail_enterprise_error') IS NOT NULL)
 BEGIN
@@ -1765,6 +1802,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and initial_validation_status = 'Valid';
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_firs_wht_payments_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_firs_wht_payments_detail') IS NOT NULL)
 BEGIN
@@ -1785,6 +1823,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and row_num=@row_num;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_firs_wvat_detail_enterprise_error]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_firs_wvat_detail_enterprise_error') IS NOT NULL)
 BEGIN
@@ -1804,6 +1843,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and initial_validation_status = 'Valid';
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_firs_wvat_payments_detail]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_firs_wvat_payments_detail') IS NOT NULL)
 BEGIN
@@ -1822,6 +1862,7 @@ AS
 	SET error=@error, row_status=@row_status
 	WHERE transactions_summary_id=@transactions_summary_id and row_num=@row_num;
 GO
+
 /****** Object:  StoredProcedure [dbo].[sp_update_successful_upload]    Script Date: 06/06/2020 12:57:10 PM ******/
 IF (OBJECT_ID('sp_update_successful_upload') IS NOT NULL)
 BEGIN
