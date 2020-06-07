@@ -19,7 +19,7 @@ namespace FileUploadAndValidation.Helpers
 
             var expectedNumOfColumns = columnContracts.Count();
             if (headerRow.Columns.Count() != expectedNumOfColumns)
-                throw new ValidationException($"Invalid file uploaded!.");
+                throw new ValidationException($"Invalid file uploaded. Please, upload a valid file.");
 
             for (int i = 0; i < expectedNumOfColumns; i++)
             {
@@ -118,7 +118,7 @@ namespace FileUploadAndValidation.Helpers
             {
                 result.Append($"{failure.ColumnValidationErrors[i].PropertyName}: {failure.ColumnValidationErrors[i].ErrorMessage}");
 
-                if (failure.ColumnValidationErrors[i+1] != null)
+                if (i < failure.ColumnValidationErrors.Count() - 1)
                     result.Append(", ");
             }
 
@@ -439,7 +439,7 @@ namespace FileUploadAndValidation.Helpers
         private static decimal GetAmountFromMultiTaxRow(RowDetail s)
         {
             if (GenericConstants.Wht.Equals(s.TaxType))
-                return decimal.Parse(s.ContractAmount);
+                return decimal.Parse(s.WhtAmount);
 
             if (GenericConstants.Cit.Equals(s.TaxType.ToLower())
                 || GenericConstants.Edt.Equals(s.TaxType.ToLower())

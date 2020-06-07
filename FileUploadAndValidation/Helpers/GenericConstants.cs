@@ -49,6 +49,7 @@ namespace FileUploadAndValidation.Helpers
 
         public static string BillPaymentTxtTemplate = "BillPaymentTxtTemplate.txt";
         public static string BillPaymentCsvTemplate = "BillPaymentCsvTemplate.csv";
+        public static string FirsMultitaxPaymentCsvTemplate = "FirsMultitaxPaymentCsvTemplate.csv";
         public static string BillPaymentXlsTemplate = "BillPaymentXlsTemplate.xls";
         public static string BillPaymentXlsxTemplate = "BillPaymentXlsxTemplate.xlsx";
         public static string BillPaymentTemplate = "BillPaymentTemplate";

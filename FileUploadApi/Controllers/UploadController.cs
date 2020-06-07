@@ -110,7 +110,7 @@ namespace FileUploadApi.Controllers
                     throw new AppException("Value must be passed for 'HasHeaderRow'.");
 
                 if (Request.Form.Files.Count() == 0)
-                    throw new AppException("Please upload a file!."); 
+                    throw new AppException("Please upload a file."); 
 
                 var request = new FileUploadRequest
                 {
@@ -167,10 +167,11 @@ namespace FileUploadApi.Controllers
                 
             try
             {
-
                 var status = (Enum.IsDefined(typeof(StatusEnum), pagination.Status))
                 ? (StatusEnum)pagination.Status
                 : throw new AppException("The field 'Status' must have a value between 0 and 2.");
+
+                string auth = Request.Headers["Authorization"].ToString();
 
                 var paginationFilter =
                    new PaginationFilter(pagination.PageSize,
@@ -179,7 +180,7 @@ namespace FileUploadApi.Controllers
                    pagination.TaxType
                    );
 
-                var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter);
+                var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter, auth);
 
                 response.Data = result.Data;
                 response.TotalCount = result.TotalRowsCount;
@@ -210,8 +211,6 @@ namespace FileUploadApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-
-                //throw new AppException("An error occured. Please retry!.", 400);
 
                 return BadRequest("An error occured. Please retry!");
 
@@ -258,7 +257,6 @@ namespace FileUploadApi.Controllers
                 };
 
                 return result;
-                //throw ex;
             }
             catch (Exception ex)
             {
@@ -269,8 +267,6 @@ namespace FileUploadApi.Controllers
                     StatusCode = (int)HttpStatusCode.BadRequest
                 };
                 return result;
-                // throw new AppException("An error occured. Please retry!.", 400);
-
             }
 
             return Ok(response);
@@ -301,7 +297,6 @@ namespace FileUploadApi.Controllers
                 };
 
                 return result;
-               // throw ex;
             }
             catch (Exception ex)
             {
@@ -312,7 +307,6 @@ namespace FileUploadApi.Controllers
                     StatusCode = (int)HttpStatusCode.BadRequest
                 };
                 return result;
-                //throw new AppException("An error occured. Please retry!.", 400);
             }
         }
 
@@ -369,14 +363,11 @@ namespace FileUploadApi.Controllers
                 };
 
                 return result;
-                //throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 return BadRequest(new { errorMessage = "An error occured. Please retry!." });
-                //throw new AppException("An error occured.Please, retry!.", 400);
-
             }
 
             return Ok(response);
@@ -407,13 +398,11 @@ namespace FileUploadApi.Controllers
                 };
 
                 return result;
-                //throw ex;
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 return BadRequest(new { errorMessage = "An error occured.Please, retry!." });
-                //throw new AppException("An error occured.Please, retry!.", 400);
             }
         }
     }

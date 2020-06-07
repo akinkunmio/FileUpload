@@ -87,15 +87,29 @@ namespace FileUploadApi.ApiServices
             return pagedData;
         }
 
-        public async Task<PagedData<dynamic>> GetPaymentsStatus(string batchId, PaginationFilter pagination)
+        public async Task<PagedData<dynamic>> GetPaymentsStatus(string batchId, PaginationFilter pagination, string authToken)
         {
             ArgumentGuard.NotNullOrWhiteSpace(batchId, nameof(batchId));
+            ArgumentGuard.NotNullOrWhiteSpace(authToken, nameof(authToken));
 
             var paymentStatuses = new PagedData<dynamic>();
 
             try
             {
                 var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
+
+                if (fileSummary.TransactionStatus.Equals(GenericConstants.PendingValidation, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    await _httpService.ValidateRecords(new FileProperty
+                    {
+                        BatchId = batchId,
+                        ContentType = fileSummary.ContentType,
+                        ItemType = fileSummary.ItemType,
+                        Url = fileSummary.NasToValidateFile
+                    }, authToken);
+
+                    return paymentStatuses;
+                }
 
                 var paymentStatus = await _dbRepository.GetPaymentRowStatuses(batchId, pagination);
 
@@ -119,7 +133,7 @@ namespace FileUploadApi.ApiServices
                             CustomerId = s.CustomerId,
                             ItemCode = s.ItemCode,
                             ProductCode = s.ProductCode,
-                            Error = s.Error,
+                            Error = s.ErrorDescription,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
@@ -139,7 +153,7 @@ namespace FileUploadApi.ApiServices
                             WhtAmount = s.WhtAmount,
                             PeriodCovered = s.PeriodCovered,
                             InvoiceNumber = s.InvoiceNumber,
-                            Error = s.Error,
+                            Error = s.ErrorDescription,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
@@ -162,7 +176,7 @@ namespace FileUploadApi.ApiServices
                             TaxAccountNumber = s.TaxAccountNumber,
                             WvatRate = s.WvatRate,
                             WvatValue = s.WvatValue,
-                            Error = s.Error,
+                            Error = s.ErrorDescription,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
@@ -189,7 +203,7 @@ namespace FileUploadApi.ApiServices
                            s.DocumentNumber,
                            s.PayerTin,
                            s.TaxType,
-                           s.Error,
+                           s.ErrorDescription,
                            Status = s.RowStatus
                        });
 
@@ -208,7 +222,7 @@ namespace FileUploadApi.ApiServices
                            s.PhoneNumber,
                            s.Email,
                            Address = s.AddressInfo,
-                           s.Error,
+                           s.ErrorDescription,
                            Status = s.RowStatus
                        });
 
@@ -247,7 +261,7 @@ namespace FileUploadApi.ApiServices
 
             result = await _httpService.InitiatePayment(fileProperty, initiatePaymentOptions);
 
-            await _dbRepository.UpdateBillPaymentInitiation(batchId);
+            await _dbRepository.UpdatePaymentInitiation(batchId);
 
             return result;
         }
@@ -270,8 +284,13 @@ namespace FileUploadApi.ApiServices
             {
                 fileName = GenericConstants.BillPaymentCsvTemplate;
             }
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+            {
+                fileName = GenericConstants.FirsMultitaxPaymentCsvTemplate;
+            }
             else
-                throw new AppException("Template not found");
+                throw new AppException("Template not found!.");
 
             await _nasRepository.GetTemplateFileContentAsync(fileName, outputStream);
 
@@ -283,10 +302,10 @@ namespace FileUploadApi.ApiServices
             var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
             if (fileSummary == null)
-                throw new AppException($"Batch Upload Summary for BatchId: {batchId} not found", (int)HttpStatusCode.NotFound);
+                throw new AppException($"Batch Upload Summary for BatchId '{batchId}' not found!.", (int)HttpStatusCode.NotFound);
 
             if (string.IsNullOrWhiteSpace(fileSummary.NasUserValidationFile))
-                throw new AppException($"Validation file not found for batch with Id : {batchId}", (int)HttpStatusCode.NotFound);
+                throw new AppException($"Validation file not found for batch with Id '{batchId}'!.", (int)HttpStatusCode.NotFound);
 
             await _nasRepository.GetUserValidationResultAsync(fileSummary.NasUserValidationFile, outputStream);
 
