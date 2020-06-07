@@ -19,7 +19,7 @@ namespace FileUploadAndValidation.Helpers
 
             var expectedNumOfColumns = columnContracts.Count();
             if (headerRow.Columns.Count() != expectedNumOfColumns)
-                throw new ValidationException($"Invalid file uploaded!.");
+                throw new ValidationException($"Invalid file uploaded. Please, upload a valid file.");
 
             for (int i = 0; i < expectedNumOfColumns; i++)
             {
