@@ -31,6 +31,7 @@ namespace FileUploadAndValidation.BillPayments
             ProductCode = GetColumnValue(columns, INDEX_OF_PRODUCT_CODE, "");
             CustomerId = GetColumnValue(columns, INDEX_OF_CUSTOMER_ID, "");
             ItemCode = GetColumnValue(columns, INDEX_OF_ITEM_CODE, "");
+            Description = GetColumnValue(columns, INDEX_OF_DESCRIPTION, "");
 
             if (decimal.TryParse(GetColumnValue(columns, INDEX_OF_AMOUNT, ""), out decimal _amount))
             {
