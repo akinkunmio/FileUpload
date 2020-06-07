@@ -128,33 +128,33 @@ namespace FileUploadApi.ApiServices
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentId)
                 || fileSummary.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
                     paymentStatuses.Data = paymentStatus
-                        .Select(s => new BillPaymentRowStatusUntyped
+                        .Select(s => new 
                         {
-                            Amount = s.Amount,
-                            CustomerId = s.CustomerId,
-                            ItemCode = s.ItemCode,
-                            ProductCode = s.ProductCode,
-                            Error = s.ErrorDescription,
+                            s.Amount,
+                            s.CustomerId,
+                            s.ItemCode,
+                            s.ProductCode,
+                            ErrorDescription = s.Error,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Wht))
                     paymentStatuses.Data = paymentStatus
-                        .Select(s => new FirsWhtRowStatusUntyped
+                        .Select(s => new 
                         {
-                            BeneficiaryAddress = s.BeneficiaryAddress,
-                            BeneficiaryName = s.BeneficiaryName,
-                            BeneficiaryTin = s.BeneficiaryTin,
-                            ContractAmount = s.ContractAmount,
-                            ContractDate = s.ContractDate,
-                            ContractDescription = s.ContractDescription,
-                            ContractType = s.ContractType,
-                            WhtRate = s.WhtRate,
-                            WhtAmount = s.WhtAmount,
-                            PeriodCovered = s.PeriodCovered,
-                            InvoiceNumber = s.InvoiceNumber,
-                            Error = s.ErrorDescription,
+                            s.BeneficiaryAddress,
+                            s.BeneficiaryName,
+                            s.BeneficiaryTin,
+                            s.ContractAmount,
+                            s.ContractDate,
+                            s.ContractDescription,
+                            s.ContractType,
+                            s.WhtRate,
+                            s.WhtAmount,
+                            s.PeriodCovered,
+                            s.InvoiceNumber,
+                            ErrorDescription = s.Error,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
@@ -177,7 +177,7 @@ namespace FileUploadApi.ApiServices
                             s.TaxAccountNumber,
                             s.WvatRate,
                             s.WvatValue,
-                            s.ErrorDescription,
+                            ErrorDescription = s.Error,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
@@ -204,7 +204,7 @@ namespace FileUploadApi.ApiServices
                            s.DocumentNumber,
                            s.PayerTin,
                            s.TaxType,
-                           s.ErrorDescription,
+                           ErrorDescription = s.Error,
                            Status = s.RowStatus
                        });
 
@@ -223,7 +223,7 @@ namespace FileUploadApi.ApiServices
                            s.PhoneNumber,
                            s.Email,
                            Address = s.AddressInfo,
-                           s.ErrorDescription,
+                           ErrorDescription = s.Error,
                            Status = s.RowStatus
                        });
             }

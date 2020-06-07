@@ -95,7 +95,7 @@ namespace FileUploadAndValidation.UploadServices
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new AppException("Contact your administrator to elevate your access rights!.", (int)HttpStatusCode.Unauthorized);
+                    throw new AppException("Please, retry after some time. Remote server currently not reacheable!.", (int)HttpStatusCode.Unauthorized);
                 }
 
                 return validateResponse;
@@ -118,7 +118,7 @@ namespace FileUploadAndValidation.UploadServices
                 //        ResultMode = "Queue"
                 //    }
                 //};
-                throw new AppException("Error occured while performing payment validation. Please, retry validating the file!.", 400);
+                throw new AppException("An error occured while performing validation. Please, retry validating the file after some time!.", 400);
             }
         }
 
@@ -245,7 +245,7 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new AppException("Contact your administrator to elevate your access rights!.", (int)HttpStatusCode.Unauthorized);
+                    throw new AppException("Please, retry after some time. Remote server currently not reacheable!.", (int)HttpStatusCode.Unauthorized);
                 }
                 else
                 {

@@ -41,7 +41,7 @@ namespace FileUploadApi.ApiServices
             if (!request.ContentType.ToLower().Equals(GenericConstants.Firs)
                && !request.ContentType.ToLower().Equals(GenericConstants.Lasg)
                && !request.ContentType.ToLower().Equals(GenericConstants.FctIrs))
-                throw new AppException("Invalid Authority Type specified");
+                throw new AppException("Invalid Authority Type specified.");
 
             var uploadResult = new UploadResult
             {
