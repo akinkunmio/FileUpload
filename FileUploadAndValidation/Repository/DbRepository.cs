@@ -94,7 +94,7 @@ namespace FileUploadAndValidation.Repository
                                             created_date = invalid.Row.CreatedDate,
                                             transactions_summary_Id = transactionSummaryId,
                                             initial_validation_status = "Invalid",
-                                            error = invalid.Row.Error
+                                            error = invalid.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
@@ -150,7 +150,7 @@ namespace FileUploadAndValidation.Repository
                                             row_num = invalid.Row.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
                                             initial_validation_status = "Invalid",
-                                            error = invalid.Row.Error
+                                            error = invalid.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
@@ -212,7 +212,7 @@ namespace FileUploadAndValidation.Repository
                                             transactions_summary_Id = transactionSummaryId,
                                             row_status = "Invalid",
                                             initial_validation_status = "Invalid",
-                                            error = invalidWvat.Row.Error
+                                            error = invalidWvat.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
@@ -279,7 +279,7 @@ namespace FileUploadAndValidation.Repository
                                             transactions_summary_Id = transactionSummaryId,
                                             row_status = "Invalid",
                                             initial_validation_status = "Invalid",
-                                            error = invalid.Row.Error
+                                            error = invalid.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
@@ -333,7 +333,7 @@ namespace FileUploadAndValidation.Repository
                                             transactions_summary_Id = transactionSummaryId,
                                             row_status = "Invalid",
                                             initial_validation_status = "Invalid",
-                                            error = inValid.Row.Error
+                                            error = inValid.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);

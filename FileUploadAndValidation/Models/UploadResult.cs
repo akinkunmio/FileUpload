@@ -125,7 +125,7 @@ public class FirsRowDetail : RowDetail
 
         public string CreatedDate { get; set; }
 
-        public string Error { get; set; }
+        public string ErrorDescription { get; set; }
 
         public string ProductCode { get; set; }
 

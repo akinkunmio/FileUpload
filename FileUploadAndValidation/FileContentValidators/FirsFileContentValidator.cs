@@ -239,7 +239,7 @@ namespace FileUploadAndValidation.FileServices
 
                 foreach(var failure in uploadResult.Failures)
                 {
-                    failure.Row.Error = GenericHelpers.ConstructValidationError(failure);
+                    failure.Row.ErrorDescription = GenericHelpers.ConstructValidationError(failure);
                 }
 
                 if (uploadResult.ValidRows.Count() == 0)

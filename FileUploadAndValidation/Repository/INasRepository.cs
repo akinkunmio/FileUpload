@@ -260,7 +260,7 @@ namespace FileUploadAndValidation.Repository
                     .Select(s => new
                     {
                         Row = s.RowNum,
-                        s.Error,
+                        s.ErrorDescription,
                         Status = s.RowStatus,
                         s.Amount,
                         s.CustomerId,
@@ -273,10 +273,10 @@ namespace FileUploadAndValidation.Repository
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails
-                    .Select(r => new FirsWhtRowStatusUntyped
+                    .Select(r => new 
                     {
                         Row = r.RowNum,
-                        Error = r.Error,
+                        r.ErrorDescription,
                         Status = r.RowStatus,
                         BeneficiaryTin = r.BeneficiaryTin,
                         BeneficiaryName = r.BeneficiaryName,
@@ -296,10 +296,10 @@ namespace FileUploadAndValidation.Repository
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails
-                    .Select(r => new FirsWVatRowStatusUntyped
+                    .Select(r => new 
                     {
                         Row = r.RowNum,
-                        Error = r.Error,
+                        r.ErrorDescription,
                         Status = r.RowStatus,
                         ContractorName = r.ContractorName,
                         ContractorAddress = r.ContractorAddress,
@@ -324,7 +324,7 @@ namespace FileUploadAndValidation.Repository
                 result = rowDetails.Select(r => new 
                 { 
                     Row = r.RowNum,
-                    r.Error,
+                    r.ErrorDescription,
                     Status = r.RowStatus,
                     r.BeneficiaryTin,
                     r.BeneficiaryName,
@@ -351,7 +351,7 @@ namespace FileUploadAndValidation.Repository
                 result = rowDetails.Select(r => new
                 {
                     Row = r.RowNum,
-                    r.Error,
+                    r.ErrorDescription,
                     Status = r.RowStatus,
                     r.BeneficiaryTin,
                     r.BeneficiaryName,

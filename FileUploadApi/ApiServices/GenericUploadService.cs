@@ -133,7 +133,7 @@ namespace FileUploadApi.ApiServices
                             CustomerId = s.CustomerId,
                             ItemCode = s.ItemCode,
                             ProductCode = s.ProductCode,
-                            Error = s.Error,
+                            Error = s.ErrorDescription,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
@@ -153,7 +153,7 @@ namespace FileUploadApi.ApiServices
                             WhtAmount = s.WhtAmount,
                             PeriodCovered = s.PeriodCovered,
                             InvoiceNumber = s.InvoiceNumber,
-                            Error = s.Error,
+                            Error = s.ErrorDescription,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
@@ -176,7 +176,7 @@ namespace FileUploadApi.ApiServices
                             TaxAccountNumber = s.TaxAccountNumber,
                             WvatRate = s.WvatRate,
                             WvatValue = s.WvatValue,
-                            Error = s.Error,
+                            Error = s.ErrorDescription,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
@@ -203,7 +203,7 @@ namespace FileUploadApi.ApiServices
                            s.DocumentNumber,
                            s.PayerTin,
                            s.TaxType,
-                           s.Error,
+                           s.ErrorDescription,
                            Status = s.RowStatus
                        });
 
@@ -222,7 +222,7 @@ namespace FileUploadApi.ApiServices
                            s.PhoneNumber,
                            s.Email,
                            Address = s.AddressInfo,
-                           s.Error,
+                           s.ErrorDescription,
                            Status = s.RowStatus
                        });
 
