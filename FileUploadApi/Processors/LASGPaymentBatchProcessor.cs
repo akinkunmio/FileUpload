@@ -52,19 +52,20 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
         var batch = new Batch<LASGPaymentRow>(finalResult.ValidRows, finalResult.Failures)
         {
             BatchId = batchId,
-            ItemType = "lasg",
-            ContentType = "lasg",
+            ItemType = GenericConstants.Lasg,
+            ContentType = GenericConstants.Lasg,
             UploadDate = DateTime.Now.ToShortDateString(),
             ModifiedDate = DateTime.Now.ToShortDateString(),
             ProductCode = context.ProductCode,
             ProductName = context.ProductName,
             UserId = context.UserId,
-            Status = GenericConstants.PendingValidation,
-            //UplodedBy =  context.UserName,           
+            UploadSuccessful = true,
+            Status = RemoteValidationUtil.GetStatusFromRemoteResponseCode(remoteValidationResult.CompletionStatus.Status),
+            ErrorMessage = remoteValidationResult.CompletionStatus.ErrorMessage           
         };
 
         await dbRepository.InsertAllUploadRecords(batch);
 
         return batch;
-    }
+    }    
 }

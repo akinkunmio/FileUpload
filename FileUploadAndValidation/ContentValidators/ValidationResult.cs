@@ -14,6 +14,7 @@ namespace FileUploadApi.Services
         public List<T> ValidRows { get; set; }
 
         public List<T> Failures { get; set; }
+        public CompletionState CompletionStatus { get; set;}
         public ValidationResult<T> MergeResults(ValidationResult<T> otherResult)
         {
             //local validations has all rows: failed and valid
@@ -42,5 +43,20 @@ namespace FileUploadApi.Services
 
             return this;
         }
+    }
+
+    public class CompletionState 
+    {
+        public CompletionStateStatus Status { get;set;}
+        public string ErrorCode { get; set; }
+        public string ErrorMessage {get;set;}
+    }
+
+    public enum CompletionStateStatus
+    {
+        Completed = 0,
+        Queued = 1,
+        Failed = 2,
+        Aborted = 3
     }
 }

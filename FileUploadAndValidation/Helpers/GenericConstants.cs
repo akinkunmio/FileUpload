@@ -43,7 +43,8 @@ namespace FileUploadAndValidation.Helpers
         public const string InitiateBillPaymentUrl = "/qbtrans/api/v1/payments/bills/initiate-payment";
         public const string InitiateFirsPaymentUrl = "/qbtrans/api/v1/payments/firs/initiate-payment";
         public const string InitiateFirsMultitaxPaymentUrl = "/qbtrans/api/v1/payments/hub/firs/initiate-payment";
-        public const string ValidateManualCapture = "/qbtrans/api/v1/payments/hub/bills/validate/fctirs";
+        public const string ValidateManualCaptureUrl = "/qbtrans/api/v1/payments/hub/bills/validate/fctirs";
+        public const string ValidateLasgDataUrl = "/qbtrans/api/v1/payments/hub/bills/validate/lasg";
 
         public const int RECORDS_SMALL_SIZE = 50;
 

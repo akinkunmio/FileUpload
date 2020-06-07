@@ -11,15 +11,13 @@ namespace FileUploadAndValidation.BillPayments
         const int INDEX_OF_ITEM_CODE = 1;
         const int INDEX_OF_REVENUE_CODE = 2;
         const int INDEX_OF_AGENCY_CODE = 3;
-        const int INDEX_OF_CUSTOMER_ID = 4; //PAYER ID
+        const int INDEX_OF_PAYER_ID = 4; //PAYER ID
         const int INDEX_OF_AMOUNT = 5;
         const int INDEX_OF_PERIOD_FROM = 6;
         const int INDEX_OF_PERIOD_TO = 7;
         const int INDEX_OF_DESCRIPTION = 8;
 
-        public LASGPaymentRow() {
-            
-        }
+        public LASGPaymentRow() {}
 
         public LASGPaymentRow(Row row)
         {
@@ -31,7 +29,7 @@ namespace FileUploadAndValidation.BillPayments
         private void SetupFields(List<Column> columns)
         {
             ProductCode = GetColumnValue(columns, INDEX_OF_PRODUCT_CODE, "");
-            CustomerId = GetColumnValue(columns, INDEX_OF_CUSTOMER_ID, "");
+            PayerId = GetColumnValue(columns, INDEX_OF_PAYER_ID, "");
             ItemCode = GetColumnValue(columns, INDEX_OF_ITEM_CODE, "");
             RevenueCode = GetColumnValue(columns, INDEX_OF_REVENUE_CODE, "");
             AgencyCode = GetColumnValue(columns, INDEX_OF_AGENCY_CODE, "");
@@ -53,6 +51,8 @@ namespace FileUploadAndValidation.BillPayments
                 errors.Add($"{nameof(ProductCode)} not specified");
             if (string.IsNullOrWhiteSpace(ItemCode))
                 errors.Add($"{nameof(ItemCode)} not specified");
+            if (string.IsNullOrWhiteSpace(PayerId))
+                errors.Add($"{nameof(PayerId)} not specified. E.g. Tax Id");
             if (string.IsNullOrWhiteSpace(RevenueCode))
                 errors.Add($"{nameof(RevenueCode)} not specified");
             if (string.IsNullOrWhiteSpace(AgencyCode))
@@ -64,12 +64,12 @@ namespace FileUploadAndValidation.BillPayments
                 
             if (!LASGUtil.TryValidateMonth(StartPeriod))
             {
-                errors.Add($"{nameof(StartPeriod)} must be 7 characters or less e.g. JUL{DateTime.Now.Year}");
+                errors.Add($"{nameof(StartPeriod)} must be 7 characters e.g. JUL{DateTime.Now.Year}");
             }
             
             if (!LASGUtil.TryValidateMonth(EndPeriod))
             {
-                errors.Add($"{nameof(EndPeriod)} must be 7 characters or less e.g. JUL{DateTime.Now.Year}");
+                errors.Add($"{nameof(EndPeriod)} must be 7 characters e.g. JUL{DateTime.Now.Year}");
             }
 
             if (string.IsNullOrEmpty(Description))
@@ -88,6 +88,7 @@ namespace FileUploadAndValidation.BillPayments
         ///
         ///<remarks>This is the PayerId or Tax ID</remarks>
         ///
+        public string PayerId {get;set;}
         public string CustomerId {get;set;}
 
         ///
@@ -105,8 +106,8 @@ namespace FileUploadAndValidation.BillPayments
 
 
     static class LASGUtil {
-        public static bool TryValidateMonth(string periodMonth){
-            var months = new []{"JAN","FEB","MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+       static string[] months = new []{"JAN","FEB","MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+       public static bool TryValidateMonth(string periodMonth){
 
             if(periodMonth?.Length != 7) return false;
 

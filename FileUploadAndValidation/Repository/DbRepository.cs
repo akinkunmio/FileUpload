@@ -725,13 +725,22 @@ namespace FileUploadAndValidation.Repository
                                 {
                                     await connection.ExecuteAsync(
                                         sql: GetSPToUpdatePaymentDetail(fileSummary.ItemType, fileSummary.ContentType)/*"sp_update_payments_detail"*/,
-                                        param: new
-                                        {
-                                            transactions_summary_id = summaryId,
-                                            error = status.Error,
-                                            row_num = status.Row,
-                                            row_status = status.Status
-                                        },
+                                        param: 
+                                            fileSummary.ContentType == GenericConstants.Lasg ? 
+                                                (object) new {
+                                                    transactions_summary_id = summaryId,
+                                                    error = status.Error,
+                                                    row_num = status.Row,
+                                                    row_status = status.Status,
+                                                    webguid = status.WebGuid
+                                                } :
+                                                new
+                                                {
+                                                    transactions_summary_id = summaryId,
+                                                    error = status.Error,
+                                                    row_num = status.Row,
+                                                    row_status = status.Status
+                                                },
                                         commandType: CommandType.StoredProcedure,
                                         transaction: sqlTransaction);
                                 }
@@ -784,6 +793,16 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_fctirs_multitax_payments_detail";
             }
+            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                 && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                return @"sp_update_fctirs_multitax_payments_detail";
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.Lasg)
+                 && contentType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return @"sp_update_lasg_multitax_payments_detail";
+            }
             else return "";
         }
 
@@ -814,6 +833,11 @@ namespace FileUploadAndValidation.Repository
                 && contentType.ToLower().Equals(GenericConstants.FctIrs))
             {
                 return @"sp_update_fctirs_multitax_detail_enterprise_error";
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.Lasg)
+                && contentType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return @"sp_update_lasg_multitax_detail_enterprise_error";
             }
             else return "";
         }

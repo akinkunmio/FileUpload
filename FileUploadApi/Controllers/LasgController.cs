@@ -49,7 +49,8 @@ namespace FileUploadApi.Controllers
 
                 using (var contentStream = request.FileRef.OpenReadStream())
                 {
-                    rows = fileContentReader.Read(contentStream);
+                    var tempRows = fileContentReader.Read(contentStream);
+                    rows = tempRows.Any() ? tempRows.Skip(1) : tempRows;
                 }
 
                 foreach (var row in rows)

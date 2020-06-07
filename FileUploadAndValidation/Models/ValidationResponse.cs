@@ -24,6 +24,7 @@ namespace FileUploadAndValidation.Models
         public string Status { get; set; }
         public string Error { get; set; }
         public string ExtraData { get; set;}
+        public string WebGuid { get; set;}
     }
 
     public class FileProperty

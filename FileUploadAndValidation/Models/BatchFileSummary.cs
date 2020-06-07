@@ -67,6 +67,7 @@ namespace FileUploadAndValidation.Models
         public IEnumerable<T> Rows { get; private set; }
         public long UserId { get; set; }
         public string Status { get; set; }
+        public string ErrorMessage { get; set; }
     }
 
 }
