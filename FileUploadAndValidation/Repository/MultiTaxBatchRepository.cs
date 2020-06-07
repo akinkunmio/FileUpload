@@ -46,12 +46,17 @@ namespace FileUploadAndValidation.Repository
 
 
             FileProperty fileProperty = await _nasRepository
-                                                    .SaveFileToValidate(uploadResult.BatchId, request.ContentType, request.ItemType, uploadResult.ValidRows);
+                                                    .SaveFileToValidate(uploadResult.BatchId, 
+                                                    request.ContentType, 
+                                                    request.ItemType, 
+                                                    uploadResult.ValidRows);
 
             fileProperty.ContentType = request.ContentType;
             fileProperty.ItemType = request.ItemType;
 
-            await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
+            await _httpService.ValidateRecords(fileProperty, 
+                request.AuthToken, 
+                uploadResult.ValidRows.Count() > 50);
         }
     }
 }
