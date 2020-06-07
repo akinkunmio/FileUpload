@@ -98,7 +98,8 @@ namespace FileUploadApi.ApiServices
             {
                 var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
-                if (fileSummary.TransactionStatus.Equals(GenericConstants.PendingValidation, StringComparison.InvariantCultureIgnoreCase))
+                if (GenericConstants.PendingValidation.Equals(fileSummary.TransactionStatus, StringComparison.InvariantCultureIgnoreCase)
+                   && !GenericConstants.NoValidRecord.Equals(fileSummary.TransactionStatus, StringComparison.InvariantCultureIgnoreCase))
                 {
                     await _httpService.ValidateRecords(new FileProperty
                     {
@@ -162,20 +163,20 @@ namespace FileUploadApi.ApiServices
                     paymentStatuses.Data = paymentStatus
                         .Select(s => new 
                         {
-                            ContractorName = s.ContractorName,
-                            ContractorAddress = s.ContractorAddress,
-                            ContractDescription = s.ContractDescription,
-                            ContractorTin = s.ContractorTin,
-                            TransactionDate = s.TransactionDate,
-                            NatureOfTransaction = s.NatureOfTransaction,
-                            InvoiceNumber = s.InvoiceNumber,
-                            TransactionCurrency = s.TransactionCurrency,
-                            CurrencyInvoicedValue = s.CurrencyInvoicedValue,
-                            TransactionInvoicedValue = s.TransactionInvoicedValue,
-                            CurrencyExchangeRate = s.CurrencyExchangeRate,
-                            TaxAccountNumber = s.TaxAccountNumber,
-                            WvatRate = s.WvatRate,
-                            WvatValue = s.WvatValue,
+                            s.ContractorName,
+                            s.ContractorAddress,
+                            s.ContractDescription,
+                            s.ContractorTin,
+                            s.TransactionDate,
+                            s.NatureOfTransaction,
+                            s.InvoiceNumber,
+                            s.TransactionCurrency,
+                            s.CurrencyInvoicedValue,
+                            s.TransactionInvoicedValue,
+                            s.CurrencyExchangeRate,
+                            s.TaxAccountNumber,
+                            s.WvatRate,
+                            s.WvatValue,
                             s.ErrorDescription,
                             Row = s.RowNum,
                             Status = s.RowStatus
@@ -225,9 +226,6 @@ namespace FileUploadApi.ApiServices
                            s.ErrorDescription,
                            Status = s.RowStatus
                        });
-
-                //if (paymentStatuses.Data.Count() < 1)
-                //    throw new AppException($"No result found", (int)HttpStatusCode.OK);
             }
             catch (AppException appEx)
             {
