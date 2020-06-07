@@ -650,8 +650,8 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_firs_multitax_payments_status_by_transactions_summary_id";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
-                 && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            else if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+                 && contentType.ToLower().Equals(GenericConstants.ManualCapture))
             {
                 return @"sp_get_fctirs_multitax_payments_status_by_transactions_summary_id";
             }
