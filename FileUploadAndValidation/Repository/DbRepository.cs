@@ -40,7 +40,7 @@ namespace FileUploadAndValidation.Repository
                     {
                         try
                         {
-                            var transactionSummaryId = await connection.ExecuteScalarAsync(sql: "sp_insert_bill_payment_transaction_summary",
+                            var transactionSummaryId = await connection.ExecuteScalarAsync(sql: "sp_insert_payment_transaction_summary",
                                param: new
                                {
                                    batch_id = fileDetail.BatchId,
@@ -49,7 +49,6 @@ namespace FileUploadAndValidation.Repository
                                    num_of_records = fileDetail.NumOfAllRecords,
                                    upload_date = fileDetail.UploadDate,
                                    content_type = fileDetail.ContentType,
-                                   nas_raw_file = fileDetail.NasRawFile,
                                    userid = fileDetail.UserId,
                                    product_code = fileDetail.ProductCode,
                                    product_name = fileDetail.ProductName,
@@ -274,6 +273,7 @@ namespace FileUploadAndValidation.Repository
                                             comment = invalid.Row.Comment,
                                             tax_type = invalid.Row.TaxType,
                                             document_number = invalid.Row.DocumentNumber,
+                                            payer_tin = invalid.Row.PayerTin,
                                             created_date = invalid.Row.CreatedDate,
                                             row_num = invalid.Row.RowNum,
                                             transactions_summary_Id = transactionSummaryId,

@@ -160,7 +160,7 @@ namespace FileUploadApi.ApiServices
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Wvat))
                     paymentStatuses.Data = paymentStatus
-                        .Select(s => new FirsWVatRowStatusUntyped
+                        .Select(s => new 
                         {
                             ContractorName = s.ContractorName,
                             ContractorAddress = s.ContractorAddress,
@@ -176,7 +176,7 @@ namespace FileUploadApi.ApiServices
                             TaxAccountNumber = s.TaxAccountNumber,
                             WvatRate = s.WvatRate,
                             WvatValue = s.WvatValue,
-                            Error = s.ErrorDescription,
+                            s.ErrorDescription,
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
