@@ -3,12 +3,14 @@ using FileUploadAndValidation.Models;
 using FileUploadApi.ApiServices;
 using FileUploadApi.Models;
 using FilleUploadCore.Exceptions;
+using FilleUploadCore.FileReaders;
 using FilleUploadCore.UploadManagers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MimeMapping;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -24,6 +26,7 @@ namespace FileUploadApi.Controllers
         private readonly IGenericUploadService _genericUploadService;
         private readonly IBatchProcessor _batchProcessor;
         private readonly ILogger<UploadController> _logger;
+        private readonly IEnumerable<IFileReader> _fileReaders;
 
 
         public UploadController(IBatchProcessor batchProcessor,

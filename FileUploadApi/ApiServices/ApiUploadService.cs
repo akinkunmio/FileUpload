@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FileUploadApi.ApiServices
 {
-    public class ApiUploadService : IApiUploadService
+    public class ApiUploadService //: IApiUploadService
     {
         private readonly INasRepository _nasRepository;
         private readonly IDbRepository _dbRepository;

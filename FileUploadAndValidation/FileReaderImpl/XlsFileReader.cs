@@ -10,6 +10,12 @@ namespace FileUploadAndValidation.FileReaders
 {
     public class XlsFileReader : IFileReader
     {
+
+        public bool CanRead(string fileExtension)
+        {
+            return fileExtension.ToLower() == "xls";
+        }
+
         public IEnumerable<Row> Read(Stream stream)
         {
             var rowList = new List<Row>();

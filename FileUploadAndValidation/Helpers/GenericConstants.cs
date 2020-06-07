@@ -29,9 +29,10 @@ namespace FileUploadAndValidation.Helpers
         public const string Sms = "sms";
         public const string BillPayment = "billpayment";
         public const string MultiTax = "multitax";
-       
+        public const string ManualCapture = "manual-capture";
+
         public const string Firs = "firs";
-        public const string Lirs = "lirs";
+        public const string Lasg = "Lasg";
         public const string FctIrs = "fctirs";
 
 
@@ -42,6 +43,7 @@ namespace FileUploadAndValidation.Helpers
         public const string InitiateBillPaymentUrl = "/qbtrans/api/v1/payments/bills/initiate-payment";
         public const string InitiateFirsPaymentUrl = "/qbtrans/api/v1/payments/firs/initiate-payment";
         public const string InitiateFirsMultitaxPaymentUrl = "/qbtrans/api/v1/payments/hub/firs/initiate-payment";
+        public const string ValidateManualCapture = "/qbtrans/api/v1/payments/hub/bills/validate/fctirs";
 
         public const int RECORDS_SMALL_SIZE = 50;
 
@@ -55,5 +57,6 @@ namespace FileUploadAndValidation.Helpers
         public static string FirsWhtCsvTemplate = "FirsWhtCsvTemplate.csv";
         public static string FirsWvatCsvTemplate = "FirsWVATCsvTemplate.csv";
         public static string All = "all";
+
     }
 }

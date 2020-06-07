@@ -21,6 +21,11 @@ namespace FileUploadAndValidation.FileReaderImpl
             _logger = logger;
         }
 
+        public bool CanRead(string fileExtension)
+        {
+            return fileExtension.ToLower() == "txt";
+        }
+
         public IEnumerable<Row> Read(Stream stream)
         {
             var rowList = new List<Row>();

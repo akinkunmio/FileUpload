@@ -46,6 +46,8 @@ namespace FileUploadAndValidation.UploadServices
 
             else if (itemType.ToLower().Equals(GenericConstants.MultiTax))
                 return GenericConstants.ValidateMultitaxUrl;
+            else if (itemType.ToLower().Equals(GenericConstants.ManualCapture))
+                return GenericConstants.ValidateManualCapture;
 
             return "";
         }
@@ -152,6 +154,15 @@ namespace FileUploadAndValidation.UploadServices
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && itemType.ToLower().Equals(GenericConstants.MultiTax))
+                result = JsonConvert.SerializeObject(new
+                {
+                    DataStore = 1,
+                    DataStoreUrl = url,
+                    BatchId = batchId
+                });
+
+            if (contentType.ToLower().Equals(GenericConstants.ManualCapture)
+                && itemType.ToLower().Equals(GenericConstants.ManualCapture))
                 result = JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,

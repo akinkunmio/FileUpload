@@ -1,9 +1,7 @@
 ﻿using FileUploadAndValidation.Models;
 using FileUploadApi.Models;
-using FilleUploadCore.FileReaders;
 using FilleUploadCore.UploadManagers;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using FileUploadAndValidation.QueueMessages;
 using FileUploadAndValidation;
