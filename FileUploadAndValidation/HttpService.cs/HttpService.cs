@@ -193,6 +193,7 @@ namespace FileUploadAndValidation.UploadServices
             if (fileProperty.ContentType.ToLower().Equals(GenericConstants.BillPayment.ToLower())
                 || fileProperty.ContentType.ToLower().Equals(GenericConstants.Lasg.ToLower())
                 || fileProperty.ContentType.ToLower().Equals(GenericConstants.ManualCapture.ToLower())
+                || fileProperty.ContentType.ToLower().Equals(GenericConstants.Lasg.ToLower())
                 )
                 result = JsonConvert.SerializeObject(new
                 {
