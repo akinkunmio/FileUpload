@@ -198,7 +198,7 @@ public class FirsRowDetail : RowDetail
         public string Address { get; set; }
 
         public string AddressInfo { get; set; }
-
+        public string Error { get; set; }
     }
 
     //public class RowdDetailUtyped

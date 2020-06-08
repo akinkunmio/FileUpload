@@ -317,19 +317,19 @@ namespace FileUploadAndValidation.Helpers
                     {
                         continue;
                     }
-                    if (contract.Required == true && string.IsNullOrWhiteSpace(column.Value))
+                    else if(contract.Required == true && string.IsNullOrWhiteSpace(column.Value))
                     {
                         errorMessage = "Value must be provided";
                     }
-                    if (contract.Max != default && column.Value != null && contract.Max < column.Value.Length)
+                    else if(contract.Max != default && column.Value != null && contract.Max < column.Value.Length)
                     {
                         errorMessage = "Specified maximum length exceeded";
                     }
-                    if (contract.Min != default && column.Value != null && column.Value.Length < contract.Min)
+                    else if(contract.Min != default && column.Value != null && column.Value.Length < contract.Min)
                     {
                         errorMessage = "Specified minimum length not met";
                     }
-                    if (contract.DataType != default && column.Value != null)
+                    else if(contract.DataType != default && column.Value != null)
                     {
                         if (!GenericHelpers.ColumnDataTypes().ContainsKey(contract.DataType))
                             errorMessage = "Specified data type is not supported";
@@ -339,7 +339,7 @@ namespace FileUploadAndValidation.Helpers
                         }
                         catch (Exception)
                         {
-                            errorMessage = "Invalid value for data type specified";
+                            errorMessage = "Invalid value for this field";
                         }
                     }
                     if (!string.IsNullOrWhiteSpace(errorMessage))
