@@ -62,7 +62,7 @@ namespace FileUploadAndValidation.Repository
                                         row_status = string.Empty,
                                         created_date = batch.UploadDate,
                                         initial_validation_status = row.IsValid ? "Valid" : "Invalid",
-                                        error = row.ErrorMessages?.ToString(),                                      
+                                        error = string.Join(',', row.ErrorMessages ?? new List<string>()),   
                                         },
                                     transaction: transaction,
                                     commandType: System.Data.CommandType.StoredProcedure);

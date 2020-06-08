@@ -35,9 +35,9 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
         if (rows.Count() == 0) throw new AppException("No records found");
 
         var localValidationResult = await _fileContentValidator.Validate(rows, context);//, null);
-        Console.WriteLine(JsonConvert.SerializeObject(localValidationResult));
 
-        Console.WriteLine(JsonConvert.SerializeObject(localValidationResult));
+        // Console.WriteLine(JsonConvert.SerializeObject(localValidationResult));
+        
         if (!localValidationResult.ValidRows.Any()){
             var errors = localValidationResult.Failures.SelectMany(e => e.ErrorMessages);
             throw new AppException("No valid rows");
@@ -52,18 +52,20 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
         var batch = new Batch<LASGPaymentRow>(finalResult.ValidRows, finalResult.Failures)
         {
             BatchId = batchId,
-            ItemType = "lasg",
-            ContentType = "lasg",
+            ItemType = GenericConstants.Lasg,
+            ContentType = GenericConstants.Lasg,
             UploadDate = DateTime.Now.ToShortDateString(),
             ModifiedDate = DateTime.Now.ToShortDateString(),
-            ProductCode = "LASG",
-            ProductName = "LASG",
+            ProductCode = context.ProductCode,
+            ProductName = context.ProductName,
             UserId = context.UserId,
-            //UplodedBy =  context.UserName,           
+            UploadSuccessful = true,
+            Status = RemoteValidationUtil.GetStatusFromRemoteResponseCode(remoteValidationResult.CompletionStatus.Status),
+            ErrorMessage = remoteValidationResult.CompletionStatus.ErrorMessage           
         };
 
         await dbRepository.InsertAllUploadRecords(batch);
 
         return batch;
-    }
+    }    
 }
