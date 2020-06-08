@@ -75,7 +75,10 @@ namespace FileUploadAndValidation.Repository
 
                 var path = fileLocation + fileName;
 
-                await File.WriteAllTextAsync(path, json);
+                if (!File.Exists(path))
+                {
+                    await File.WriteAllTextAsync(path, json);
+                }
 
                 return new FileProperty
                 {
@@ -118,13 +121,14 @@ namespace FileUploadAndValidation.Repository
 
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(PaymentValidateMessage queueMessage)
         {
-            IEnumerable<RowValidationStatus> result; 
+            IEnumerable<RowValidationStatus> result;
             var location = @"../data/";
             //var location = _appConfig.NasFolderLocation;
 
             //var path = location + queueMessage.ResultLocation;
 
             var path = Path.Combine(location, queueMessage.ResultLocation);
+
 
             try
             {
@@ -256,7 +260,7 @@ namespace FileUploadAndValidation.Repository
                     .Select(s => new
                     {
                         Row = s.RowNum,
-                        s.Error,
+                        s.ErrorDescription,
                         Status = s.RowStatus,
                         s.Amount,
                         s.CustomerId,
@@ -269,10 +273,10 @@ namespace FileUploadAndValidation.Repository
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails
-                    .Select(r => new FirsWhtRowStatusUntyped
+                    .Select(r => new 
                     {
                         Row = r.RowNum,
-                        Error = r.Error,
+                        r.ErrorDescription,
                         Status = r.RowStatus,
                         BeneficiaryTin = r.BeneficiaryTin,
                         BeneficiaryName = r.BeneficiaryName,
@@ -292,10 +296,10 @@ namespace FileUploadAndValidation.Repository
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails
-                    .Select(r => new FirsWVatRowStatusUntyped
+                    .Select(r => new 
                     {
                         Row = r.RowNum,
-                        Error = r.Error,
+                        r.ErrorDescription,
                         Status = r.RowStatus,
                         ContractorName = r.ContractorName,
                         ContractorAddress = r.ContractorAddress,
@@ -320,7 +324,7 @@ namespace FileUploadAndValidation.Repository
                 result = rowDetails.Select(r => new 
                 { 
                     Row = r.RowNum,
-                    r.Error,
+                    r.ErrorDescription,
                     Status = r.RowStatus,
                     r.BeneficiaryTin,
                     r.BeneficiaryName,
@@ -338,6 +342,40 @@ namespace FileUploadAndValidation.Repository
                     r.DocumentNumber,
                     r.PayerTin,
                     r.TaxType
+                });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+               && contentType.ToLower().Equals(GenericConstants.ManualCapture))
+            {
+                result = rowDetails.Select(r => new
+                {
+                    Row = r.RowNum,
+                    r.ItemCode,
+                    r.ProductCode,
+                    r.ErrorDescription,
+                    Status = r.RowStatus,
+                    r.Amount,
+                    r.CustomerId,
+                    r.CustomerName,
+                    Desc = r.TaxType,
+                    r.Email,
+                    Address = r.AddressInfo
+                });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Lasg)
+               && contentType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                result = rowDetails.Select(r => new
+                {
+                    Row = r.RowNum,
+                    r.ItemCode,
+                    r.ProductCode,
+                    r.ErrorDescription,
+                    Status = r.RowStatus,
+                    r.CustomerId,
+                    r.Amount
                 });
             }
 

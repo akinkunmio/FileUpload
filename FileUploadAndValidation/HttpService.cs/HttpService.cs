@@ -57,7 +57,9 @@ namespace FileUploadAndValidation.UploadServices
         private string GetInitiatePaymentUrl(string contentType, string itemType)
         {
 
-            if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()) 
+                || contentType.ToLower().Equals(GenericConstants.ManualCapture.ToLower())
+                || contentType.ToLower().Equals(GenericConstants.Lasg.ToLower()))
                 return GenericConstants.InitiateBillPaymentUrl;
 
             else if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower())
@@ -71,9 +73,9 @@ namespace FileUploadAndValidation.UploadServices
             return "";
         }
 
-        public async Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty)
+        public async Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty = true)
         {
-            ValidationResponse validateResponse;
+            var validateResponse =  new ValidationResponse();
             try
             {
                 var requestBody = ConstructValidateRequestString(greaterThanFifty, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin, fileProperty.BatchId);
@@ -94,22 +96,10 @@ namespace FileUploadAndValidation.UploadServices
                 {
                     validateResponse = JsonConvert.DeserializeObject<ValidationResponse>(responseResult);
                 }
-                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    validateResponse = JsonConvert.DeserializeObject<ValidationResponse>(responseResult);
-                    throw new AppException($"{validateResponse.ResponseDescription}", (int)HttpStatusCode.BadRequest);
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    throw new AppException("Unauthorized", (int)HttpStatusCode.Unauthorized);
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    throw new AppException("File to validate was not found", (int)HttpStatusCode.NotFound);
-                }
-                else
-                {
-                    throw new AppException("An error occured while performing payment validation", (int)response.StatusCode);
+                    throw new AppException("Invalid Access Token", (int)HttpStatusCode.Unauthorized);
                 }
 
                 return validateResponse;
@@ -132,7 +122,7 @@ namespace FileUploadAndValidation.UploadServices
                 //        ResultMode = "Queue"
                 //    }
                 //};
-                throw new AppException("Error occured while performing payment validation", 400);
+                throw new AppException("An error occured while performing validation. Please, retry validating the file after some time!.", 400);
             }
         }
 
@@ -140,7 +130,8 @@ namespace FileUploadAndValidation.UploadServices
         {
             string result = "";
             if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
-                result =  check ?
+                result =  (check) 
+                ?
                 JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
@@ -199,7 +190,11 @@ namespace FileUploadAndValidation.UploadServices
         {
             string result = "";
 
-            if (fileProperty.ContentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
+            if (fileProperty.ContentType.ToLower().Equals(GenericConstants.BillPayment.ToLower())
+                || fileProperty.ContentType.ToLower().Equals(GenericConstants.Lasg.ToLower())
+                || fileProperty.ContentType.ToLower().Equals(GenericConstants.ManualCapture.ToLower())
+                || fileProperty.ContentType.ToLower().Equals(GenericConstants.Lasg.ToLower())
+                )
                 result = JsonConvert.SerializeObject(new
                 {
                     BusinessId = initiatePaymentOptions.BusinessId,
@@ -213,18 +208,18 @@ namespace FileUploadAndValidation.UploadServices
             if (fileProperty.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
                 result = JsonConvert.SerializeObject(new
                 {
-                    TaxTypeId = initiatePaymentOptions.TaxTypeId,
-                    TaxTypeName = initiatePaymentOptions.TaxTypeName,
-                    ProductId = initiatePaymentOptions.ProductId,
-                    CurrencyCode = initiatePaymentOptions.CurrencyCode,
+                    initiatePaymentOptions.TaxTypeId,
+                    initiatePaymentOptions.TaxTypeName,
+                    initiatePaymentOptions.ProductId,
+                    initiatePaymentOptions.CurrencyCode,
                     TaxTypeCode = fileProperty.ItemType.ToUpper(),
                     ProductCode  = fileProperty.ContentType.ToUpper(),
                     CustomerNumber = initiatePaymentOptions.BusinessTin,
                     IsScheduleTaxType = true,
-                    BusinessId = initiatePaymentOptions.BusinessId,
-                    UserId = initiatePaymentOptions.UserId,
-                    ApprovalConfigId = initiatePaymentOptions.ApprovalConfigId,
-                    UserName = initiatePaymentOptions.UserName,
+                    initiatePaymentOptions.BusinessId,
+                    initiatePaymentOptions.UserId,
+                    initiatePaymentOptions.ApprovalConfigId,
+                    initiatePaymentOptions.UserName,
                     DataStore = 1,
                     DataStoreUrl = fileProperty.Url
                 });
@@ -267,7 +262,7 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new AppException("Unauthorized", (int)HttpStatusCode.Unauthorized);
+                    throw new AppException("Invalid Access Token", (int)HttpStatusCode.Unauthorized);
                 }
                 else
                 {
@@ -288,7 +283,7 @@ namespace FileUploadAndValidation.UploadServices
             catch (Exception ex)
             {
                 _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException("An error occured while initiating payment. Please, retry!.", 400);
+                throw new AppException("An error occured. Please, retry!.", 400);
             }
 
         }
@@ -296,7 +291,7 @@ namespace FileUploadAndValidation.UploadServices
 
     public interface IHttpService
     {
-        Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty);
+        Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty = true);
 
         Task<ConfirmedBillResponse> InitiatePayment(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
     }

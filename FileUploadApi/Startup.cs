@@ -33,6 +33,8 @@ using Hellang.Middleware.ProblemDetails;
 using FileUploadApi.Services;
 using FileUploadApi.Processors;
 using FileUploadAndValidation.BillPayments;
+using FileUploadApi.Utils;
+using Microsoft.AspNetCore.Http;
 
 namespace FileUploadApi
 {
@@ -53,11 +55,10 @@ namespace FileUploadApi
             services.AddProblemDetails();
 
             services.AddScoped<IGenericUploadService, GenericUploadService>();
-
+            services.AddTransient<ITokenHandlerRepository, TokenHandlerRepository>();
             services.AddSingleton<IAppConfig, AppConfig>();
             //services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
             //services.AddScoped<IDbRepository<BillPayment, FailedBillPayment>, BillPaymentRepository>();
-            services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IBatchProcessor, BatchProcessor>();
             //services.AddScoped<IApiUploadService, ApiUploadService>();
@@ -89,6 +90,15 @@ namespace FileUploadApi
             services.AddScoped<IFileReader, XlsFileReader>();
             services.AddScoped<IFileReader, XlsxFileReader>();
 
+            #region content firs content validators and batchrepo 
+            services.AddScoped<IFileContentValidator, BillPaymentFileContentValidator>();
+            services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
+            services.AddScoped<IFileContentValidator, FirsMultiTaxContentValidator>();
+            services.AddScoped<IFileContentValidator, FctIrsMultiTaxContentValidator>();
+
+            services.AddScoped<IBatchRepository, BatchRepository>();
+            services.AddScoped<IBatchRepository, MultiTaxBatchRepository>();
+            #endregion
             services.AddScoped<IBatchFileProcessor<AutoPayUploadContext>, AutoPayBatchFileProcessor>();
             services.AddScoped<IBatchFileProcessor<ManualCustomerCaptureContext>, ManualCustomerCaptureBatchProcessor>();
             services.AddScoped<IBatchFileProcessor<LASGPaymentContext>, LASGPaymentBatchProcessor>();
@@ -99,16 +109,6 @@ namespace FileUploadApi
             services.AddScoped<IDetailsDbRepository<LASGPaymentRow>, LasgPaymentDbRepository>();
 
             services.AddAutoMapper(typeof(Startup));
-
-            services.AddScoped<IFileContentValidator, BillPaymentFileContentValidator>();
-            services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
-            services.AddScoped<IFileContentValidator, FirsMultiTaxContentValidator>();
-            services.AddScoped<IFileContentValidator, FctIrsMultiTaxContentValidator>();
-
-
-            services.AddScoped<IBatchRepository, BatchRepository>();
-            services.AddScoped<IBatchRepository, MultiTaxBatchRepository>();
-            
             services.AddScoped<IDbRepository, DbRepository>();
 
             services.AddHttpClient<IHttpService, HttpService>();
@@ -210,6 +210,12 @@ namespace FileUploadApi
                 app.UseHsts();
             }
 
+            app.UseWhen(context => !PathExcludedFromAuthorization(context.Request.Path), appBuilder =>
+            {
+                appBuilder.UsePassportOauthMiddleware();
+            });
+
+
             loggerFactory.AddSerilog();
 
             app.UseHealthChecks(path: "/health");
@@ -230,5 +236,12 @@ namespace FileUploadApi
             });
         }
 
+        private bool PathExcludedFromAuthorization(PathString path)
+        {
+            if (path.StartsWithSegments("/health"))
+                return true;
+
+            return false;
+        }
     }
 }

@@ -23,6 +23,8 @@ namespace FileUploadAndValidation.Utils
         public string QueuePassword => _configuration["AppConfig:QueuePassword"];
 
         public string QueueUsername => _configuration["AppConfig:QueueUsername"];
+        public string FCTIRSProductCode => _configuration["AppConfig:FCTIRSProductCode"];
+        public string LasgProductCode => _configuration["AppConfig:LasgProductCode"];
 
         public string ProxyAddress => _configuration["AppConfig:ProxyAddress"];
 
@@ -31,6 +33,8 @@ namespace FileUploadAndValidation.Utils
         public string RabbitMqUrl => _configuration["AppConfig:RabbitMqUrl"];
 
         public string BillPaymentQueueName => _configuration["AppConfig:BillPaymentQueueName"];
+
+        public string PassportRsaPublicKey => _configuration["AppConfig:RsaPublicKey"];
 
     }
 
@@ -41,9 +45,12 @@ namespace FileUploadAndValidation.Utils
         string BillPaymentQueueName { get; }
         string QueuePassword { get; }
         string QueueUsername { get; }
+        string FCTIRSProductCode { get; }
+        string LasgProductCode { get; }
         string UploadServiceConnectionString { get; }
         string ProxyAddress { get; }
         string ProxyPort { get; }
         string RabbitMqUrl { get; }
+        string PassportRsaPublicKey { get; }
     }
 }

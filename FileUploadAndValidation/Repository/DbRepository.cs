@@ -40,7 +40,7 @@ namespace FileUploadAndValidation.Repository
                     {
                         try
                         {
-                            var transactionSummaryId = await connection.ExecuteScalarAsync(sql: "sp_insert_bill_payment_transaction_summary",
+                            var transactionSummaryId = await connection.ExecuteScalarAsync(sql: "sp_insert_payment_transaction_summary",
                                param: new
                                {
                                    batch_id = fileDetail.BatchId,
@@ -49,7 +49,6 @@ namespace FileUploadAndValidation.Repository
                                    num_of_records = fileDetail.NumOfAllRecords,
                                    upload_date = fileDetail.UploadDate,
                                    content_type = fileDetail.ContentType,
-                                   nas_raw_file = fileDetail.NasRawFile,
                                    userid = fileDetail.UserId,
                                    product_code = fileDetail.ProductCode,
                                    product_name = fileDetail.ProductName,
@@ -94,7 +93,7 @@ namespace FileUploadAndValidation.Repository
                                             created_date = invalid.Row.CreatedDate,
                                             transactions_summary_Id = transactionSummaryId,
                                             initial_validation_status = "Invalid",
-                                            error = invalid.Row.Error
+                                            error = invalid.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
@@ -150,7 +149,7 @@ namespace FileUploadAndValidation.Repository
                                             row_num = invalid.Row.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
                                             initial_validation_status = "Invalid",
-                                            error = invalid.Row.Error
+                                            error = invalid.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
@@ -212,7 +211,7 @@ namespace FileUploadAndValidation.Repository
                                             transactions_summary_Id = transactionSummaryId,
                                             row_status = "Invalid",
                                             initial_validation_status = "Invalid",
-                                            error = invalidWvat.Row.Error
+                                            error = invalidWvat.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
@@ -274,12 +273,13 @@ namespace FileUploadAndValidation.Repository
                                             comment = invalid.Row.Comment,
                                             tax_type = invalid.Row.TaxType,
                                             document_number = invalid.Row.DocumentNumber,
+                                            payer_tin = invalid.Row.PayerTin,
                                             created_date = invalid.Row.CreatedDate,
                                             row_num = invalid.Row.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
                                             row_status = "Invalid",
                                             initial_validation_status = "Invalid",
-                                            error = invalid.Row.Error
+                                            error = invalid.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
@@ -333,7 +333,7 @@ namespace FileUploadAndValidation.Repository
                                             transactions_summary_Id = transactionSummaryId,
                                             row_status = "Invalid",
                                             initial_validation_status = "Invalid",
-                                            error = inValid.Row.Error
+                                            error = inValid.Row.ErrorDescription
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);
@@ -574,8 +574,8 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_confirmed_firs_multitax_by_transactions_summary_id";
             }
-            else if (contentType.ToLower().Equals(GenericConstants.FctIrs)
-                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+            else if (contentType.ToLower().Equals(GenericConstants.ManualCapture)
+                && itemType.ToLower().Equals(GenericConstants.ManualCapture))
             {
                 return @"sp_get_confirmed_fctirs_multitax_by_transactions_summary_id";
             }
@@ -650,8 +650,8 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_firs_multitax_payments_status_by_transactions_summary_id";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
-                 && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            else if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+                 && contentType.ToLower().Equals(GenericConstants.ManualCapture))
             {
                 return @"sp_get_fctirs_multitax_payments_status_by_transactions_summary_id";
             }
@@ -793,8 +793,8 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_fctirs_multitax_payments_detail";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
-                 && contentType.ToLower().Equals(GenericConstants.Firs))
+            else if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+                 && contentType.ToLower().Equals(GenericConstants.ManualCapture))
             {
                 return @"sp_update_fctirs_multitax_payments_detail";
             }
@@ -829,8 +829,8 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_firs_multitax_detail_enterprise_error";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
-                && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            else if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+                && contentType.ToLower().Equals(GenericConstants.ManualCapture))
             {
                 return @"sp_update_fctirs_multitax_detail_enterprise_error";
             }
@@ -842,7 +842,7 @@ namespace FileUploadAndValidation.Repository
             else return "";
         }
 
-        public async Task UpdateBillPaymentInitiation(string batchId)
+        public async Task UpdatePaymentInitiation(string batchId)
         {
             using (var connection = new SqlConnection(_appConfig.UploadServiceConnectionString))
             {

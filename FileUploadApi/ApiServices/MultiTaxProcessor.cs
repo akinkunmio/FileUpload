@@ -34,12 +34,14 @@ namespace FileUploadApi.ApiServices
         {
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
+            ArgumentGuard.NotNullOrWhiteSpace(request.ProductCode, nameof(request.ProductCode));
+            ArgumentGuard.NotNullOrWhiteSpace(request.ProductName, nameof(request.ProductName));
             ArgumentGuard.NotNullOrWhiteSpace(request.AuthToken, nameof(request.AuthToken));
 
             if (!request.ContentType.ToLower().Equals(GenericConstants.Firs)
                && !request.ContentType.ToLower().Equals(GenericConstants.Lasg)
                && !request.ContentType.ToLower().Equals(GenericConstants.FctIrs))
-                throw new AppException("Invalid Authority Type specified");
+                throw new AppException("Invalid Authority Type specified.");
 
             var uploadResult = new UploadResult
             {

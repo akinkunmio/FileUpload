@@ -14,6 +14,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Scripts\1591636828_dbo.stored_procedures.sql" />
+    <None Remove="Scripts\1591637185_manualcapture.sql" />
+    <None Remove="Scripts\1591637213_lasg_lirs_tables_procs.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\1591636828_dbo.stored_procedures.sql" />
+    <EmbeddedResource Include="Scripts\1591637213_lasg_lirs_tables_procs.sql" />
+    <EmbeddedResource Include="Scripts\1591637185_manualcapture.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="dbup" Version="4.2.0" />
     <PackageReference Include="EPPlus" Version="4.5.3.2" />
@@ -24,19 +36,35 @@
     <PackageReference Include="MassTransit.RabbitMQ" Version="5.5.5" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.5.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.9.10" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.4" />
     <PackageReference Include="MimeMapping" Version="1.0.1.15" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.UDP" Version="5.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.4.0" />
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
+    <PackageReference Include="UAParser" Version="3.1.43" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FileUploadAndValidation\FileUploadAndValidation.csproj" />
     <ProjectReference Include="..\FilleUploadCore\FilleUploadCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dependencies\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Interswitch.Security.JwtToken">
+      <HintPath>Dependencies\Interswitch.Security.JwtToken.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

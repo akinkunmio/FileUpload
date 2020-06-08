@@ -19,7 +19,7 @@ namespace FileUploadAndValidation.Helpers
 
             var expectedNumOfColumns = columnContracts.Count();
             if (headerRow.Columns.Count() != expectedNumOfColumns)
-                throw new ValidationException($"Invalid file uploaded!.");
+                throw new ValidationException($"Invalid file uploaded. Please, upload a valid file.");
 
             for (int i = 0; i < expectedNumOfColumns; i++)
             {
@@ -118,7 +118,7 @@ namespace FileUploadAndValidation.Helpers
             {
                 result.Append($"{failure.ColumnValidationErrors[i].PropertyName}: {failure.ColumnValidationErrors[i].ErrorMessage}");
 
-                if (failure.ColumnValidationErrors[i+1] != null)
+                if (i < failure.ColumnValidationErrors.Count() - 1)
                     result.Append(", ");
             }
 
@@ -129,9 +129,11 @@ namespace FileUploadAndValidation.Helpers
         {
             dynamic result = default;
 
-            if (contentType.ToLower().Equals(GenericConstants.BillPayment)
+            if ((contentType.ToLower().Equals(GenericConstants.BillPayment)
                 && (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)
-                || itemType.ToLower().Equals(GenericConstants.BillPaymentId)))
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentId))) 
+                || (contentType.ToLower().Equals(GenericConstants.ManualCapture) && itemType.ToLower().Equals(GenericConstants.ManualCapture))
+                || (contentType.ToLower().Equals(GenericConstants.Lasg) && itemType.ToLower().Equals(GenericConstants.Lasg)))
             {
                 result = new 
                 {
@@ -295,6 +297,18 @@ namespace FileUploadAndValidation.Helpers
                return rowDetails
                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.BillPaymentId, s));
             }
+            else if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+               || itemType.ToLower().Equals(GenericConstants.ManualCapture))
+            {
+                return rowDetails
+                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.ManualCapture, s));
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.Lasg)
+               || itemType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return rowDetails
+                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Lasg, s));
+            }
 
             return "";
         }
@@ -317,19 +331,19 @@ namespace FileUploadAndValidation.Helpers
                     {
                         continue;
                     }
-                    if (contract.Required == true && string.IsNullOrWhiteSpace(column.Value))
+                    else if(contract.Required == true && string.IsNullOrWhiteSpace(column.Value))
                     {
                         errorMessage = "Value must be provided";
                     }
-                    if (contract.Max != default && column.Value != null && contract.Max < column.Value.Length)
+                    else if(contract.Max != default && column.Value != null && contract.Max < column.Value.Length)
                     {
                         errorMessage = "Specified maximum length exceeded";
                     }
-                    if (contract.Min != default && column.Value != null && column.Value.Length < contract.Min)
+                    else if(contract.Min != default && column.Value != null && column.Value.Length < contract.Min)
                     {
                         errorMessage = "Specified minimum length not met";
                     }
-                    if (contract.DataType != default && column.Value != null)
+                    else if(contract.DataType != default && column.Value != null)
                     {
                         if (!GenericHelpers.ColumnDataTypes().ContainsKey(contract.DataType))
                             errorMessage = "Specified data type is not supported";
@@ -339,7 +353,7 @@ namespace FileUploadAndValidation.Helpers
                         }
                         catch (Exception)
                         {
-                            errorMessage = "Invalid value for data type specified";
+                            errorMessage = "Invalid value for this field";
                         }
                     }
                     if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -433,13 +447,28 @@ namespace FileUploadAndValidation.Helpers
                     .Select(s => GetAmountFromMultiTaxRow(s))
                     .Sum();
 
+            if (contentType.ToLower().Equals(GenericConstants.ManualCapture)
+                && itemType.ToLower().Equals(GenericConstants.ManualCapture))
+                totalAmount = rowsStatus
+                .Where(r => valids.Any(v => v.Row == r.RowNum))
+                .Select(s => decimal.Parse(s.Amount))
+                .Sum();
+
+            if (contentType.ToLower().Equals(GenericConstants.Lasg)
+                && itemType.ToLower().Equals(GenericConstants.Lasg))
+                totalAmount = rowsStatus
+                .Where(r => valids.Any(v => v.Row == r.RowNum))
+                .Select(s => decimal.Parse(s.Amount))
+                .Sum();
+
+
             return totalAmount;
         }
 
         private static decimal GetAmountFromMultiTaxRow(RowDetail s)
         {
             if (GenericConstants.Wht.Equals(s.TaxType))
-                return decimal.Parse(s.ContractAmount);
+                return decimal.Parse(s.WhtAmount);
 
             if (GenericConstants.Cit.Equals(s.TaxType.ToLower())
                 || GenericConstants.Edt.Equals(s.TaxType.ToLower())

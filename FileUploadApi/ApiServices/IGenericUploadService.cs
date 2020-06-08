@@ -14,7 +14,7 @@ namespace FileUploadApi.ApiServices
     {
         Task<PagedData<BatchFileSummaryDto>> GetUserFilesSummary(string userId, SummaryPaginationFilter paginationFilter);
 
-        Task<PagedData<dynamic>> GetPaymentsStatus(string batchId, PaginationFilter pagination);
+        Task<PagedData<dynamic>> GetPaymentsStatus(string batchId, PaginationFilter pagination, string auth);
 
         Task<ConfirmedBillResponse> PaymentInitiationConfirmed(string batchId, InitiatePaymentOptions initiatePaymentOptions);
 

@@ -163,7 +163,7 @@ namespace FileUploadAndValidation.FileServices
                         ItemCode = f.Row.ItemCode,
                         ProductCode = f.Row.ProductCode,
                         RowNum = f.Row.RowNum,
-                        Error = GenericHelpers.ConstructValidationError(f)
+                        ErrorDescription = GenericHelpers.ConstructValidationError(f)
                     }
                 }).ToList();
 

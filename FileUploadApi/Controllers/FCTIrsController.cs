@@ -10,6 +10,7 @@ using System.Linq;
 using FileUploadAndValidation;
 using FileUploadApi.Processors;
 using FileUploadAndValidation.BillPayments;
+using FileUploadAndValidation.Utils;
 
 namespace FileUploadApi.Controllers
 {    
@@ -20,14 +21,16 @@ namespace FileUploadApi.Controllers
         private readonly IBatchFileProcessor<ManualCustomerCaptureContext> _batchProcessor;
         private readonly ILogger<FCTIrsController> _logger;
         private readonly IEnumerable<IFileReader> _fileReaders;
+        private readonly IAppConfig _appConfig;
 
         public FCTIrsController(IBatchFileProcessor<ManualCustomerCaptureContext> batchProcessor,
-                                         IEnumerable<IFileReader> fileReaders,
+                                         IEnumerable<IFileReader> fileReaders, IAppConfig appConfig,
                                          ILogger<FCTIrsController> logger)
         {
             _batchProcessor = batchProcessor;
             _logger = logger;
             _fileReaders = fileReaders;
+            _appConfig = appConfig;
         }
 
 
@@ -36,7 +39,7 @@ namespace FileUploadApi.Controllers
         {
             try
             {
-                var productCode = "FCT-IRS";
+                var productCode = _appConfig.FCTIRSProductCode;
                 var request = FileUploadRequest.FromRequestForFCTIRS(Request);
                 request.ProductCode = productCode;
                 request.ProductName = productCode;
@@ -62,7 +65,7 @@ namespace FileUploadApi.Controllers
                 };
 
                 var uploadResult = await _batchProcessor.UploadAsync(rows, context, HttpContext.Request.Headers["Authorization"]);
-
+                uploadResult.UploadSuccessful = true;
                 return Ok(uploadResult);
             }
             catch (AppException ex)

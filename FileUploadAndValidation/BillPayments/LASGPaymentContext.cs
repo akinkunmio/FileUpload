@@ -1,10 +1,12 @@
+using FileUploadAndValidation.Utils;
+
 namespace FileUploadAndValidation.BillPayments
 {
     public class LASGPaymentContext
     {
-        public LASGPaymentContext()
+        public LASGPaymentContext(IAppConfig appConfig)
         {
-            ProductCode = "LASG";
+            ProductCode = appConfig.LasgProductCode;
             ProductName = "Lagos State Collections";
         }
         public long UserId { get; set; }
