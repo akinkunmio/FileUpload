@@ -14,10 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Scripts\1591563107_lasg_lirs_tables_procs.sql" />
     <None Remove="Scripts\1591606493_manualcapture.sql" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Scripts\1591563107_lasg_lirs_tables_procs.sql" />
     <EmbeddedResource Include="Scripts\1591606493_manualcapture.sql" />
   </ItemGroup>
 
