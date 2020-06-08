@@ -129,9 +129,11 @@ namespace FileUploadAndValidation.Helpers
         {
             dynamic result = default;
 
-            if (contentType.ToLower().Equals(GenericConstants.BillPayment)
+            if ((contentType.ToLower().Equals(GenericConstants.BillPayment)
                 && (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)
-                || itemType.ToLower().Equals(GenericConstants.BillPaymentId)))
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentId))) 
+                || (contentType.ToLower().Equals(GenericConstants.ManualCapture) && itemType.ToLower().Equals(GenericConstants.ManualCapture))
+                || (contentType.ToLower().Equals(GenericConstants.Lasg) && itemType.ToLower().Equals(GenericConstants.Lasg)))
             {
                 result = new 
                 {
@@ -294,6 +296,18 @@ namespace FileUploadAndValidation.Helpers
             {
                return rowDetails
                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.BillPaymentId, s));
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+               || itemType.ToLower().Equals(GenericConstants.ManualCapture))
+            {
+                return rowDetails
+                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.ManualCapture, s));
+            }
+            else if (itemType.ToLower().Equals(GenericConstants.Lasg)
+               || itemType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return rowDetails
+                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Lasg, s));
             }
 
             return "";

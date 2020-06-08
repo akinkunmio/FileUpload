@@ -345,30 +345,37 @@ namespace FileUploadAndValidation.Repository
                 });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.MultiTax)
-               && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+               && contentType.ToLower().Equals(GenericConstants.ManualCapture))
             {
                 result = rowDetails.Select(r => new
                 {
                     Row = r.RowNum,
+                    r.ItemCode,
+                    r.ProductCode,
                     r.ErrorDescription,
                     Status = r.RowStatus,
-                    r.BeneficiaryTin,
-                    r.BeneficiaryName,
-                    r.BeneficiaryAddress,
-                    r.ContractDescription,
-                    r.ContractDate,
-                    r.ContractAmount,
-                    r.InvoiceNumber,
-                    r.ContractType,
-                    r.PeriodCovered,
-                    r.WhtRate,
-                    r.WhtAmount,
                     r.Amount,
-                    r.Comment,
-                    r.DocumentNumber,
-                    r.PayerTin,
-                    r.TaxType
+                    r.CustomerId,
+                    r.CustomerName,
+                    Desc = r.TaxType,
+                    r.Email,
+                    Address = r.AddressInfo
+                });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Lasg)
+               && contentType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                result = rowDetails.Select(r => new
+                {
+                    Row = r.RowNum,
+                    r.ItemCode,
+                    r.ProductCode,
+                    r.ErrorDescription,
+                    Status = r.RowStatus,
+                    r.CustomerId,
+                    r.Amount
                 });
             }
 
