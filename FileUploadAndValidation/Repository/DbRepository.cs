@@ -655,6 +655,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_fctirs_multitax_payments_status_by_transactions_summary_id";
             }
+            else if (itemType.ToLower().Equals(GenericConstants.Lasg)
+                 && contentType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return @"sp_get_lasg_multitax_payments_status_by_transactions_summary_id";
+            }
             else return "";
         }
 
