@@ -339,7 +339,7 @@ namespace FileUploadAndValidation.Helpers
                         }
                         catch (Exception)
                         {
-                            errorMessage = "invalid value for this field";
+                            errorMessage = "Invalid value for this field";
                         }
                     }
                     if (!string.IsNullOrWhiteSpace(errorMessage))
