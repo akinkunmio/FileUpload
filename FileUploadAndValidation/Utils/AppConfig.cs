@@ -34,6 +34,8 @@ namespace FileUploadAndValidation.Utils
 
         public string BillPaymentQueueName => _configuration["AppConfig:BillPaymentQueueName"];
 
+        public string PassportRsaPublicKey => _configuration["AppConfig:RsaPublicKey"];
+
     }
 
     public interface IAppConfig
@@ -49,5 +51,6 @@ namespace FileUploadAndValidation.Utils
         string ProxyAddress { get; }
         string ProxyPort { get; }
         string RabbitMqUrl { get; }
+        string PassportRsaPublicKey { get; }
     }
 }
