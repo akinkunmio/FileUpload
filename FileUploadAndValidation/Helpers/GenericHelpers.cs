@@ -433,6 +433,21 @@ namespace FileUploadAndValidation.Helpers
                     .Select(s => GetAmountFromMultiTaxRow(s))
                     .Sum();
 
+            if (contentType.ToLower().Equals(GenericConstants.ManualCapture)
+                && itemType.ToLower().Equals(GenericConstants.ManualCapture))
+                totalAmount = rowsStatus
+                .Where(r => valids.Any(v => v.Row == r.RowNum))
+                .Select(s => decimal.Parse(s.Amount))
+                .Sum();
+
+            if (contentType.ToLower().Equals(GenericConstants.Lasg)
+                && itemType.ToLower().Equals(GenericConstants.Lasg))
+                totalAmount = rowsStatus
+                .Where(r => valids.Any(v => v.Row == r.RowNum))
+                .Select(s => decimal.Parse(s.Amount))
+                .Sum();
+
+
             return totalAmount;
         }
 
