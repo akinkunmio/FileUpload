@@ -10,6 +10,7 @@ using System.Linq;
 using FileUploadAndValidation;
 using FileUploadApi.Processors;
 using FileUploadAndValidation.BillPayments;
+using FileUploadAndValidation.Utils;
 
 namespace FileUploadApi.Controllers
 {    
@@ -20,14 +21,16 @@ namespace FileUploadApi.Controllers
         private readonly IBatchFileProcessor<LASGPaymentContext> _batchProcessor;
         private readonly ILogger<LasgController> _logger;
         private readonly IEnumerable<IFileReader> _fileReaders;
+        private readonly IAppConfig _appConfig;
 
         public LasgController(IBatchFileProcessor<LASGPaymentContext> batchProcessor,
-                                         IEnumerable<IFileReader> fileReaders,
+                                         IEnumerable<IFileReader> fileReaders, IAppConfig appConfig,
                                          ILogger<LasgController> logger)
         {
             _batchProcessor = batchProcessor;
             _logger = logger;
             _fileReaders = fileReaders;
+            _appConfig = appConfig;
         }
 
 
@@ -39,7 +42,7 @@ namespace FileUploadApi.Controllers
                 // var productCode = "LASG";
                 var request = FileUploadRequest.FromRequestForFCTIRS(Request);
                 
-                var context = new LASGPaymentContext()
+                var context = new LASGPaymentContext(_appConfig)
                 {
                     UserId = request.UserId.Value
                 };

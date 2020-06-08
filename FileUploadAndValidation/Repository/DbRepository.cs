@@ -574,8 +574,8 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_confirmed_firs_multitax_by_transactions_summary_id";
             }
-            else if (contentType.ToLower().Equals(GenericConstants.FctIrs)
-                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+            else if (contentType.ToLower().Equals(GenericConstants.ManualCapture)
+                && itemType.ToLower().Equals(GenericConstants.ManualCapture))
             {
                 return @"sp_get_confirmed_fctirs_multitax_by_transactions_summary_id";
             }
@@ -829,8 +829,8 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_firs_multitax_detail_enterprise_error";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
-                && contentType.ToLower().Equals(GenericConstants.FctIrs))
+            else if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+                && contentType.ToLower().Equals(GenericConstants.ManualCapture))
             {
                 return @"sp_update_fctirs_multitax_detail_enterprise_error";
             }

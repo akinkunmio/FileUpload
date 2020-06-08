@@ -33,6 +33,8 @@ using Hellang.Middleware.ProblemDetails;
 using FileUploadApi.Services;
 using FileUploadApi.Processors;
 using FileUploadAndValidation.BillPayments;
+using FileUploadApi.Utils;
+using Microsoft.AspNetCore.Http;
 
 namespace FileUploadApi
 {
@@ -53,7 +55,7 @@ namespace FileUploadApi
             services.AddProblemDetails();
 
             services.AddScoped<IGenericUploadService, GenericUploadService>();
-
+            services.AddTransient<ITokenHandlerRepository, TokenHandlerRepository>();
             services.AddSingleton<IAppConfig, AppConfig>();
             //services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
             //services.AddScoped<IDbRepository<BillPayment, FailedBillPayment>, BillPaymentRepository>();
@@ -208,6 +210,12 @@ namespace FileUploadApi
                 app.UseHsts();
             }
 
+            app.UseWhen(context => !PathExcludedFromAuthorization(context.Request.Path), appBuilder =>
+            {
+                appBuilder.UsePassportOauthMiddleware();
+            });
+
+
             loggerFactory.AddSerilog();
 
             app.UseHealthChecks(path: "/health");
@@ -228,5 +236,12 @@ namespace FileUploadApi
             });
         }
 
+        private bool PathExcludedFromAuthorization(PathString path)
+        {
+            if (path.StartsWithSegments("/health"))
+                return true;
+
+            return false;
+        }
     }
 }
