@@ -360,7 +360,7 @@ namespace FileUploadAndValidation.Repository
                     r.CustomerName,
                     Desc = r.TaxType,
                     r.Email,
-                    r.Address
+                    Address = r.AddressInfo
                 });
             }
 
