@@ -7,6 +7,7 @@ using FileUploadAndValidation.BillPayments;
 using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation.Repository;
+using FileUploadAndValidation.Utils;
 using FileUploadApi;
 using FileUploadApi.Processors;
 using FileUploadApi.Services;
@@ -20,14 +21,16 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
     private readonly INasRepository nasRepository;
     private readonly IDetailsDbRepository<ManualCaptureRow> dbRepository;
     private readonly IRemoteFileContentValidator<ManualCaptureRow> remoteValidator;
+    private readonly IAppConfig _appConfig;
 
     public ManualCustomerCaptureBatchProcessor(IFileContentValidator<ManualCaptureRow, ManualCustomerCaptureContext> fileContentValidator,
-                                        IRemoteFileContentValidator<ManualCaptureRow> remoteValidator,
+                                        IRemoteFileContentValidator<ManualCaptureRow> remoteValidator, IAppConfig appConfig,
                                         IDetailsDbRepository<ManualCaptureRow> dbRepository)
     {
         _fileContentValidator = fileContentValidator;
         this.remoteValidator = remoteValidator;
         this.dbRepository = dbRepository;
+        _appConfig = appConfig;
     }
 
     public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, ManualCustomerCaptureContext context, string clientToken)
@@ -53,16 +56,15 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
         var batch = new Batch<ManualCaptureRow>(finalResult.ValidRows, finalResult.Failures)
         {
             BatchId = batchId,
-            ItemType = "manual-capture",
-            ContentType = "manual-capture",
+            ItemType = GenericConstants.ManualCapture,
+            ContentType = GenericConstants.ManualCapture,
             UploadDate = DateTime.Now.ToString(),
             ModifiedDate = DateTime.Now.ToString(),
-            ProductCode = "FCT-IRS",
+            ProductCode = _appConfig.FCTIRSProductCode,
             ProductName = "FCT-IRS",
             UserId = context.UserId,
             TransactionStatus = GenericConstants.PendingValidation,
-            NameOfFile = string.Empty
-            //UplodedBy =  context.UserName,           
+            NameOfFile = string.Empty    
         };
 
         await dbRepository.InsertAllUploadRecords(batch);

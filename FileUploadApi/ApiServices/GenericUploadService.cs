@@ -208,8 +208,8 @@ namespace FileUploadApi.ApiServices
                            Status = s.RowStatus
                        });
 
-                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.MultiTax)
-                    && fileSummary.ContentType.ToLower().Equals(GenericConstants.FctIrs))
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.ManualCapture)
+                    && fileSummary.ContentType.ToLower().Equals(GenericConstants.ManualCapture))
                     paymentStatuses.Data = paymentStatus
                        .Select(s => new
                        {

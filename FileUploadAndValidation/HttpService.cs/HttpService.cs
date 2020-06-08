@@ -57,7 +57,9 @@ namespace FileUploadAndValidation.UploadServices
         private string GetInitiatePaymentUrl(string contentType, string itemType)
         {
 
-            if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
+            if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()) 
+                || contentType.ToLower().Equals(GenericConstants.ManualCapture.ToLower())
+                || contentType.ToLower().Equals(GenericConstants.Lasg.ToLower()))
                 return GenericConstants.InitiateBillPaymentUrl;
 
             else if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower())
@@ -97,7 +99,7 @@ namespace FileUploadAndValidation.UploadServices
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new AppException("Please, retry after some time. Remote server currently not reacheable!.", (int)HttpStatusCode.Unauthorized);
+                    throw new AppException("Invalid Access Token", (int)HttpStatusCode.Unauthorized);
                 }
 
                 return validateResponse;
@@ -188,7 +190,10 @@ namespace FileUploadAndValidation.UploadServices
         {
             string result = "";
 
-            if (fileProperty.ContentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
+            if (fileProperty.ContentType.ToLower().Equals(GenericConstants.BillPayment.ToLower())
+                || fileProperty.ContentType.ToLower().Equals(GenericConstants.Lasg.ToLower())
+                || fileProperty.ContentType.ToLower().Equals(GenericConstants.ManualCapture.ToLower())
+                )
                 result = JsonConvert.SerializeObject(new
                 {
                     BusinessId = initiatePaymentOptions.BusinessId,
@@ -256,7 +261,7 @@ namespace FileUploadAndValidation.UploadServices
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new AppException("Please, retry after some time. Remote server currently not reacheable!.", (int)HttpStatusCode.Unauthorized);
+                    throw new AppException("Invalid Access Token", (int)HttpStatusCode.Unauthorized);
                 }
                 else
                 {
