@@ -36,25 +36,28 @@ namespace FileUploadApi.Controllers
         {
             try
             {
-                var fctIRSProductCode = "LASG";
+                // var productCode = "LASG";
                 var request = FileUploadRequest.FromRequestForFCTIRS(Request);
-                request.ProductCode = fctIRSProductCode;
-                request.ProductName = fctIRSProductCode;
+                
+                var context = new LASGPaymentContext()
+                {
+                    UserId = request.UserId.Value
+                };
 
-                IEnumerable<Row> rows = new List<Row>();
                 IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");
+                IEnumerable<Row> rows = new List<Row>();
 
                 using (var contentStream = request.FileRef.OpenReadStream())
                 {
-                    rows = fileContentReader.Read(contentStream);
+                    var tempRows = fileContentReader.Read(contentStream);
+                    rows = tempRows.Any() ? tempRows.Skip(1) : tempRows;
                 }
 
                 foreach (var row in rows)
                 {
-                    row.Columns[0].Value = fctIRSProductCode;
+                    row.Columns[0].Value = context.ProductCode;
                 }
 
-                var context = new LASGPaymentContext();
                 var uploadResult = await _batchProcessor.UploadAsync(rows, context);
 
                 return Ok(uploadResult);

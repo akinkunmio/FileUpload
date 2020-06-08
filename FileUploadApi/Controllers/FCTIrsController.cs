@@ -36,25 +36,23 @@ namespace FileUploadApi.Controllers
         {
             try
             {
-                var fctIRSProductCode = "FCT-IRS";
+                var productCode = "FCT-IRS";
                 var request = FileUploadRequest.FromRequestForFCTIRS(Request);
-                request.ProductCode = fctIRSProductCode;
-                request.ProductName = fctIRSProductCode;
+                request.ProductCode = productCode;
+                request.ProductName = productCode;
 
-                IEnumerable<Row> tempRows = new List<Row>();
+                IEnumerable<Row> rows = new List<Row>();
                 IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");
 
                 using (var contentStream = request.FileRef.OpenReadStream())
                 {
-                    tempRows = fileContentReader.Read(contentStream);
+                    var tempRows = fileContentReader.Read(contentStream);
+                    rows = tempRows.Any() ? tempRows.Skip(1) : tempRows;
                 }
-
-                var rows = tempRows.ToList();                
-                rows.RemoveAt(0);
 
                 foreach (var row in rows)
                 {
-                    row.Columns[0].Value = fctIRSProductCode;
+                    row.Columns[0].Value = productCode;
                 }
 
                 var context = new ManualCustomerCaptureContext
