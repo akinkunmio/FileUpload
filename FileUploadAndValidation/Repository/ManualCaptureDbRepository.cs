@@ -59,7 +59,7 @@ namespace FileUploadAndValidation.Repository
                                         address = row.Address,
                                         transactions_summary_id = transactionSummaryId,
                                         row_num = row.Row,
-                                        row_status = string.Empty,
+                                        row_status = row.IsValid ? string.Empty : "Invalid",
                                         created_date = batch.UploadDate,
                                         initial_validation_status = row.IsValid ? "Valid" : "Invalid",
                                         error = string.Join(',', row.ErrorMessages ?? new List<string>()),   
