@@ -63,6 +63,7 @@ namespace FileUploadApi.Controllers
 
                 var uploadResult = await _batchProcessor.UploadAsync(rows, context, HttpContext.Request.Headers["Authorization"]);
                 uploadResult.UploadSuccessful = true;
+                
                 return Ok(uploadResult);
             }
             catch (AppException ex)
