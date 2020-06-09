@@ -64,7 +64,8 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             ProductName = "FCT-IRS",
             UserId = context.UserId,
             TransactionStatus = GenericConstants.PendingValidation,
-            NameOfFile = string.Empty    
+            NameOfFile = string.Empty,
+            Status = RemoteValidationUtil.GetStatusFromRemoteResponseCode(remoteValidationResult.CompletionStatus.Status),
         };
 
         await dbRepository.InsertAllUploadRecords(batch);

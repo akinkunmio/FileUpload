@@ -41,8 +41,6 @@ namespace FileUploadAndValidation.BillPayments
 
             StartPeriod = GetColumnValue(columns, INDEX_OF_PERIOD_FROM, "");
             EndPeriod = GetColumnValue(columns, INDEX_OF_PERIOD_TO, StartPeriod);
-            if(string.IsNullOrWhiteSpace(EndPeriod) && !string.IsNullOrEmpty(StartPeriod))
-                EndPeriod = StartPeriod;
                 
             Description = GetColumnValue(columns, INDEX_OF_DESCRIPTION, "");
 
@@ -61,7 +59,9 @@ namespace FileUploadAndValidation.BillPayments
                 errors.Add($"{nameof(StartPeriod)} not specified");
             if (string.IsNullOrWhiteSpace(EndPeriod))
                 errors.Add($"{nameof(EndPeriod)} not specified");
-                
+            if (Amount <= 0)
+                errors.Add($"{nameof(Amount)} must be greater than 0");
+
             if (!LASGUtil.TryValidateMonth(StartPeriod))
             {
                 errors.Add($"{nameof(StartPeriod)} must be 7 characters e.g. JUL{DateTime.Now.Year}");
