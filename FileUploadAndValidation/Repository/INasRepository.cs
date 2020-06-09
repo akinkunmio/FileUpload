@@ -134,7 +134,7 @@ namespace FileUploadAndValidation.Repository
             {
                 if (File.Exists(path))
                 {
-                    var extractedContent = await System.IO.File.ReadAllTextAsync(path, Encoding.Unicode);
+                    var extractedContent = await System.IO.File.ReadAllTextAsync(path, Encoding.UTF8);
                     result = JsonConvert.DeserializeObject<IEnumerable<RowValidationStatus>>(extractedContent);
                 }
                 else

@@ -32,7 +32,7 @@ namespace FileUploadAndValidation.Helpers
         public const string ManualCapture = "manual-capture";
 
         public const string Firs = "firs";
-        public const string Lasg = "Lasg";
+        public const string Lasg = "lasg";
         public const string FctIrs = "fctirs";
 
 
