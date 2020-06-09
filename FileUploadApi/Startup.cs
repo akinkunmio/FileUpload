@@ -210,10 +210,10 @@ namespace FileUploadApi
                 app.UseHsts();
             }
 
-            app.UseWhen(context => !PathExcludedFromAuthorization(context.Request.Path), appBuilder =>
-            {
-                appBuilder.UsePassportOauthMiddleware();
-            });
+            // app.UseWhen(context => !PathExcludedFromAuthorization(context.Request.Path), appBuilder =>
+            // {
+            //     appBuilder.UsePassportOauthMiddleware();
+            // });
 
 
             loggerFactory.AddSerilog();
