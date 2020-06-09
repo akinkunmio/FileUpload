@@ -47,7 +47,7 @@ namespace FileUploadAndValidation.BillPayments
             }
 
             IEnumerable<LASGPaymentRow> result = new List<LASGPaymentRow>();
-            var isSuccessResponse = new[] { "200", "201", "204" }.Contains(validationResponse.ResponseCode);
+            var isSuccessResponse = new[] { "200", "201", "204", "90000" }.Contains(validationResponse.ResponseCode);
             if (!isSuccessResponse)
                 return RemoteValidationUtil.HandleFailureResponse<LASGPaymentRow>(validationResponse.ResponseCode);
 
