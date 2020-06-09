@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation.Repository;
 using FileUploadAndValidation.UploadServices;
@@ -34,8 +35,8 @@ namespace FileUploadAndValidation.BillPayments
             ValidationResponse validationResponse;
             try
             {
-                fileProperty.ContentType = "Lasg";
-                fileProperty.ItemType = "Lasg";
+                fileProperty.ContentType = GenericConstants.Lasg;
+                fileProperty.ItemType = GenericConstants.Lasg;
                 validationResponse = await _httpService.ValidateRecords(fileProperty, clientToken, true);
             }
             catch (AppException ex)

@@ -34,7 +34,8 @@ namespace FileUploadAndValidation.BillPayments
             RevenueCode = GetColumnValue(columns, INDEX_OF_REVENUE_CODE, "");
             AgencyCode = GetColumnValue(columns, INDEX_OF_AGENCY_CODE, "");
 
-            if (decimal.TryParse(GetColumnValue(columns, INDEX_OF_AMOUNT, ""), out decimal _amount))
+            var amountProvided = GetColumnValue(columns, INDEX_OF_AMOUNT, "");
+            if (decimal.TryParse(amountProvided, out decimal _amount))
             {
                 Amount = _amount;
             }
@@ -60,16 +61,24 @@ namespace FileUploadAndValidation.BillPayments
             if (string.IsNullOrWhiteSpace(EndPeriod))
                 errors.Add($"{nameof(EndPeriod)} not specified");
             if (Amount <= 0)
-                errors.Add($"{nameof(Amount)} must be greater than 0");
+                errors.Add($"{nameof(Amount)} must be greater than 0. Provided amount: {amountProvided} is invalid");
 
+            var startAndEndDateIsValid = true;
             if (!LASGUtil.TryValidateMonth(StartPeriod))
             {
+                startAndEndDateIsValid = false;
                 errors.Add($"{nameof(StartPeriod)} must be 7 characters e.g. JUL{DateTime.Now.Year}");
             }
             
             if (!LASGUtil.TryValidateMonth(EndPeriod))
             {
+                startAndEndDateIsValid = false;
                 errors.Add($"{nameof(EndPeriod)} must be 7 characters e.g. JUL{DateTime.Now.Year}");
+            }
+
+            if(startAndEndDateIsValid && !LASGUtil.IsValidDateRange(StartPeriod, EndPeriod))
+            {
+                errors.Add($"{nameof(EndPeriod)} must be greater than {nameof(StartPeriod)}");
             }
 
             if (string.IsNullOrEmpty(Description))
@@ -115,6 +124,22 @@ namespace FileUploadAndValidation.BillPayments
 
             int.TryParse(periodMonth.Substring(3,4), out int year);
             if(year < 2000) return false;
+
+            return true;
+        }
+
+        internal static bool IsValidDateRange(string startPeriod, string endPeriod, bool checkParamsValidity = true)
+        {
+            var fromYear = int.Parse(startPeriod.Substring(3,4));
+            var toYear = int.Parse(endPeriod.Substring(3,4));
+
+            if (fromYear > toYear) return false;
+
+            var fromMonthGreaterThanTo = Array.IndexOf(months, startPeriod.Substring(0, 3)) > Array.IndexOf(months, endPeriod.Substring(0, 3));
+            if (fromYear == toYear && fromMonthGreaterThanTo)
+            {
+                return false;
+            }
 
             return true;
         }
