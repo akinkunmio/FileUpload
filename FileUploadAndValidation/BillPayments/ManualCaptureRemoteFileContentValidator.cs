@@ -33,6 +33,7 @@ namespace FileUploadAndValidation.BillPayments
             var remoteResponse = await _httpService.ValidateRecords(result, clientToken, true);
 
             return new ValidationResult<ManualCaptureRow> {
+                CompletionStatus = new CompletionState { Status = CompletionStateStatus.Queued },
                 ValidRows = validRows.ToList(),
                 Failures = new List<ManualCaptureRow>()
             };
