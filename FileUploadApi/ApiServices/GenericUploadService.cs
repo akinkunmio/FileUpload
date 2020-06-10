@@ -226,6 +226,26 @@ namespace FileUploadApi.ApiServices
                            ErrorDescription = s.Error,
                            Status = s.RowStatus
                        });
+
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Lasg)
+                    && fileSummary.ContentType.ToLower().Equals(GenericConstants.Lasg))
+                    paymentStatuses.Data = paymentStatus
+                       .Select(s => new
+                       {
+                           Row = s.RowNum,
+                           s.ProductCode,
+                           s.ItemCode,
+                           s.CustomerId,
+                           s.PayerId,
+                           s.RevenueCode,
+                           s.AgencyCode,
+                           s.Amount,
+                           s.StartPeriod,
+                           s.EndPeriod,
+                           Description = s.Narration,
+                           ErrorDescription = s.Error,
+                           Status = s.RowStatus
+                       });
             }
             catch (AppException appEx)
             {
