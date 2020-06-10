@@ -99,6 +99,7 @@ namespace FileUploadApi
             services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<IBatchRepository, MultiTaxBatchRepository>();
             #endregion
+
             services.AddScoped<IBatchFileProcessor<AutoPayUploadContext>, AutoPayBatchFileProcessor>();
             services.AddScoped<IBatchFileProcessor<ManualCustomerCaptureContext>, ManualCustomerCaptureBatchProcessor>();
             services.AddScoped<IBatchFileProcessor<LASGPaymentContext>, LASGPaymentBatchProcessor>();
@@ -238,7 +239,7 @@ namespace FileUploadApi
 
         private bool PathExcludedFromAuthorization(PathString path)
         {
-            if (path.StartsWithSegments("/health"))
+            if (path.StartsWithSegments("/health") || path.StartsWithSegments("/swagger"))
                 return true;
 
             return false;
