@@ -319,7 +319,7 @@ namespace FileUploadAndValidation.Helpers
                     }
                     else if(contract.Required == true && string.IsNullOrWhiteSpace(column.Value))
                     {
-                        errorMessage = "Value must be provided";
+                        errorMessage = "Field cannot be empty";
                     }
                     else if(contract.Max != default && column.Value != null && contract.Max < column.Value.Length)
                     {
