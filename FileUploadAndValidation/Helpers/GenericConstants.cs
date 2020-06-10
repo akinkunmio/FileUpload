@@ -32,7 +32,7 @@ namespace FileUploadAndValidation.Helpers
         public const string ManualCapture = "manual-capture";
 
         public const string Firs = "firs";
-        public const string Lasg = "Lasg";
+        public const string Lasg = "lasg";
         public const string FctIrs = "fctirs";
 
 
@@ -57,6 +57,8 @@ namespace FileUploadAndValidation.Helpers
         public static string ValidationResultFile = "ValidationResult.csv";
         public static string FirsWhtCsvTemplate = "FirsWhtCsvTemplate.csv";
         public static string FirsWvatCsvTemplate = "FirsWVATCsvTemplate.csv";
+        public static string FctIrsCsvTemplate = "FctIrsCsvTemplate.csv";
+        public static string LasgCsvTemplate = "LasgCsvTemplate.csv";
         public static string All = "all";
 
     }

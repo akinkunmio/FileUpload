@@ -655,6 +655,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_fctirs_multitax_payments_status_by_transactions_summary_id";
             }
+            else if (itemType.ToLower().Equals(GenericConstants.Lasg)
+                 && contentType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return @"sp_get_lasg_multitax_payments_status_by_transactions_summary_id";
+            }
             else return "";
         }
 
@@ -793,8 +798,8 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_fctirs_multitax_payments_detail";
             }
-            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
-                 && contentType.ToLower().Equals(GenericConstants.Firs))
+            else if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
+                 && contentType.ToLower().Equals(GenericConstants.ManualCapture))
             {
                 return @"sp_update_fctirs_multitax_payments_detail";
             }

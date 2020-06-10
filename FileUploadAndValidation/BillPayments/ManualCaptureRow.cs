@@ -33,7 +33,8 @@ namespace FileUploadAndValidation.BillPayments
             ItemCode = GetColumnValue(columns, INDEX_OF_ITEM_CODE, "");
             Description = GetColumnValue(columns, INDEX_OF_DESCRIPTION, "");
 
-            if (decimal.TryParse(GetColumnValue(columns, INDEX_OF_AMOUNT, ""), out decimal _amount))
+            var amountProvided = GetColumnValue(columns, INDEX_OF_AMOUNT, "");
+            if (decimal.TryParse(amountProvided, out decimal _amount))
             {
                 Amount = _amount;
             }
@@ -51,7 +52,7 @@ namespace FileUploadAndValidation.BillPayments
             if (string.IsNullOrWhiteSpace(ItemCode))
                 errors.Add($"{nameof(ItemCode)} not specified");
             if (Amount <= 0)
-                errors.Add($"{nameof(Amount)} must be greater than 0");
+                errors.Add($"{nameof(Amount)} must be greater than 0. Provided amount: {amountProvided} is invalid");
             if (string.IsNullOrWhiteSpace(CustomerName))
                 errors.Add($"{nameof(CustomerName)} not specified");
             if (_config.IsEmailRequired && string.IsNullOrWhiteSpace(Email))

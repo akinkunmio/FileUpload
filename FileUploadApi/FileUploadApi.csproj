@@ -14,13 +14,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Scripts\1591563107_lasg_lirs_tables_procs.sql" />
-    <None Remove="Scripts\1591606493_manualcapture.sql" />
+    <None Remove="Scripts\1591636828_dbo.stored_procedures.sql" />
+    <None Remove="Scripts\1591637185_manualcapture.sql" />
+    <None Remove="Scripts\1591637213_lasg_lirs_tables_procs.sql" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\1591563107_lasg_lirs_tables_procs.sql" />
-    <EmbeddedResource Include="Scripts\1591606493_manualcapture.sql" />
+    <EmbeddedResource Include="Scripts\1591636828_dbo.stored_procedures.sql" />
+    <EmbeddedResource Include="Scripts\1591637213_lasg_lirs_tables_procs.sql" />
+    <EmbeddedResource Include="Scripts\1591660408_LASG_getbatchSummary.sql" />
+    <EmbeddedResource Include="Scripts\1591637185_manualcapture.sql" />
   </ItemGroup>
 
   <ItemGroup>

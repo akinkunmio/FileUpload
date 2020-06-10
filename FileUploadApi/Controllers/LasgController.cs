@@ -61,8 +61,9 @@ namespace FileUploadApi.Controllers
                     row.Columns[0].Value = context.ProductCode;
                 }
 
-                var uploadResult = await _batchProcessor.UploadAsync(rows, context);
-
+                var uploadResult = await _batchProcessor.UploadAsync(rows, context, HttpContext.Request.Headers["Authorization"]);
+                uploadResult.UploadSuccessful = true;
+                
                 return Ok(uploadResult);
             }
             catch (AppException ex)

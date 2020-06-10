@@ -287,6 +287,16 @@ namespace FileUploadApi.ApiServices
             {
                 fileName = GenericConstants.FirsMultitaxPaymentCsvTemplate;
             }
+            else if (contentType.ToLower().Equals(GenericConstants.ManualCapture)
+               && itemType.ToLower().Equals(GenericConstants.ManualCapture))
+            {
+                fileName = GenericConstants.FctIrsCsvTemplate;
+            }
+            else if (contentType.ToLower().Equals(GenericConstants.Lasg)
+               && itemType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                fileName = GenericConstants.LasgCsvTemplate;
+            }
             else
                 throw new AppException("Template not found!.");
 
