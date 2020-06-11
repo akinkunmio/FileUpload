@@ -109,25 +109,26 @@ namespace FileUploadApi.Controllers
                 if (string.IsNullOrWhiteSpace(Request.Form["HasHeaderRow"].ToString()))
                     throw new AppException("Value must be passed for 'HasHeaderRow'.");
 
-                if (Request.Form.Files.Count() == 0)
-                    throw new AppException("Please upload a file."); 
+                var file = Request.Form.Files.FirstOrDefault();
+                
+                if (file == default)
+                    throw new AppException("Please upload a file.");
 
                 var request = new FileUploadRequest
                 {
                     ItemType = GenericConstants.MultiTax,
                     ContentType = authority,
                     AuthToken = Request.Headers["Authorization"].ToString(),
-                    FileRef = Request.Form.Files.FirstOrDefault(),
-                    FileName = Request.Form.Files
-                                        .First().FileName
+                    FileRef = file,
+                    FileName = file.FileName
                                         .Split('.')[0],
-                    FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
+                    FileExtension = Path.GetExtension(file.FileName)
                                     .Replace(".", string.Empty)
                                     .ToLower(),
                     UserId = long.Parse(userId),
                     ProductCode = Request.Form["productCode"].ToString(),
                     ProductName = Request.Form["productName"].ToString(),
-                    FileSize = Request.Form.Files.First().Length,
+                    FileSize = file.Length,
                     HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool() /*true*/
                 };
 
