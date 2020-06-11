@@ -234,10 +234,7 @@ namespace FileUploadAndValidation.FileContentValidators
                 };
 
 
-                uploadResult.ValidRows = uploadResult.ValidRows
-                         .Where(b => !failBeneficiaryTinValidation.Any(n => n.RowNum == b.RowNum))
-                         .Select(r => r)
-                         .ToList();
+               uploadResult.ValidRows = uploadResult.ValidRows?.Except(failBeneficiaryTinValidation).ToList();
 
                 if (uploadResult.Failures.Any()) 
                     foreach (var failure in uploadResult.Failures)
