@@ -117,7 +117,7 @@ namespace FileUploadApi.Controllers
                     ItemType = GenericConstants.MultiTax,
                     ContentType = authority,
                     AuthToken = Request.Headers["Authorization"].ToString(),
-                    FileRef = Request.Form.Files.First(),
+                    FileRef = Request.Form.Files.FirstOrDefault(),
                     FileName = Request.Form.Files
                                         .First().FileName
                                         .Split('.')[0],
