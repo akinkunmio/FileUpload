@@ -22,7 +22,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Scripts\1591636828_dbo.stored_procedures.sql" />
     <EmbeddedResource Include="Scripts\1591637213_lasg_lirs_tables_procs.sql" />
-    <EmbeddedResource Include="Scripts\1591660408_LASG_getbatchSummary.sql" />
+    <EmbeddedResource Include="Scripts\1591864976_LASG_getbatchSummary.sql" />
     <EmbeddedResource Include="Scripts\1591637185_manualcapture.sql" />
   </ItemGroup>
 

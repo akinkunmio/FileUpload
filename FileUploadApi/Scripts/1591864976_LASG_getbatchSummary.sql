@@ -6,6 +6,12 @@ begin
 end
 go
 
+if OBJECT_ID('sp_get_confirmed_lasg_multitax_by_transactions_summary_id') IS NOT NULL
+begin
+    DROP PROCEDURE sp_get_confirmed_lasg_multitax_by_transactions_summary_id
+end
+go
+
 CREATE PROCEDURE sp_get_lasg_multitax_payments_status_by_transactions_summary_id
     @transactions_summary_id bigint,
     @page_size int,
@@ -109,3 +115,12 @@ AS
 						ORDER BY RowNum
 					end
 	end
+go
+
+
+CREATe PROCEDURE sp_get_confirmed_lasg_multitax_by_transactions_summary_id
+@transactions_summary_id bigint
+AS
+	SELECT [row_num],[product_code],[item_code],[customer_id],[amount] 
+	FROM tbl_lirs_multi_tax_transactions_detail 
+	WHERE transactions_summary_id = @transactions_summary_id and row_status = 'Valid';
