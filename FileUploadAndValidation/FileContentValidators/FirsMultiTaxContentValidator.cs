@@ -205,8 +205,7 @@ namespace FileUploadAndValidation.FileContentValidators
                 if (uploadResult.ValidRows.Count() == 0)
                     throw new AppException("All records are invalid", 400, uploadResult);
 
-                if (uploadResult.ValidRows.Count() > 0
-                    && uploadResult.ValidRows.Any())
+                if (uploadResult.ValidRows.Any())
                 {
 
                     var whtRowDetails = uploadResult.ValidRows
@@ -214,7 +213,7 @@ namespace FileUploadAndValidation.FileContentValidators
                               .Select(v => v);
 
                     failBeneficiaryTinValidation = whtRowDetails
-                              ?.GroupBy(b => new { b.BeneficiaryTin })
+                              ?.GroupBy(b => new { b?.BeneficiaryTin })
                               .Where(g => g.Count() > 1)
                               .SelectMany(r => r);
 
@@ -234,10 +233,7 @@ namespace FileUploadAndValidation.FileContentValidators
                 };
 
 
-                uploadResult.ValidRows = uploadResult.ValidRows
-                         .Where(b => !failBeneficiaryTinValidation.Any(n => n.RowNum == b.RowNum))
-                         .Select(r => r)
-                         .ToList();
+               uploadResult.ValidRows = uploadResult.ValidRows?.Except(failBeneficiaryTinValidation).ToList();
 
                 if (uploadResult.Failures.Any()) 
                     foreach (var failure in uploadResult.Failures)

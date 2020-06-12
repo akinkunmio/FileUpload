@@ -221,65 +221,66 @@ namespace FileUploadAndValidation.Repository
                             if(fileDetail.ContentType.ToLower().Equals(GenericConstants.Firs)
                                 && fileDetail.ItemType.ToLower().Equals(GenericConstants.MultiTax))
                             {
-                                foreach (var valid in payments)
-                                {
-                                    //create sp sp_insert_valid_firs_multitax
-                                    await connection.ExecuteAsync(sql: "sp_insert_valid_firs_multitax",
-                                        param: new
-                                        {
-                                            beneficiary_address = valid.BeneficiaryAddress,
-                                            beneficiary_name = valid.BeneficiaryName,
-                                            beneficiary_tin = valid.BeneficiaryTin,
-                                            contract_amount = valid.ContractAmount,
-                                            contract_date = valid.ContractDate,
-                                            contract_type = valid.ContractType,
-                                            contract_description = valid.ContractDescription,
-                                            invoice_number = valid.InvoiceNumber,
-                                            wht_rate = valid.WhtRate,
-                                            wht_amount = valid.WhtAmount,
-                                            period_covered = valid.PeriodCovered,
-                                            amount = valid.Amount,
-                                            comment = valid.Comment,
-                                            tax_type = valid.TaxType,
-                                            document_number = valid.DocumentNumber,
-                                            payer_tin = valid.PayerTin,
-                                            created_date = valid.CreatedDate,
-                                            row_num = valid.RowNum,
-                                            transactions_summary_Id = transactionSummaryId,
-                                            initial_validation_status = "Valid"
-                                        },
-                                        transaction: sqlTransaction,
-                                        commandType: System.Data.CommandType.StoredProcedure);
-                                }
+                                //foreach (var valid in payments)
+                                //{
+                                //    //create sp sp_insert_valid_firs_multitax
+                                //    await connection.ExecuteAsync(sql: "sp_insert_invalid_firs_multitax",
+                                //        param: new
+                                //        {
+                                //            beneficiary_address = valid.BeneficiaryAddress,
+                                //            beneficiary_name = valid.BeneficiaryName,
+                                //            beneficiary_tin = valid.BeneficiaryTin,
+                                //            contract_amount = valid.ContractAmount,
+                                //            contract_date = valid.ContractDate,
+                                //            contract_type = valid.ContractType,
+                                //            contract_description = valid.ContractDescription,
+                                //            invoice_number = valid.InvoiceNumber,
+                                //            wht_rate = valid.WhtRate,
+                                //            wht_amount = valid.WhtAmount,
+                                //            period_covered = valid.PeriodCovered,
+                                //            amount = valid.Amount,
+                                //            comment = valid.Comment,
+                                //            tax_type = valid.TaxType,
+                                //            document_number = valid.DocumentNumber,
+                                //            payer_tin = valid.PayerTin,
+                                //            created_date = valid.CreatedDate,
+                                //            row_num = valid.RowNum,
+                                //            transactions_summary_Id = transactionSummaryId,
+                                //            initial_validation_status = "Valid"
+                                //        },
+                                //        transaction: sqlTransaction,
+                                //        commandType: System.Data.CommandType.StoredProcedure);
+                                //}
 
-                                foreach (var invalid in invalidPayments)
+                                var allpayments = payments.Concat(invalidPayments.Select(a => a.Row));
+                                foreach (var payment in allpayments)
                                 {
                                     // create sp_insert_invalid_firs_multitax
                                     await connection.ExecuteAsync(sql: "sp_insert_invalid_firs_multitax",
                                         param: new
                                         {
-                                            contract_description = invalid.Row.ContractDescription,
-                                            invoice_number = invalid.Row.InvoiceNumber,
-                                            beneficiary_address = invalid.Row.BeneficiaryAddress,
-                                            beneficiary_name = invalid.Row.BeneficiaryName,
-                                            beneficiary_tin = invalid.Row.BeneficiaryTin,
-                                            contract_amount = invalid.Row.ContractAmount,
-                                            contract_date = invalid.Row.ContractDate,
-                                            contract_type = invalid.Row.ContractType,
-                                            wht_rate = invalid.Row.WhtRate,
-                                            wht_amount = invalid.Row.WhtAmount,
-                                            period_covered = invalid.Row.PeriodCovered,
-                                            amount = invalid.Row.Amount,
-                                            comment = invalid.Row.Comment,
-                                            tax_type = invalid.Row.TaxType,
-                                            document_number = invalid.Row.DocumentNumber,
-                                            payer_tin = invalid.Row.PayerTin,
-                                            created_date = invalid.Row.CreatedDate,
-                                            row_num = invalid.Row.RowNum,
+                                            beneficiary_address = payment.BeneficiaryAddress,
+                                            beneficiary_name = payment.BeneficiaryName,
+                                            beneficiary_tin = payment.BeneficiaryTin,
+                                            contract_amount = payment.ContractAmount,
+                                            contract_date = payment.ContractDate,
+                                            contract_type = payment.ContractType,
+                                            contract_description = payment.ContractDescription,
+                                            invoice_number = payment.InvoiceNumber,
+                                            wht_rate = payment.WhtRate,
+                                            wht_amount = payment.WhtAmount,
+                                            period_covered = payment.PeriodCovered,
+                                            amount = payment.Amount,
+                                            comment = payment.Comment,
+                                            tax_type = payment.TaxType,
+                                            document_number = payment.DocumentNumber,
+                                            payer_tin = payment.PayerTin,
+                                            created_date = payment.CreatedDate,
+                                            row_num = payment.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
-                                            row_status = "Invalid",
-                                            initial_validation_status = "Invalid",
-                                            error = invalid.Row.ErrorDescription
+                                            row_status = string.IsNullOrWhiteSpace(payment.ErrorDescription) ? "Invalid" : "",
+                                            initial_validation_status = string.IsNullOrWhiteSpace(payment.ErrorDescription) ? "Valid" : "Invalid",
+                                            error = payment.ErrorDescription ?? ""
                                         },
                                         transaction: sqlTransaction,
                                         commandType: System.Data.CommandType.StoredProcedure);

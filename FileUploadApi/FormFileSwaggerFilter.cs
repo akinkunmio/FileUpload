@@ -48,6 +48,22 @@ namespace FileUploadApi
                     Type = "string"
                 });
 
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "productCode",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "productName",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+
                 operation.Consumes.Add("multipart/form-data");
                 operation.Consumes.Add("string/form-data");
             }

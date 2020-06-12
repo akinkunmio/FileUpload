@@ -66,6 +66,46 @@ namespace FileUploadAndValidation.Models
             };
         }
 
+        public static FileUploadRequest FromRequestForFirsMultitax(HttpRequest request, string authority)
+        {
+            var userId = request.Form["id"].ToString();
+
+            bool success = long.TryParse(userId, out long number);
+
+            if (!success)
+            {
+                throw new AppException($"Invalid value '{userId}' passed for 'id'!.", 400);
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Form["HasHeaderRow"].ToString()))
+                throw new AppException("Value must be passed for 'HasHeaderRow'.");
+
+            var file = request.Form.Files.FirstOrDefault();
+
+            if (file == default)
+                throw new AppException("Please upload a file.");
+
+            return new FileUploadRequest
+            {
+                ItemType = GenericConstants.MultiTax,
+                ContentType = authority,
+                AuthToken = request.Headers["Authorization"].ToString(),
+                FileRef = file,
+                FileName = file.FileName
+                                    .Split('.')[0],
+                FileExtension = Path.GetExtension(file.FileName)
+                                .Replace(".", string.Empty)
+                                .ToLower(),
+                UserId = long.Parse(userId),
+                ProductCode = request.Form["productCode"].ToString(),
+                ProductName = request.Form["productName"].ToString(),
+                FileSize = file.Length,
+                HasHeaderRow = request.Form["HasHeaderRow"].ToString().ToBool() 
+            };
+
+        }
+
+
         public static FileUploadRequest FromRequestForFCTIRS(HttpRequest request)
         {
             var file = request.Form.Files.FirstOrDefault();
@@ -130,32 +170,6 @@ namespace FileUploadAndValidation.Models
                     FileSize = request.Form.Files.First().Length
             };
         }
-
-        //public static FileUploadRequest FromRequestForSingle(HttpRequest request)
-        //{
-        //    var file = request.Form.Files.First();
-        //    var userId = /*request.Form["id"].ToString() ??*/ "255";
-        //    var productCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL";
-        //    var productName = /*request.Form["productName"].ToString() ??*/ "AIRTEL";
-        //    var businessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001";
-
-        //    return new FileUploadRequest
-        //    {
-        //        FileRef = file,
-        //        AuthToken = request.Headers["Authorization"],
-        //        ContentType = request.Path["contentType"],
-        //        ItemType = request.Query["itemType"],
-        //        FileName = file.FileName.Split('.')[0],
-        //        FileSize = file.Length,
-        //        FileExtension = Path.GetExtension(file.FileName)
-        //                            .Replace(".", string.Empty)
-        //                            .ToLower(),
-        //        UserId = long.Parse(userId),
-        //        ProductCode = productCode,
-        //        ProductName = productName,
-        //        BusinessTin = businessTin,
-        //    };
-        //}
     }
 
     public class UserContext

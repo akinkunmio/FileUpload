@@ -100,36 +100,9 @@ namespace FileUploadApi.Controllers
         {
             ResponseResult response;
 
-            var userId = Request.Form["id"].ToString() /*"255"*/;
-
             try
             {
-                ValidateUserId(userId);
-
-                if (string.IsNullOrWhiteSpace(Request.Form["HasHeaderRow"].ToString()))
-                    throw new AppException("Value must be passed for 'HasHeaderRow'.");
-
-                if (Request.Form.Files.Count() == 0)
-                    throw new AppException("Please upload a file."); 
-
-                var request = new FileUploadRequest
-                {
-                    ItemType = GenericConstants.MultiTax,
-                    ContentType = authority,
-                    AuthToken = Request.Headers["Authorization"].ToString(),
-                    FileRef = Request.Form.Files.First(),
-                    FileName = Request.Form.Files
-                                        .First().FileName
-                                        .Split('.')[0],
-                    FileExtension = Path.GetExtension(Request.Form.Files.First().FileName)
-                                    .Replace(".", string.Empty)
-                                    .ToLower(),
-                    UserId = long.Parse(userId),
-                    ProductCode = Request.Form["productCode"].ToString(),
-                    ProductName = Request.Form["productName"].ToString(),
-                    FileSize = Request.Form.Files.First().Length,
-                    HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool() /*true*/
-                };
+                var request = FileUploadRequest.FromRequestForFirsMultitax(Request, authority);
 
                 response = await _multiTaxProcessor.UploadFileAsync(request);
             }
