@@ -17,6 +17,8 @@ namespace FileUploadAndValidation.BillPayments
         const int INDEX_OF_EMAIL = 7;
         const int INDEX_OF_CUST_ADDRESS = 8;
 
+        public ManualCaptureRow() { }
+
         public ManualCaptureRow(Row row, ManualCaptureRowConfig config)
         {
             _config = config;

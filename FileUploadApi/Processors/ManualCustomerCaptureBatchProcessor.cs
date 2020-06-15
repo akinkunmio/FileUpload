@@ -49,9 +49,7 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
 
         var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows, clientToken);
 
-        var isBackground = remoteValidator.IsBackground();
-
-        var finalResult = isBackground ? localValidationResult : localValidationResult.MergeResults(remoteValidationResult);
+        var finalResult = localValidationResult.MergeResults(remoteValidationResult);
 
         var batch = new Batch<ManualCaptureRow>(finalResult.ValidRows, finalResult.Failures)
         {

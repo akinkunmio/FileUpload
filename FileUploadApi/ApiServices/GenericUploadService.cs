@@ -106,7 +106,7 @@ namespace FileUploadApi.ApiServices
                         BatchId = batchId,
                         ContentType = fileSummary.ContentType,
                         ItemType = fileSummary.ItemType,
-                        Url = fileSummary.NasToValidateFile
+                        Url = $"validate/{batchId}_validate.json"
                     }, authToken);
 
                     return paymentStatuses;
