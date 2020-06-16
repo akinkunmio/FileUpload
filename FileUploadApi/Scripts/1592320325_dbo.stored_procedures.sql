@@ -202,7 +202,7 @@ GO
 CREATE PROCEDURE [dbo].[sp_get_batch_upload_summaries_by_user_id]
 @user_id bigint
 AS
-	SELECT * FROM tbl_transactions_summary 
+	SELECT * FROM tbl_transactions_summary(NOLOCK) 
 	WHERE userid = @user_id and (upload_successful = 'true' or transaction_status = 'Pending Validation')  
 	ORDER BY Id desc;
 GO
@@ -218,7 +218,7 @@ GO
 CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_by_batch_id]
 @batch_id NVARCHAR (100)
 AS
-	SELECT * FROM tbl_transactions_summary WHERE batch_id = @batch_id;
+	SELECT * FROM tbl_transactions_summary(NOLOCK) WHERE batch_id = @batch_id;
 GO
 
 /****** Object:  StoredProcedure [dbo].[sp_get_batch_upload_summary_id_by_batch_id]    Script Date: 06/06/2020 12:57:10 PM ******/
@@ -232,7 +232,7 @@ CREATE PROCEDURE [dbo].[sp_get_batch_upload_summary_id_by_batch_id]
 @batch_id NVARCHAR (100)
 AS
 	SELECT Id 
-	FROM tbl_transactions_summary 
+	FROM tbl_transactions_summary (NOLOCK)
 	WHERE batch_id = @batch_id;
 GO
 
@@ -250,7 +250,7 @@ CREATE PROCEDURE [dbo].[sp_get_bill_payments_status_by_transactions_summary_id]
 AS
 			SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num]
 			FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-				  FROM      tbl_bill_payment_transactions_detail
+				  FROM      tbl_bill_payment_transactions_detail (NOLOCK)
 				  WHERE     transactions_summary_id = @transactions_summary_id
 				) AS RowConstrainedResult
 			WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -270,7 +270,7 @@ CREATE PROCEDURE [dbo].[sp_get_confirmed_bill_payments_by_transactions_summary_i
 @transactions_summary_id bigint
 AS
 	SELECT [row_num],[product_code],[item_code],[customer_id],[amount] 
-	FROM tbl_bill_payment_transactions_detail 
+	FROM tbl_bill_payment_transactions_detail (NOLOCK)
 	WHERE [transactions_summary_id] = @transactions_summary_id and row_status = 'Valid';
 GO
 
@@ -304,7 +304,7 @@ AS
 	document_number,
 	tax_type,
 	payer_tin
-	FROM tbl_firs_multi_tax_transactions_detail 
+	FROM tbl_firs_multi_tax_transactions_detail (NOLOCK)
 	WHERE [transactions_summary_id] = @transactions_summary_id and row_status = 'Valid';
 GO
 
@@ -335,7 +335,7 @@ AS
 		tax_account_number,
 		wvat_rate,
 		wvat_value
-	FROM tbl_firs_wvat_transactions_detail 
+	FROM tbl_firs_wvat_transactions_detail (NOLOCK)
 	WHERE [transactions_summary_id] = @transactions_summary_id and row_status = 'Valid';
 GO
 
@@ -380,7 +380,7 @@ AS
 					row_status,
 					row_num
 				FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-					  FROM      tbl_firs_multi_tax_transactions_detail
+					  FROM      tbl_firs_multi_tax_transactions_detail(NOLOCK)
 					  WHERE     transactions_summary_id = @transactions_summary_id
 					) AS RowConstrainedResult
 				WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -414,7 +414,7 @@ AS
 							row_status,
 							row_num
 						FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-							  FROM      tbl_firs_multi_tax_transactions_detail
+							  FROM      tbl_firs_multi_tax_transactions_detail(NOLOCK)
 							  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Valid'
 							) AS RowConstrainedResult
 						WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -446,7 +446,7 @@ AS
 							row_status,
 							row_num
 						FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-							  FROM      tbl_firs_multi_tax_transactions_detail
+							  FROM      tbl_firs_multi_tax_transactions_detail(NOLOCK)
 							  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Invalid'
 							) AS RowConstrainedResult
 						WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -479,7 +479,7 @@ AS
 					row_status,
 					row_num
 				FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-					  FROM      tbl_firs_multi_tax_transactions_detail
+					  FROM      tbl_firs_multi_tax_transactions_detail(NOLOCK)
 					  WHERE     transactions_summary_id = @transactions_summary_id and tax_type = @tax_type
 					) AS RowConstrainedResult
 				WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -513,7 +513,7 @@ AS
 							row_status,
 							row_num
 						FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-							  FROM      tbl_firs_multi_tax_transactions_detail
+							  FROM      tbl_firs_multi_tax_transactions_detail(NOLOCK)
 							  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Valid' and tax_type = @tax_type
 							) AS RowConstrainedResult
 						WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -545,7 +545,7 @@ AS
 							row_status,
 							row_num
 						FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-							  FROM      tbl_firs_multi_tax_transactions_detail
+							  FROM      tbl_firs_multi_tax_transactions_detail(NOLOCK)
 							  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Invalid' and tax_type = @tax_type
 							) AS RowConstrainedResult
 						WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -573,7 +573,7 @@ AS
 		begin
 			SELECT [beneficiary_tin],[beneficiary_name],beneficiary_address,contract_amount,contract_description,contract_date,contract_type,period_covered,wht_rate,wht_amount,invoice_number,[error],[row_status],[row_num]
 			FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-				  FROM      tbl_firs_wht_transactions_detail
+				  FROM      tbl_firs_wht_transactions_detail(NOLOCK)
 				  WHERE     transactions_summary_id = @transactions_summary_id
 				) AS RowConstrainedResult
 			WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -586,7 +586,7 @@ AS
 				begin
 					SELECT [beneficiary_tin],[beneficiary_name],beneficiary_address,contract_amount,contract_description,contract_date,contract_type,period_covered,wht_rate,wht_amount,invoice_number,[error],[row_status],[row_num]
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-						  FROM      tbl_firs_wht_transactions_detail
+						  FROM      tbl_firs_wht_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Valid'
 						) AS RowConstrainedResult
 					WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -597,7 +597,7 @@ AS
 				begin
 					SELECT [beneficiary_tin],[beneficiary_name],beneficiary_address,contract_amount,contract_description,contract_date,contract_type,period_covered,wht_rate,wht_amount,invoice_number,[error],[row_status],[row_num]
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-						  FROM      tbl_firs_wht_transactions_detail
+						  FROM      tbl_firs_wht_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Invalid'
 						) AS RowConstrainedResult
 					WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -641,7 +641,7 @@ AS
 					row_status,
 					row_num
 			FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-				  FROM      tbl_firs_wvat_transactions_detail
+				  FROM      tbl_firs_wvat_transactions_detail(NOLOCK)
 				  WHERE     transactions_summary_id = @transactions_summary_id
 				) AS RowConstrainedResult
 			WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -671,7 +671,7 @@ AS
 						row_status,
 						row_num
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-						  FROM      tbl_firs_wvat_transactions_detail
+						  FROM      tbl_firs_wvat_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Valid'
 						) AS RowConstrainedResult
 					WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -699,7 +699,7 @@ AS
 						row_status,
 						row_num
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-						  FROM      tbl_firs_wvat_transactions_detail
+						  FROM      tbl_firs_wvat_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Invalid'
 						) AS RowConstrainedResult
 					WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -728,7 +728,7 @@ AS
 		begin
 			SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num]
 			FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-				  FROM      tbl_bill_payment_transactions_detail
+				  FROM      tbl_bill_payment_transactions_detail(NOLOCK)
 				  WHERE     transactions_summary_id = @transactions_summary_id
 				) AS RowConstrainedResult
 			WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -741,7 +741,7 @@ AS
 				begin
 					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num]
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-						  FROM      tbl_bill_payment_transactions_detail
+						  FROM      tbl_bill_payment_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Valid'
 						) AS RowConstrainedResult
 					WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -752,7 +752,7 @@ AS
 				begin
 					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num]
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-						  FROM      tbl_bill_payment_transactions_detail
+						  FROM      tbl_bill_payment_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Invalid'
 						) AS RowConstrainedResult
 					WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
