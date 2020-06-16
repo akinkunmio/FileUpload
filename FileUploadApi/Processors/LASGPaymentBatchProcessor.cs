@@ -43,7 +43,7 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
             throw new AppException("No valid rows");
         }
 
-        var batchId = GenericHelpers.GenerateBatchId("QTB", DateTime.Now);
+        var batchId = GenericHelpers.GenerateBatchId("QTB_LASG", DateTime.Now);
 
         var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows, token);
 
