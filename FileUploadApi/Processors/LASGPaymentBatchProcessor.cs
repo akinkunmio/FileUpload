@@ -59,6 +59,7 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
             ProductCode = context.ProductCode,
             ProductName = context.ProductName,
             UserId = context.UserId,
+            TransactionStatus = GenericConstants.PendingValidation,
             UploadSuccessful = true,
             Status = RemoteValidationUtil.GetStatusFromRemoteResponseCode(remoteValidationResult.CompletionStatus.Status),
             ErrorMessage = remoteValidationResult.CompletionStatus.ErrorMessage           
