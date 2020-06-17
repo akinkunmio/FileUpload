@@ -45,7 +45,7 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             throw new AppException("No valid rows");
         }
 
-        var batchId = GenericHelpers.GenerateBatchId("QTB", DateTime.Now);
+        var batchId = GenericHelpers.GenerateBatchId("QTB_FCTIRS", DateTime.Now);
 
         var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows, clientToken);
 
