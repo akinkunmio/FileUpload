@@ -120,7 +120,7 @@ namespace FileUploadAndValidation.BillPayments
 
             if(periodMonth?.Length != 7) return false;
 
-            if(!months.Any(m => m == periodMonth.Substring(0,3))) return false;
+            if(!months.Any(m => m == (periodMonth.Substring(0,3).ToUpper()))) return false;
 
             int.TryParse(periodMonth.Substring(3,4), out int year);
             if(year < 2000) return false;
