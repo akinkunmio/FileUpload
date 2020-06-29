@@ -2,9 +2,8 @@ FROM mcr.microsoft.com/dotnet/core/aspnet:2.2
 
 MAINTAINER Akinkunmi_Okunola <akinkunmi.okunola@interswitchgroup.com>
 
-RUN rm -f /etc/localtime
-
-RUN ln -s /usr/share/zoneinfo/Africa/Lagos /etc/localtime
+# Set OS time zone
+ENV TZ Africa/Lagos
 
 ENV ASPNETCORE_ENVIRONMENT Production
 
