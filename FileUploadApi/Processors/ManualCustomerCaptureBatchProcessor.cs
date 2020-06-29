@@ -45,13 +45,11 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             throw new AppException("No valid rows");
         }
 
-        var batchId = GenericHelpers.GenerateBatchId("QTB", DateTime.Now);
+        var batchId = GenericHelpers.GenerateBatchId("QTB_FCTIRS", DateTime.Now);
 
         var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows, clientToken);
 
-        var isBackground = remoteValidator.IsBackground();
-
-        var finalResult = isBackground ? localValidationResult : localValidationResult.MergeResults(remoteValidationResult);
+        var finalResult = localValidationResult.MergeResults(remoteValidationResult);
 
         var batch = new Batch<ManualCaptureRow>(finalResult.ValidRows, finalResult.Failures)
         {

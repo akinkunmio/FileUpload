@@ -196,9 +196,15 @@ public class FirsRowDetail : RowDetail
         public string Email { get; set; }
 
         public string Address { get; set; }
-
         public string AddressInfo { get; set; }
         public string Error { get; set; }
+        public string RevenueCode { get; set; }
+        public string AgencyCode { get; set; }
+        public string PayerId { get; set; }
+        public string StartPeriod { get; set; }
+        public string EndPeriod { get; set; }
+        public string Narration { get; set; }
+
     }
 
     //public class RowdDetailUtyped

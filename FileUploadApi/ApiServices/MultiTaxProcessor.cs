@@ -48,7 +48,7 @@ namespace FileUploadApi.ApiServices
                 FileName = request.FileName
             };
 
-            uploadResult.BatchId = GenericHelpers.GenerateBatchId(request.FileName, DateTime.Now);
+            uploadResult.BatchId = GenericHelpers.GenerateBatchId("QTB_FIRS", DateTime.Now);
 
             using (var contentStream = request.FileRef.OpenReadStream())
             {

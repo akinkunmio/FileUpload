@@ -64,16 +64,24 @@ namespace FileUploadAndValidation.BillPayments
                 errors.Add($"{nameof(Amount)} must be greater than 0. Provided amount: {amountProvided} is invalid");
 
             var startAndEndDateIsValid = true;
-            if (!LASGUtil.TryValidateMonth(StartPeriod))
+            if (!LASGUtil.TryValidateMonth(StartPeriod, out string beginPeriod))
             {
                 startAndEndDateIsValid = false;
                 errors.Add($"{nameof(StartPeriod)} must be 7 characters e.g. JUL{DateTime.Now.Year}");
             }
+            else
+            {
+                StartPeriod = beginPeriod;
+            }
             
-            if (!LASGUtil.TryValidateMonth(EndPeriod))
+            if (!LASGUtil.TryValidateMonth(EndPeriod, out string closePeriod))
             {
                 startAndEndDateIsValid = false;
                 errors.Add($"{nameof(EndPeriod)} must be 7 characters e.g. JUL{DateTime.Now.Year}");
+            }
+            else
+            {
+                EndPeriod = closePeriod;
             }
 
             if(startAndEndDateIsValid && !LASGUtil.IsValidDateRange(StartPeriod, EndPeriod))
@@ -116,13 +124,23 @@ namespace FileUploadAndValidation.BillPayments
 
     static class LASGUtil {
        static string[] months = new []{"JAN","FEB","MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-       public static bool TryValidateMonth(string periodMonth){
+       public static bool TryValidateMonth(string periodMonth, out string timePeriod){
+            timePeriod = "";
+            if(periodMonth?.Length != 7 && periodMonth?.Length != 6) return false;
 
-            if(periodMonth?.Length != 7) return false;
-
-            if(!months.Any(m => m == periodMonth.Substring(0,3))) return false;
-
-            int.TryParse(periodMonth.Substring(3,4), out int year);
+            if(!months.Any(m => m == (periodMonth.Substring(0,3).ToUpper()))) return false;
+            int year = 0;
+            if (periodMonth.Length == 7)
+            {
+                int.TryParse(periodMonth.Substring(3, 4), out year);
+                timePeriod = periodMonth;
+            }else
+            {
+                var tempYear = $"{DateTime.Now.Year.ToString().Substring(0, 2)}{periodMonth.Substring(4, 2)}";
+                int.TryParse(tempYear, out year);
+                timePeriod = $"{periodMonth.Substring(0, 3).ToUpper()}{year}";
+            }
+                        
             if(year < 2000) return false;
 
             return true;

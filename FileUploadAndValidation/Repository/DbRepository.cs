@@ -580,6 +580,11 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_confirmed_fctirs_multitax_by_transactions_summary_id";
             }
+            else if (contentType.ToLower().Equals(GenericConstants.Lasg)
+                && itemType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return @"sp_get_confirmed_lasg_multitax_by_transactions_summary_id";
+            }
             else return "";
         }
 

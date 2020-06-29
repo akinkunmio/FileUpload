@@ -1,8 +1,14 @@
-go
+﻿go
 
 if OBJECT_ID('sp_get_lasg_multitax_payments_status_by_transactions_summary_id') IS NOT NULL
 begin
     DROP PROCEDURE sp_get_lasg_multitax_payments_status_by_transactions_summary_id
+end
+go
+
+if OBJECT_ID('sp_get_confirmed_lasg_multitax_by_transactions_summary_id') IS NOT NULL
+begin
+    DROP PROCEDURE sp_get_confirmed_lasg_multitax_by_transactions_summary_id
 end
 go
 
@@ -37,7 +43,7 @@ AS
 					transactions_summary_id,
 					initial_validation_status
 				FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-					  FROM      tbl_lirs_multi_tax_transactions_detail
+					  FROM      tbl_lirs_multi_tax_transactions_detail(NOLOCK)
 					  WHERE     transactions_summary_id = @transactions_summary_id
 					) AS RowConstrainedResult
 				WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -70,7 +76,7 @@ AS
 							transactions_summary_id,
 							initial_validation_status
 						FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-							  FROM      tbl_lirs_multi_tax_transactions_detail
+							  FROM      tbl_lirs_multi_tax_transactions_detail(NOLOCK)
 							  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Valid'
 							) AS RowConstrainedResult
 						WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -101,7 +107,7 @@ AS
 							transactions_summary_id,
 							initial_validation_status
 						FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
-							  FROM      tbl_lirs_multi_tax_transactions_detail
+							  FROM      tbl_lirs_multi_tax_transactions_detail(NOLOCK)
 							  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Invalid'
 							) AS RowConstrainedResult
 						WHERE   RowNum >= ((@page_number * @page_size) - (@page_size)) + 1
@@ -109,3 +115,12 @@ AS
 						ORDER BY RowNum
 					end
 	end
+go
+
+
+CREATe PROCEDURE sp_get_confirmed_lasg_multitax_by_transactions_summary_id
+@transactions_summary_id bigint
+AS
+	SELECT [row_num],[product_code],[item_code],[customer_id],[amount] 
+	FROM tbl_lirs_multi_tax_transactions_detail (NOLOCK)
+	WHERE transactions_summary_id = @transactions_summary_id and row_status = 'Valid';
