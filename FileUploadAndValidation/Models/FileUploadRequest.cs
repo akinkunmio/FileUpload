@@ -43,10 +43,10 @@ namespace FileUploadAndValidation.Models
             var file = request.Form.Files.FirstOrDefault();
             if(file == null) throw new AppException("No file uploaded", "No file uploaded");
 
-            var userId = /*request.Form["id"].ToString() ??*/ "255";
-            var productCode = /*request.Form["productCode"].ToString() ??*/ "AIRTEL";
-            var productName = /*request.Form["productName"].ToString() ??*/ "AIRTEL";
-            var businessTin = /*request.Form["businessTin"].ToString() ??*/ "00771252-0001";
+            var userId = request.Form["id"].ToString();
+            var productCode = request.Form["productCode"].ToString();
+            var productName = request.Form["productName"].ToString();
+            var businessTin = request.Form["businessTin"].ToString();
 
             return new FileUploadRequest
             {
