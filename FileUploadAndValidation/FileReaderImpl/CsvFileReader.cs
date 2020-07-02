@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,6 +16,12 @@ namespace FileUploadAndValidation.FileReaderImpl
 {
     public class CsvFileReader : IFileReader
     {
+        private readonly ILogger<CsvFileReader> _logger;
+
+        public CsvFileReader(ILogger<CsvFileReader> logger)
+        {
+            _logger = logger;
+        }
 
         public bool CanRead(string fileExtension)
         {
@@ -76,6 +83,8 @@ namespace FileUploadAndValidation.FileReaderImpl
             }
             catch (Exception ex)
             {
+                _logger.LogError("An Error occured while extracting file, {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
                 throw new AppException("An error occured while extracting content of file. Please, retry!.", 400);
             }
 

@@ -89,6 +89,7 @@ namespace FileUploadAndValidation.Models
         {
             PageNumber = pageNumber;
             PageSize = pageSize;
+            Status = StatusEnum.All;
         }
 
         public PaginationFilter()
@@ -122,6 +123,7 @@ namespace FileUploadAndValidation.Models
         {
             PageSize = (pageSize > 0) ? pageSize : 10;
             PageNumber = (pageNumber > 0) ? pageNumber : 1;
+            Status = SummaryStatusEnum.All;
         }
 
         public SummaryPaginationFilter()

@@ -119,6 +119,7 @@ namespace FileUploadApi
             services.AddSingleton<IAppConfig, AppConfig>();
             
             services.AddHealthChecks();
+
             services.AddSwaggerGen(config =>
             {
                 config.SwaggerDoc("v1", new Info { Title = "QTB Upload Service API", Version = "V1" });
@@ -135,6 +136,7 @@ namespace FileUploadApi
                     In = "header",
                     Type = "apiKey"
                 });
+
                 config.AddSecurityRequirement(security);
 
                 config.OperationFilter<FormFileSwaggerFilter>();
@@ -233,13 +235,14 @@ namespace FileUploadApi
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUI(c => {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Upload Service V1.0");
+                c.RoutePrefix = "api-docs";
             });
         }
 
         private bool PathExcludedFromAuthorization(PathString path)
         {
-            if (path.StartsWithSegments("/health") || path.StartsWithSegments("/swagger"))
+            if (path.StartsWithSegments("/health") || path.StartsWithSegments("/api-docs") || path.StartsWithSegments("/swagger"))
                 return true;
 
             return false;
