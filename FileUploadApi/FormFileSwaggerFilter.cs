@@ -68,12 +68,13 @@ namespace FileUploadApi
                 operation.Consumes.Add("multipart/form-data");
                 operation.Consumes.Add("string/form-data");
             }
-        }
-    }
-    public class LasgFormFileSwaggerFilter : IOperationFilter
-    {
-        public void Apply(Operation operation, OperationFilterContext context)
-        {
+           
+            if(operation.OperationId == nameof(UploadController.ValidationResultFile) 
+                || operation.OperationId == nameof(UploadController.GetTemplate))
+            {
+                operation.Produces = new[] { "application/octet-stream" };
+            }
+
             if (operation.OperationId == nameof(LasgController.LasgUploadFile))
             {
                 operation.Parameters.Add(new NonBodyParameter
@@ -106,13 +107,6 @@ namespace FileUploadApi
                 operation.Consumes.Add("string/form-data");
             }
 
-        }
-    }
-
-    public class AutoPayFormFileSwaggerFilter : IOperationFilter
-    {
-        public void Apply(Operation operation, OperationFilterContext context)
-        {
             if (operation.OperationId == nameof(AutoPayController.AutoPayUploadFile))
             {
                 operation.Parameters.Add(new NonBodyParameter
@@ -161,13 +155,7 @@ namespace FileUploadApi
                 operation.Consumes.Add("multipart/form-data");
                 operation.Consumes.Add("string/form-data");
             }
-        }
-    }
-
-    public class FCTIrsFormFileSwaggerFilter : IOperationFilter
-    {
-        public void Apply(Operation operation, OperationFilterContext context)
-        {
+        
             if (operation.OperationId == nameof(FCTIrsController.FCTIrsUploadFile))
             {
                 operation.Parameters.Add(new NonBodyParameter
@@ -200,6 +188,7 @@ namespace FileUploadApi
                 operation.Consumes.Add("string/form-data");
 
             }
+
         }
     }
 }
