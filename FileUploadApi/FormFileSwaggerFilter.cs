@@ -21,7 +21,8 @@ namespace FileUploadApi
 
                 operation.Consumes.Add("multipart/form-data");
             }
-            if(operation.OperationId == nameof(UploadController.PostMultiTaxPaymentUploadAsync))
+
+            if (operation.OperationId == nameof(UploadController.PostMultiTaxPaymentUploadAsync))
             {
                 operation.Parameters.Add(new NonBodyParameter
                 {
@@ -67,8 +68,13 @@ namespace FileUploadApi
                 operation.Consumes.Add("multipart/form-data");
                 operation.Consumes.Add("string/form-data");
             }
-
-            if (operation.OperationId == nameof(LasgController.UploadFile))
+        }
+    }
+    public class LasgFormFileSwaggerFilter : IOperationFilter
+    {
+        public void Apply(Operation operation, OperationFilterContext context)
+        {
+            if (operation.OperationId == nameof(LasgController.LasgUploadFile))
             {
                 operation.Parameters.Add(new NonBodyParameter
                 {
@@ -100,7 +106,14 @@ namespace FileUploadApi
                 operation.Consumes.Add("string/form-data");
             }
 
-            if (operation.OperationId == nameof(AutoPayController.UploadFile))
+        }
+    }
+
+    public class AutoPayFormFileSwaggerFilter : IOperationFilter
+    {
+        public void Apply(Operation operation, OperationFilterContext context)
+        {
+            if (operation.OperationId == nameof(AutoPayController.AutoPayUploadFile))
             {
                 operation.Parameters.Add(new NonBodyParameter
                 {
@@ -148,8 +161,14 @@ namespace FileUploadApi
                 operation.Consumes.Add("multipart/form-data");
                 operation.Consumes.Add("string/form-data");
             }
+        }
+    }
 
-            if (operation.OperationId == nameof(FCTIrsController.UploadFile))
+    public class FCTIrsFormFileSwaggerFilter : IOperationFilter
+    {
+        public void Apply(Operation operation, OperationFilterContext context)
+        {
+            if (operation.OperationId == nameof(FCTIrsController.FCTIrsUploadFile))
             {
                 operation.Parameters.Add(new NonBodyParameter
                 {
@@ -181,8 +200,6 @@ namespace FileUploadApi
                 operation.Consumes.Add("string/form-data");
 
             }
-
-          
         }
     }
 }

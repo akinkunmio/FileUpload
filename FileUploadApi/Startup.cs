@@ -140,6 +140,9 @@ namespace FileUploadApi
                 config.AddSecurityRequirement(security);
 
                 config.OperationFilter<FormFileSwaggerFilter>();
+                config.OperationFilter<LasgFormFileSwaggerFilter>();
+                config.OperationFilter<AutoPayFormFileSwaggerFilter>();
+                config.OperationFilter<FCTIrsFormFileSwaggerFilter>();
             });
            
             services.AddCors();
@@ -242,7 +245,7 @@ namespace FileUploadApi
 
         private bool PathExcludedFromAuthorization(PathString path)
         {
-            if (path.StartsWithSegments("/health") || path.StartsWithSegments("/api-docs") || path.StartsWithSegments("/swagger"))
+            if (path.StartsWithSegments("/qbupload") || path.StartsWithSegments("/api-docs") || path.StartsWithSegments("/swagger"))
                 return true;
 
             return false;
