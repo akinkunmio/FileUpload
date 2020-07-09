@@ -2,6 +2,7 @@
 using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation.Repository;
+using FileUploadAndValidation.Utils;
 using FilleUploadCore.Exceptions;
 using FilleUploadCore.FileReaders;
 using FilleUploadCore.Helpers;
@@ -18,16 +19,18 @@ namespace FileUploadApi.ApiServices
         private readonly IBatchRepository _batchRepository;
         private readonly IEnumerable<IFileReader> _fileReaders;
         private readonly IEnumerable<IFileContentValidator> _fileContentValidators;
+        private readonly ApprovalUtil _approvalUtil;
 
 
         public MultiTaxProcessor(IEnumerable<IFileReader> fileReaders,
             IEnumerable<IFileContentValidator> fileContentValidators,
-            IEnumerable<IBatchRepository> batchRepositories
+            IEnumerable<IBatchRepository> batchRepositories, ApprovalUtil approvalUtil
             )
         {
             _fileReaders = fileReaders;
             _fileContentValidators = fileContentValidators;
             _batchRepository = batchRepositories.ToArray()[1];
+            _approvalUtil = approvalUtil;
         }
 
         public async Task<ResponseResult> UploadFileAsync(FileUploadRequest request)
@@ -55,6 +58,13 @@ namespace FileUploadApi.ApiServices
                 IEnumerable<Row> rows = ExtractFileContent(request.FileExtension, contentStream);
 
                 await ValidateFileContentAsync(request, rows, uploadResult);
+
+                var totalAmount = (long)uploadResult.ValidRows.Select(p =>GenericHelpers.GetAmountFromMultiTaxRow(p)).ToList().Sum(s => s);
+                
+                var approvalResponse = await _approvalUtil.GetApprovalConfiguration(request.BusinessId, request.UserId, totalAmount);
+
+                if (!approvalResponse)
+                    throw new AppException("User is not enabled to upload a file", 400);
 
                 await _batchRepository.Save(uploadResult, request);
 

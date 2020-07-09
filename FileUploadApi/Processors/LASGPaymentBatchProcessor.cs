@@ -7,6 +7,7 @@ using FileUploadAndValidation.BillPayments;
 using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
 using FileUploadAndValidation.Repository;
+using FileUploadAndValidation.Utils;
 using FileUploadApi;
 using FileUploadApi.Processors;
 using FileUploadApi.Services;
@@ -20,14 +21,16 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
     private readonly INasRepository nasRepository;
     private readonly IDetailsDbRepository<LASGPaymentRow> dbRepository;
     private readonly IRemoteFileContentValidator<LASGPaymentRow> remoteValidator;
+    private readonly ApprovalUtil _approvalUtil;
 
     public LASGPaymentBatchProcessor(IFileContentValidator<LASGPaymentRow, LASGPaymentContext> fileContentValidator,
                                         IRemoteFileContentValidator<LASGPaymentRow> remoteValidator,
-                                        IDetailsDbRepository<LASGPaymentRow> dbRepository)
+                                        IDetailsDbRepository<LASGPaymentRow> dbRepository, ApprovalUtil approvalUtil)
     {
         _fileContentValidator = fileContentValidator;
         this.remoteValidator = remoteValidator;
         this.dbRepository = dbRepository;
+        _approvalUtil = approvalUtil;
     }
 
     public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, LASGPaymentContext context, string token = "")
@@ -42,6 +45,13 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
             var errors = localValidationResult.Failures.SelectMany(e => e.ErrorMessages);
             throw new AppException("No valid rows");
         }
+
+        var totalAmount = (long)localValidationResult.ValidRows.Select(p => p.Amount).ToList().Sum(s => s);
+
+        var approvalResponse = await _approvalUtil.GetApprovalConfiguration(context.BusinessId, context.UserId, totalAmount);
+
+        if (!approvalResponse)
+            throw new AppException("User is not enabled to upload a file", 400);
 
         var batchId = GenericHelpers.GenerateBatchId("QTB_LASG", DateTime.Now);
 

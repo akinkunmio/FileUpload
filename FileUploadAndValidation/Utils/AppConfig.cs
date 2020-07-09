@@ -19,6 +19,7 @@ namespace FileUploadAndValidation.Utils
         public string NasFolderLocation => _configuration["AppConfig:NasFolderLocation"];
 
         public string BillPaymentTransactionServiceUrl => _configuration["AppConfig:BillPaymentTransactionServiceUrl"];
+        public string ApprovalServiceUrl => _configuration["AppConfig:ApprovalServiceUrl"];
 
         public string QueuePassword => _configuration["AppConfig:QueuePassword"];
 
@@ -42,6 +43,7 @@ namespace FileUploadAndValidation.Utils
     {
         string NasFolderLocation { get; }
         string BillPaymentTransactionServiceUrl { get; }
+        string ApprovalServiceUrl { get; }
         string BillPaymentQueueName { get; }
         string QueuePassword { get; }
         string QueueUsername { get; }
