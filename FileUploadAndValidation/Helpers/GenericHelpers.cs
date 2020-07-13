@@ -465,7 +465,7 @@ namespace FileUploadAndValidation.Helpers
             return totalAmount;
         }
 
-        private static decimal GetAmountFromMultiTaxRow(RowDetail s)
+        public static decimal GetAmountFromMultiTaxRow(RowDetail s)
         {
             if (GenericConstants.Wht.Equals(s.TaxType))
                 return decimal.Parse(s.WhtAmount);

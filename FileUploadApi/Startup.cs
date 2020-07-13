@@ -56,6 +56,7 @@ namespace FileUploadApi
 
             services.AddScoped<IGenericUploadService, GenericUploadService>();
             services.AddTransient<ITokenHandlerRepository, TokenHandlerRepository>();
+            services.AddTransient<ApprovalUtil>();
             services.AddSingleton<IAppConfig, AppConfig>();
             //services.AddHttpClient<IBillPaymentService, BillPaymentHttpService>();
             //services.AddScoped<IDbRepository<BillPayment, FailedBillPayment>, BillPaymentRepository>();

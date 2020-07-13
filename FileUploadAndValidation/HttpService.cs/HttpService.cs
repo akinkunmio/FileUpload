@@ -19,15 +19,16 @@ namespace FileUploadAndValidation.UploadServices
     public class HttpService : IHttpService
     {
         private readonly HttpClient _httpClient;
+        private readonly HttpClient _approvalHttpClient;
         private readonly ILogger<HttpService> _logger;
 
         public HttpService(HttpClient httpClient, IAppConfig appConfig, ILogger<HttpService> logger)
         {
             _logger = logger;
             _httpClient = httpClient;
-
-            _httpClient = httpClient;
+            _approvalHttpClient = httpClient;
             _httpClient.BaseAddress = new Uri(appConfig.BillPaymentTransactionServiceUrl);
+            _approvalHttpClient.BaseAddress = new Uri(appConfig.ApprovalServiceUrl);
             _httpClient.DefaultRequestHeaders
                 .Accept
                 .Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -71,6 +72,43 @@ namespace FileUploadAndValidation.UploadServices
                 && (itemType.ToLower().Equals(GenericConstants.MultiTax)))
                 return GenericConstants.InitiateFirsMultitaxPaymentUrl;
             return "";
+        }
+
+        public async Task<ApprovalConfigResponseList> GetApprovalConfiguration(long? businessId)
+        {
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/approval/configs/{businessId}");
+                request.Headers.Authorization = new AuthenticationHeaderValue(GenericConstants.ApprovalEngineAuthCode);
+
+                var response = await _approvalHttpClient.SendAsync(request);
+                var responseResult = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    int statusCode = 400;
+                    var error = JsonConvert.DeserializeObject<ApprovalConfigError>(responseResult);
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
+                        statusCode = 401;
+                    else
+                        statusCode = 400;
+
+                    throw new AppException(error.responseDescription, statusCode);
+                }
+                var config = JsonConvert.DeserializeObject<ApprovalConfigResponseList>(responseResult);
+                return config;
+            }
+            catch (AppException ex)
+            {
+                _logger.LogError($"Error while fetching approval configuration {ex.Message} | {ex.StackTrace}");
+                throw new AppException(ex.Message, ex.StatusCode); ;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"unable to fetch approval configuration {ex.Message} | {ex.StackTrace}");
+                throw new AppException("An unexpected error occured.Please try again later.", 400);
+            }
+            
         }
 
         public async Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty = true)
@@ -294,6 +332,7 @@ namespace FileUploadAndValidation.UploadServices
         Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty = true);
 
         Task<ConfirmedBillResponse> InitiatePayment(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
+        Task<ApprovalConfigResponseList> GetApprovalConfiguration(long? businessId);
     }
 
     public class ConfirmedBillResponse

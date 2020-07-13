@@ -11,6 +11,7 @@ using FileUploadAndValidation;
 using FileUploadApi.Processors;
 using FileUploadAndValidation.BillPayments;
 using FileUploadAndValidation.Utils;
+using FileUploadAndValidation.UploadServices;
 
 namespace FileUploadApi.Controllers
 {    
@@ -44,6 +45,9 @@ namespace FileUploadApi.Controllers
                 request.ProductCode = productCode;
                 request.ProductName = productCode;
 
+                if (request.BusinessId == null || request.BusinessId < 1)
+                    throw new AppException("Invalid BusinessId", "Invalid BusinessId");
+
                 IEnumerable<Row> rows = new List<Row>();
                 IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");
 
@@ -61,7 +65,8 @@ namespace FileUploadApi.Controllers
                 var context = new ManualCustomerCaptureContext
                 {
                     Configuration = GetFCTIRSConfiguration(),
-                    UserId = request.UserId ?? 0
+                    UserId = request.UserId ?? 0,
+                    BusinessId = request.BusinessId ?? 0
                 };
 
                 var uploadResult = await _batchProcessor.UploadAsync(rows, context, HttpContext.Request.Headers["Authorization"]);
