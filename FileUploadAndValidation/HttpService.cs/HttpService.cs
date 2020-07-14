@@ -26,7 +26,7 @@ namespace FileUploadAndValidation.UploadServices
         {
             _logger = logger;
             _httpClient = httpClient;
-            _approvalHttpClient = httpClient;
+            _approvalHttpClient = new HttpClient();
             _httpClient.BaseAddress = new Uri(appConfig.BillPaymentTransactionServiceUrl);
             _approvalHttpClient.BaseAddress = new Uri(appConfig.ApprovalServiceUrl);
             _httpClient.DefaultRequestHeaders
