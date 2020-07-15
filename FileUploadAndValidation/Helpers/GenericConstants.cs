@@ -8,7 +8,7 @@ namespace FileUploadAndValidation.Helpers
     {
         public const string PendingValidation = "Pending Validation";
         public const string AwaitingInitiation = "Awaiting Initiation";
-        public const string AwaitingApproval = "Payment Initiated";
+        public const string PaymentInitiated = "Payment Initiated";
         public const string NoValidRecord = "No Valid Record";
 
         public const string BillPaymentIdPlusItem = "billpaymentid+item";

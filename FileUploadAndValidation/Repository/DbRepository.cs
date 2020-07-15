@@ -871,7 +871,7 @@ namespace FileUploadAndValidation.Repository
                         param: new
                         {
                             batch_id = fileSummary.BatchId,
-                            status = GenericConstants.AwaitingApproval,
+                            status = GenericConstants.PaymentInitiated,
                             modified_date = DateTime.Now.ToString(),
                         },
                         commandType: CommandType.StoredProcedure);
