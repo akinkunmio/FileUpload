@@ -111,7 +111,7 @@ namespace FileUploadAndValidation.UploadServices
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occured while making http request to validate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError("Error occured while trying to make http request to validate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 //return new ValidationResponse
                 //{
                 //    ResponseCode = "90000",
@@ -122,7 +122,7 @@ namespace FileUploadAndValidation.UploadServices
                 //        ResultMode = "Queue"
                 //    }
                 //};
-                throw new AppException("An error occured while performing validation. Please, retry validating the file after some time!.", 400);
+                throw new AppException("An error occured. Please, retry!.", 400);
             }
         }
 
@@ -197,10 +197,10 @@ namespace FileUploadAndValidation.UploadServices
                 )
                 result = JsonConvert.SerializeObject(new
                 {
-                    BusinessId = initiatePaymentOptions.BusinessId,
-                    UserId = initiatePaymentOptions.UserId,
-                    ApprovalConfigId = initiatePaymentOptions.ApprovalConfigId,
-                    UserName = initiatePaymentOptions.UserName,
+                    initiatePaymentOptions.BusinessId,
+                    initiatePaymentOptions.UserId,
+                    initiatePaymentOptions.ApprovalConfigId,
+                    initiatePaymentOptions.UserName,
                     DataStore = 1,
                     DataStoreUrl = fileProperty.Url
                 });

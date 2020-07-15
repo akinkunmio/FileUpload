@@ -140,9 +140,6 @@ namespace FileUploadApi
                 config.AddSecurityRequirement(security);
 
                 config.OperationFilter<FormFileSwaggerFilter>();
-                config.OperationFilter<LasgFormFileSwaggerFilter>();
-                config.OperationFilter<AutoPayFormFileSwaggerFilter>();
-                config.OperationFilter<FCTIrsFormFileSwaggerFilter>();
             });
            
             services.AddCors();
