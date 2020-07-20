@@ -872,10 +872,9 @@ namespace FileUploadAndValidation.Repository
                         {
                             batch_id = fileSummary.BatchId,
                             status = GenericConstants.PaymentInitiated,
-                            modified_date = DateTime.Now.ToString(),
+                            modified_date = DateTime.Now.ToString()
                         },
                         commandType: CommandType.StoredProcedure);
-
                 }
                 catch (AppException ex)
                 {
@@ -888,6 +887,5 @@ namespace FileUploadAndValidation.Repository
                 }
             }
         }
-
     }
 }
