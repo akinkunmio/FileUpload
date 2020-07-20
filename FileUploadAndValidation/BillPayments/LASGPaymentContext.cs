@@ -10,6 +10,7 @@ namespace FileUploadAndValidation.BillPayments
             ProductName = "Lagos State Collections";
         }
         public long UserId { get; set; }
+        public long BusinessId { get; set; }
         public string ProductCode { get; set; }
         public string ProductName { get; set; }
     }

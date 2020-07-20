@@ -22,15 +22,17 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
     private readonly IDetailsDbRepository<ManualCaptureRow> dbRepository;
     private readonly IRemoteFileContentValidator<ManualCaptureRow> remoteValidator;
     private readonly IAppConfig _appConfig;
+    private readonly ApprovalUtil _approvalUtil;
 
     public ManualCustomerCaptureBatchProcessor(IFileContentValidator<ManualCaptureRow, ManualCustomerCaptureContext> fileContentValidator,
                                         IRemoteFileContentValidator<ManualCaptureRow> remoteValidator, IAppConfig appConfig,
-                                        IDetailsDbRepository<ManualCaptureRow> dbRepository)
+                                        IDetailsDbRepository<ManualCaptureRow> dbRepository, ApprovalUtil approvalUtil)
     {
         _fileContentValidator = fileContentValidator;
         this.remoteValidator = remoteValidator;
         this.dbRepository = dbRepository;
         _appConfig = appConfig;
+        _approvalUtil = approvalUtil;
     }
 
     public async Task<BatchFileSummary> UploadAsync(IEnumerable<Row> rows, ManualCustomerCaptureContext context, string clientToken)
@@ -44,6 +46,13 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             var errors = localValidationResult.Failures.SelectMany(e => e.ErrorMessages);
             throw new AppException("No valid rows");
         }
+        var totalAmount = (long)localValidationResult.ValidRows.Select(p => p.Amount).ToList().Sum(s => s);
+        
+        var approvalResponse = await _approvalUtil.GetApprovalConfiguration(context.BusinessId, context.UserId, totalAmount);
+
+        if (!approvalResponse)
+            throw new AppException("User is not enabled to upload a file", 400);
+
 
         var batchId = GenericHelpers.GenerateBatchId("QTB_FCTIRS", DateTime.Now);
 

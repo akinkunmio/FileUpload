@@ -42,9 +42,13 @@ namespace FileUploadApi.Controllers
                 // var productCode = "LASG";
                 var request = FileUploadRequest.FromRequestForFCTIRS(Request);
                 
+                if (request.BusinessId == null || request.BusinessId < 1)
+                    throw new AppException("Invalid BusinessId", "Invalid BusinessId");
+
                 var context = new LASGPaymentContext(_appConfig)
                 {
-                    UserId = request.UserId.Value
+                    UserId = request.UserId.Value,
+                    BusinessId = request.BusinessId.Value
                 };
 
                 IFileReader fileContentReader = _fileReaders.FirstOrDefault(r => r.CanRead(request.FileExtension)) ?? throw new AppException("File extension not supported!.");

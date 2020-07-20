@@ -6,6 +6,9 @@ namespace FileUploadAndValidation.Helpers
 {
     public static class GenericConstants
     {
+        private const string _approvalEngineAuthCode = "12345";
+        public static string ApprovalEngineAuthCode => _approvalEngineAuthCode;
+
         public const string PendingValidation = "Pending Validation";
         public const string AwaitingInitiation = "Awaiting Initiation";
         public const string PaymentInitiated = "Payment Initiated";
