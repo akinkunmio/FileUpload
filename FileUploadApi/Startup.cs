@@ -243,7 +243,9 @@ namespace FileUploadApi
 
         private bool PathExcludedFromAuthorization(PathString path)
         {
-            if (path.StartsWithSegments("/health") || path.StartsWithSegments("/api-docs") || path.StartsWithSegments("/swagger"))
+            if (path.StartsWithSegments("/health") 
+                || path.StartsWithSegments("/api-docs") 
+                || path.StartsWithSegments("/swagger"))
                 return true;
 
             return false;
