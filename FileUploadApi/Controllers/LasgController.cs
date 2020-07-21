@@ -35,7 +35,7 @@ namespace FileUploadApi.Controllers
 
 
         [HttpPost("file")]
-        public async Task<IActionResult> LasgUploadFile()
+        public async Task<IActionResult> UploadFile()
         {
             try
             {

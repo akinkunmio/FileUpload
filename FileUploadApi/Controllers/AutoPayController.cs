@@ -30,7 +30,7 @@ namespace FileUploadApi.Controllers
         }
 
         [HttpPost("file")]
-        public async Task<IActionResult> AutoPayUploadFile()
+        public async Task<IActionResult> UploadFile()
         {
             try
             {

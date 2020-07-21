@@ -36,7 +36,7 @@ namespace FileUploadApi.Controllers
 
 
         [HttpPost("file")]
-        public async Task<IActionResult> FCTIrsUploadFile()
+        public async Task<IActionResult> UploadFile()
         {
             try
             {

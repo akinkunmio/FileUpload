@@ -26,7 +26,6 @@ namespace FileUploadApi.Controllers
         private readonly IGenericUploadService _genericUploadService;
         private readonly IBatchProcessor _batchProcessor;
         private readonly ILogger<UploadController> _logger;
-        private readonly IEnumerable<IFileReader> _fileReaders;
 
 
         public UploadController(IBatchProcessor batchProcessor,
