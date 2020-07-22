@@ -67,8 +67,8 @@ namespace FileUploadAndValidation.QueueServices
 
                 var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
                     
-                var validationResult = await _dbRepository.GetPaymentRowStatuses(batchId, new PaginationFilter(validationStatuses.Count(), 1));
-
+                var validationResult = await _dbRepository.GetPaymentRowStatuses(batchId, new PaginationFilter(fileSummary.NumOfRecords, 1));
+                validationResult = validationResult.OrderBy(v => v.RowNum);
                 var fileName = await _nasRepository.SaveValidationResultFile(batchId, fileSummary.ItemType, fileSummary.ContentType, validationResult);
 
                 await _dbRepository.UpdateUploadSuccess(batchId, fileName);
