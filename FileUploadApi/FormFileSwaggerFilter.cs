@@ -8,6 +8,11 @@ namespace FileUploadApi
     {
         public void Apply(Operation operation, OperationFilterContext context)
         {
+            var controller = context.MethodInfo.DeclaringType.FullName;
+            var isLASGController = controller.EndsWith(nameof(LasgController));
+            var isFCTIRSController = controller.EndsWith(nameof(FCTIrsController));
+            var isAutoPayController = controller.EndsWith(nameof(AutoPayController));
+
             if (operation.OperationId == nameof(UploadController.PostBulkUploadPaymentAsync))
             {
                 operation.Parameters.Add(new NonBodyParameter
@@ -75,7 +80,7 @@ namespace FileUploadApi
                 operation.Produces = new[] { "application/octet-stream" };
             }
 
-            if (operation.OperationId == nameof(LasgController.LasgUploadFile))
+            if (operation.OperationId == nameof(LasgController.UploadFile) && isLASGController)
             {
                 operation.Parameters.Add(new NonBodyParameter
                 {
@@ -107,7 +112,7 @@ namespace FileUploadApi
                 operation.Consumes.Add("string/form-data");
             }
 
-            if (operation.OperationId == nameof(AutoPayController.AutoPayUploadFile))
+            if (operation.OperationId == nameof(AutoPayController.UploadFile) && isAutoPayController)
             {
                 operation.Parameters.Add(new NonBodyParameter
                 {
@@ -156,7 +161,7 @@ namespace FileUploadApi
                 operation.Consumes.Add("string/form-data");
             }
         
-            if (operation.OperationId == nameof(FCTIrsController.FCTIrsUploadFile))
+            if (operation.OperationId == nameof(FCTIrsController.UploadFile) && isFCTIRSController)
             {
                 operation.Parameters.Add(new NonBodyParameter
                 {
@@ -188,7 +193,6 @@ namespace FileUploadApi
                 operation.Consumes.Add("string/form-data");
 
             }
-
-        }
+        }        
     }
 }
