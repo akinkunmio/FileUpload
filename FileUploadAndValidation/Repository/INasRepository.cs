@@ -260,7 +260,7 @@ namespace FileUploadAndValidation.Repository
                     .Select(s => new
                     {
                         Row = s.RowNum,
-                        s.ErrorDescription,
+                        ErrorDescription = s.Error,
                         Status = s.RowStatus,
                         s.Amount,
                         s.CustomerId,
@@ -276,7 +276,7 @@ namespace FileUploadAndValidation.Repository
                     .Select(r => new 
                     {
                         Row = r.RowNum,
-                        r.ErrorDescription,
+                        ErrorDescription = r.Error,
                         Status = r.RowStatus,
                         BeneficiaryTin = r.BeneficiaryTin,
                         BeneficiaryName = r.BeneficiaryName,
@@ -299,7 +299,7 @@ namespace FileUploadAndValidation.Repository
                     .Select(r => new 
                     {
                         Row = r.RowNum,
-                        r.ErrorDescription,
+                        ErrorDescription = r.Error,
                         Status = r.RowStatus,
                         ContractorName = r.ContractorName,
                         ContractorAddress = r.ContractorAddress,
@@ -324,7 +324,7 @@ namespace FileUploadAndValidation.Repository
                 result = rowDetails.Select(r => new 
                 { 
                     Row = r.RowNum,
-                    r.ErrorDescription,
+                    ErrorDescription = r.Error,
                     Status = r.RowStatus,
                     r.BeneficiaryTin,
                     r.BeneficiaryName,
@@ -353,7 +353,7 @@ namespace FileUploadAndValidation.Repository
                     Row = r.RowNum,
                     r.ItemCode,
                     r.ProductCode,
-                    r.ErrorDescription,
+                    ErrorDescription = r.Error,
                     Status = r.RowStatus,
                     r.Amount,
                     r.CustomerId,
@@ -372,7 +372,7 @@ namespace FileUploadAndValidation.Repository
                     Row = r.RowNum,
                     r.ItemCode,
                     r.ProductCode,
-                    r.ErrorDescription,
+                    ErrorDescription = r.Error,
                     Status = r.RowStatus,
                     r.CustomerId,
                     r.Amount
