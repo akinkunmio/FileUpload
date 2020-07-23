@@ -70,6 +70,14 @@ namespace FileUploadApi
                     Type = "string"
                 });
 
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "businessId",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+
                 operation.Consumes.Add("multipart/form-data");
                 operation.Consumes.Add("string/form-data");
             }
@@ -102,6 +110,14 @@ namespace FileUploadApi
                 operation.Parameters.Add(new NonBodyParameter
                 {
                     Name = "id",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "businessId",
                     In = "formData",
                     Required = true,
                     Type = "string"
@@ -155,6 +171,13 @@ namespace FileUploadApi
                     Type = "string"
                 });
 
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "businessId",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
 
                 operation.Consumes.Add("string/header");
                 operation.Consumes.Add("multipart/form-data");
@@ -183,6 +206,14 @@ namespace FileUploadApi
                 operation.Parameters.Add(new NonBodyParameter
                 {
                     Name = "id",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "businessId",
                     In = "formData",
                     Required = true,
                     Type = "string"

@@ -73,7 +73,7 @@ namespace FileUploadAndValidation.Models
             var businessId = request.Form["businessId"].ToString();
 
             bool success = long.TryParse(userId, out long number);
-            bool isBusinessValid = long.TryParse(userId, out long businessNumber);
+            bool isBusinessValid = long.TryParse(businessId, out long businessNumber);
 
             if (!success)
             {
