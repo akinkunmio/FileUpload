@@ -278,7 +278,7 @@ namespace FileUploadAndValidation.Repository
                                             created_date = payment.CreatedDate,
                                             row_num = payment.RowNum,
                                             transactions_summary_Id = transactionSummaryId,
-                                            row_status = string.IsNullOrWhiteSpace(payment.ErrorDescription) ? "Invalid" : "",
+                                            row_status = string.IsNullOrWhiteSpace(payment.ErrorDescription) ? "" : "Invalid",
                                             initial_validation_status = string.IsNullOrWhiteSpace(payment.ErrorDescription) ? "Valid" : "Invalid",
                                             error = payment.ErrorDescription ?? ""
                                         },
