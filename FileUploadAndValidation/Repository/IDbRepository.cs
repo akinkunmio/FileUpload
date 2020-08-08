@@ -24,5 +24,6 @@ namespace FileUploadApi
         Task UpdateUploadSuccess(string batchId, string userValidationFileName);
 
         Task<PagedData<BatchFileSummary>> GetUploadSummariesByUserId(string userId, SummaryPaginationFilter paginationFilter);
+       
     }
 }

@@ -28,6 +28,27 @@ END
 GO
 go
 
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_lirs_multi_tax_transactions_detail'
+AND COLUMN_NAME = 'surcharge')
+BEGIN
+	ALTER TABLE tbl_lirs_multi_tax_transactions_detail ADD [surcharge] decimal default(0)
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_lirs_multi_tax_transactions_detail'
+AND COLUMN_NAME = 'transaction_convenience_fee')
+BEGIN
+	ALTER TABLE tbl_lirs_multi_tax_transactions_detail ADD [transaction_convenience_fee] decimal default(0)
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_lirs_multi_tax_transactions_detail'
+AND COLUMN_NAME = 'batch_convenience_fee')
+BEGIN
+	ALTER TABLE tbl_lirs_multi_tax_transactions_detail ADD [batch_convenience_fee] decimal default(0)
+END
+GO
+
 if OBJECT_ID('sp_update_lasg_multitax_payments_detail') IS NOT NULL
 begin
     DROP PROCEDURE sp_update_lasg_multitax_payments_detail

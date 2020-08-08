@@ -25,6 +25,10 @@ namespace FileUploadAndValidation.Models
         public string Error { get; set; }
         public string ExtraData { get; set;}
         public string WebGuid { get; set;}
+        public string CustomerName { get; set;}
+        public decimal Surcharge { get; set;}
+        public decimal TransactionConvenienceFee { get; set;}
+        public decimal BatchConvenienceFee { get; set;}
     }
 
     public class FileProperty
