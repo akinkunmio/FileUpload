@@ -18,7 +18,7 @@
     <None Remove="Scripts\1596901345_manualcapture.sql" />
     <None Remove="Scripts\1596901364_lasg_lirs_tables_procs.sql" />
     <None Remove="Scripts\1596901388_lasg_getbatchSummary.sql" />
-    <None Remove="Scripts\1596901407_validation_data_update_procedures.sql" />
+    <None Remove="Scripts\1596901409_validation_data_update_procedures.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,7 +26,7 @@
     <EmbeddedResource Include="Scripts\1596901364_lasg_lirs_tables_procs.sql" />
     <EmbeddedResource Include="Scripts\1596901345_manualcapture.sql" />
     <EmbeddedResource Include="Scripts\1596901388_lasg_getbatchSummary.sql" />
-    <EmbeddedResource Include="Scripts\1596901407_validation_data_update_procedures.sql" />
+    <EmbeddedResource Include="Scripts\1596901409_validation_data_update_procedures.sql" />
   </ItemGroup>
 
   <ItemGroup>

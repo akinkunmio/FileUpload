@@ -120,11 +120,14 @@ CREATE PROCEDURE [dbo].[sp_update_firs_multitax_payments_detail]
 @error NVARCHAR (Max),
 @row_num INT,
 @surcharge decimal,
+@batchFee decimal,
+@transactionFee decimal,
 @customerName varchar(250),
 @row_status NVARCHAR (50)
 AS
 	UPDATE tbl_firs_multi_tax_transactions_detail 
-	SET error=@error, row_status=@row_status, payer_name = @customerName
+	SET error=@error, row_status=@row_status, payer_name = @customerName, batch_convenience_fee=@batchFee, 
+	transaction_convenience_fee  = @transactionFee
 	WHERE transactions_summary_id=@transactions_summary_id and row_num=@row_num;
 GO
 
