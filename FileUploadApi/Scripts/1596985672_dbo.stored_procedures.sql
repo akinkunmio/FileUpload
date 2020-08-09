@@ -487,6 +487,8 @@ AS
 							tax_type,
 							payer_tin,
 							payer_name,
+							batch_convenience_fee,
+							transaction_convenience_fee,
 							error,
 							row_status,
 							row_num,
@@ -520,6 +522,8 @@ AS
 							tax_type,
 							payer_tin,
 							payer_name,
+							batch_convenience_fee,
+							transaction_convenience_fee,
 							error,
 							row_status,
 							row_num,
@@ -557,6 +561,8 @@ AS
 					tax_type,
 					payer_tin,
 					payer_name,
+					batch_convenience_fee,
+					transaction_convenience_fee,
 					error,
 					row_status,
 					row_num
@@ -589,6 +595,8 @@ AS
 							tax_type,
 							payer_tin,
 							payer_name,
+							batch_convenience_fee,
+							transaction_convenience_fee,
 							error,
 							row_status,
 							row_num,
@@ -622,6 +630,8 @@ AS
 							tax_type,
 							payer_tin,
 							payer_name,
+							batch_convenience_fee,
+							transaction_convenience_fee,
 							error,
 							row_status,
 							row_num,
@@ -823,7 +833,7 @@ AS
 		begin
 			if(@status = 1)
 				begin
-					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num],[surcharge],[customer_name]
+					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num],[surcharge],[customer_name],[batch_convenience_fee],[transaction_convenience_fee]
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
 						  FROM      tbl_bill_payment_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Valid'
@@ -834,7 +844,7 @@ AS
 				end
 			else
 				begin
-					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num], [surcharge],[customer_name]
+					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num], [surcharge],[customer_name], [batch_convenience_fee],[transaction_convenience_fee]
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
 						  FROM      tbl_bill_payment_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Invalid'

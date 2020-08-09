@@ -14,19 +14,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Scripts\1596901147_dbo.stored_procedures.sql" />
-    <None Remove="Scripts\1596901345_manualcapture.sql" />
-    <None Remove="Scripts\1596901364_lasg_lirs_tables_procs.sql" />
-    <None Remove="Scripts\1596901388_lasg_getbatchSummary.sql" />
-    <None Remove="Scripts\1596901409_validation_data_update_procedures.sql" />
+    <None Remove="Scripts\1596985672_dbo.stored_procedures.sql" />
+    <None Remove="Scripts\1596985731_manualcapture.sql" />
+    <None Remove="Scripts\1596985737_lasg_lirs_tables_procs.sql" />
+    <None Remove="Scripts\1596985814_lasg_getbatchSummary.sql" />
+    <None Remove="Scripts\1596985822_validation_data_update_procedures.sql" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\1596901147_dbo.stored_procedures.sql" />
-    <EmbeddedResource Include="Scripts\1596901364_lasg_lirs_tables_procs.sql" />
-    <EmbeddedResource Include="Scripts\1596901345_manualcapture.sql" />
-    <EmbeddedResource Include="Scripts\1596901388_lasg_getbatchSummary.sql" />
-    <EmbeddedResource Include="Scripts\1596901409_validation_data_update_procedures.sql" />
+    <EmbeddedResource Include="Scripts\1596985672_dbo.stored_procedures.sql" />
+    <EmbeddedResource Include="Scripts\1596985737_lasg_lirs_tables_procs.sql" />
+    <EmbeddedResource Include="Scripts\1596985731_manualcapture.sql" />
+    <EmbeddedResource Include="Scripts\1596985814_lasg_getbatchSummary.sql" />
+    <EmbeddedResource Include="Scripts\1596985822_validation_data_update_procedures.sql" />
   </ItemGroup>
 
   <ItemGroup>
