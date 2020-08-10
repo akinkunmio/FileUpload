@@ -720,9 +720,26 @@ namespace FileUploadAndValidation.Repository
                                 RowValidationStatus status = updatePayments.RowStatuses.First();
                                 await connection.ExecuteAsync(
                                         sql: GetSPToUpdateEnterpriseError(fileSummary.ItemType, fileSummary.ContentType) /*"sp_update_payments_detail_enterprise_error"*/,
-                                        param: new
+                                        param:
+                                            fileSummary.ContentType == GenericConstants.Lasg ?
+                                        (object) new
                                         {
                                             transactions_summary_id = summaryId,
+                                            surcharge = status.Surcharge,
+                                            customerName = status.CustomerName,
+                                            batchFee = status.BatchConvenienceFee,
+                                            transactionFee = status.TransactionConvenienceFee,
+                                            error = status.Error,
+                                            row_status = status.Status,
+                                            webguid = status.WebGuid
+                                        } : 
+                                        new
+                                        {
+                                            transactions_summary_id = summaryId,
+                                            surcharge = status.Surcharge,
+                                            customerName = status.CustomerName,
+                                            batchFee = status.BatchConvenienceFee,
+                                            transactionFee = status.TransactionConvenienceFee,
                                             error = status.Error,
                                             row_status = status.Status
                                         },
@@ -742,6 +759,10 @@ namespace FileUploadAndValidation.Repository
                                                     transactions_summary_id = summaryId,
                                                     error = status.Error,
                                                     row_num = status.Row,
+                                                    surcharge = status.Surcharge,
+                                                    batchFee = status.BatchConvenienceFee,
+                                                    transactionFee = status.TransactionConvenienceFee,
+                                                    customerName = status.CustomerName,
                                                     row_status = status.Status,
                                                     webguid = status.WebGuid
                                                 } :
@@ -750,6 +771,10 @@ namespace FileUploadAndValidation.Repository
                                                     transactions_summary_id = summaryId,
                                                     error = status.Error,
                                                     row_num = status.Row,
+                                                    surcharge = status.Surcharge,
+                                                    customerName = status.CustomerName,
+                                                    batchFee = status.BatchConvenienceFee,
+                                                    transactionFee = status.TransactionConvenienceFee,
                                                     row_status = status.Status
                                                 },
                                         commandType: CommandType.StoredProcedure,
@@ -798,11 +823,6 @@ namespace FileUploadAndValidation.Repository
                  && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_update_firs_multitax_payments_detail";
-            }
-            else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
-                 && contentType.ToLower().Equals(GenericConstants.Firs))
-            {
-                return @"sp_update_fctirs_multitax_payments_detail";
             }
             else if (itemType.ToLower().Equals(GenericConstants.ManualCapture)
                  && contentType.ToLower().Equals(GenericConstants.ManualCapture))

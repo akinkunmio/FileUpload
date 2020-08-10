@@ -26,7 +26,7 @@ namespace FileUploadAndValidation.Models
         public string Error { get; set; }
 
         public decimal ValidAmountTotal { get; set; }
-
+        
         public string Status { get; set; }
 
         public string ContentType { get; set; }
