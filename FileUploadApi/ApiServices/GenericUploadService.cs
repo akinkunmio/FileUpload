@@ -113,9 +113,13 @@ namespace FileUploadApi.ApiServices
                 }
 
                 var paymentStatus = await _dbRepository.GetPaymentRowStatuses(batchId, pagination);
+                var valid = paymentStatus.Where(x => x.RowStatus == "Valid").FirstOrDefault();
+
+                var convenienceFee = valid.BatchConvenienceFee == 0 ? paymentStatus.Select(s => s.TransactionConvenienceFee).Sum() : valid.BatchConvenienceFee;
 
                 paymentStatuses.TotalRowsCount = fileSummary.NumOfRecords;
                 paymentStatuses.TotalAmountSum = fileSummary.ValidAmountSum;
+                paymentStatuses.ConvenienceFee = convenienceFee;
                 paymentStatuses.ProductCode = fileSummary.ProductCode;
                 paymentStatuses.ProductName = fileSummary.ProductName;
                 paymentStatuses.ItemType = fileSummary.ItemType;

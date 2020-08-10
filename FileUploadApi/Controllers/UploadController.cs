@@ -151,6 +151,7 @@ namespace FileUploadApi.Controllers
                 var result = await _genericUploadService.GetPaymentsStatus(batchId, paginationFilter, auth);
 
                 response.Data = result.Data;
+                response.ConvenienceFee = result.ConvenienceFee;
                 response.TotalCount = result.TotalRowsCount;
                 response.ValidAmountTotal = result.TotalAmountSum;
                 response.ProductName = result.ProductName;
