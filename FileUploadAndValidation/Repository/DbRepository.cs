@@ -696,7 +696,10 @@ namespace FileUploadAndValidation.Repository
                         .Equals("valid"));
 
                     decimal totalAmount = GenericHelpers.GetAmountSum(fileSummary.ContentType, fileSummary.ItemType, rowsStatus, valids);
-                    
+                    decimal convenienceFee = 0;
+                    if (valids.ToList().Count > 0)
+                        convenienceFee = valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee;
+
                     using (var sqlTransaction = connection.BeginTransaction())
                     {
                         try
@@ -710,7 +713,8 @@ namespace FileUploadAndValidation.Repository
                                     status = updatePayments.Status,
                                     modified_date = updatePayments.ModifiedDate,
                                     nas_tovalidate_file = updatePayments.NasToValidateFile,
-                                    valid_amount_sum = totalAmount
+                                    valid_amount_sum = totalAmount,
+                                    convenienceFee
                                 },
                             commandType: CommandType.StoredProcedure,
                             transaction: sqlTransaction); 

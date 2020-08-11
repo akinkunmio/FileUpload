@@ -445,37 +445,40 @@ namespace FileUploadAndValidation.Helpers
         {
             decimal totalAmount = 0;
 
-            if (contentType.ToLower().Equals(GenericConstants.BillPayment) 
+            if  (valids.ToList().Count > 0)
+            {
+                if (contentType.ToLower().Equals(GenericConstants.BillPayment)
                 && (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
                 || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
-                totalAmount = (
-                    (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.Amount)).Sum()) 
-                    + (valids.Select(s => s.Surcharge).Sum())
-                    + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
+                    totalAmount = (
+                        (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.Amount)).Sum())
+                        + (valids.Select(s => s.Surcharge).Sum())
+                        + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
+                        );
+
+                if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+                    && contentType.ToLower().Equals(GenericConstants.Firs))
+                    totalAmount = (
+                        (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => GetAmountFromMultiTaxRow(s)).Sum())
+                        + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
+                        );
+
+                if (contentType.ToLower().Equals(GenericConstants.ManualCapture)
+                    && itemType.ToLower().Equals(GenericConstants.ManualCapture))
+                    totalAmount = (
+                        (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.Amount)).Sum())
+                        + (valids.Select(s => s.Surcharge).Sum())
+                        + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
                     );
 
-            if (itemType.ToLower().Equals(GenericConstants.MultiTax)
-                && contentType.ToLower().Equals(GenericConstants.Firs))
-                totalAmount = (
-                    (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => GetAmountFromMultiTaxRow(s)).Sum())
-                    + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
+                if (contentType.ToLower().Equals(GenericConstants.Lasg)
+                    && itemType.ToLower().Equals(GenericConstants.Lasg))
+                    totalAmount = (
+                        (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.Amount)).Sum())
+                        + (valids.Select(s => s.Surcharge).Sum())
+                        + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
                     );
-
-            if (contentType.ToLower().Equals(GenericConstants.ManualCapture)
-                && itemType.ToLower().Equals(GenericConstants.ManualCapture))
-                totalAmount = (
-                    (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.Amount)).Sum())
-                    + (valids.Select(s => s.Surcharge).Sum())
-                    + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
-                );
-
-            if (contentType.ToLower().Equals(GenericConstants.Lasg)
-                && itemType.ToLower().Equals(GenericConstants.Lasg))
-                totalAmount = (
-                    (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.Amount)).Sum())
-                    + (valids.Select(s => s.Surcharge).Sum())
-                    + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
-                );
+            }
 
             return totalAmount;
         }

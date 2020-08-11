@@ -190,6 +190,14 @@ PRIMARY KEY CLUSTERED
 end
 GO
 
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_transactions_summary'
+AND COLUMN_NAME = 'convenience_fee')
+BEGIN
+	ALTER TABLE tbl_transactions_summary ADD [convenience_fee] decimal default(0)
+END
+GO
+
+
 IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_firs_multi_tax_transactions_detail'
 AND COLUMN_NAME = 'payer_name')
 BEGIN
@@ -1542,10 +1550,12 @@ CREATE PROCEDURE [dbo].[sp_update_bill_payment_upload_summary]
 @status NVARCHAR (50),
 @modified_date NVARCHAR (50),
 @nas_tovalidate_file NVARCHAR(MAX),
-@valid_amount_sum  NVARCHAR (50)
+@valid_amount_sum  NVARCHAR (50),
+@convenienceFee  decimal
 AS
 	UPDATE tbl_transactions_summary 
-	SET num_of_valid_records=@num_of_valid_records, transaction_status=@status, modified_date=@modified_date, nas_tovalidate_file=@nas_tovalidate_file, valid_amount_sum=@valid_amount_sum
+	SET num_of_valid_records=@num_of_valid_records, transaction_status=@status, modified_date=@modified_date, nas_tovalidate_file=@nas_tovalidate_file, 
+	valid_amount_sum=@valid_amount_sum, convenience_fee = @convenienceFee
 	OUTPUT INSERTED.Id
 	WHERE batch_id=@batch_id;
 GO
