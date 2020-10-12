@@ -37,6 +37,9 @@ namespace FileUploadAndValidation.Repository
                 var fileName = batchId + "_validate.json";
                 var path = fileLocation + fileName;
 
+                if (!Directory.Exists(fileLocation))
+                    Directory.CreateDirectory(fileLocation);
+
                 string jsonString = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails));
 
                 await File.WriteAllTextAsync(path, jsonString);
@@ -59,9 +62,7 @@ namespace FileUploadAndValidation.Repository
                 //};
                 throw new AppException($"An error occured while saving file for validation", 400);
             }
-        }
-
-      
+        }  
 
         public async Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
         {
@@ -70,6 +71,9 @@ namespace FileUploadAndValidation.Repository
                 //var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
                 var fileLocation = @"../data/confirmed/";
                 var fileName = batchId + "_confirmed.json";
+
+                if (!Directory.Exists(fileLocation))
+                    Directory.CreateDirectory(fileLocation);
 
                 string json = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails));
 
@@ -100,6 +104,9 @@ namespace FileUploadAndValidation.Repository
             var fileName = batchId + "_raw." + extension;
 
             //var path = fileLocation + fileName;
+            if (!Directory.Exists(fileLocation))
+                Directory.CreateDirectory(fileLocation);
+
 
             string path = Path.Combine(fileLocation + fileName);
 
@@ -128,7 +135,6 @@ namespace FileUploadAndValidation.Repository
             //var path = location + queueMessage.ResultLocation;
 
             var path = Path.Combine(location, queueMessage.ResultLocation);
-
 
             try
             {
@@ -190,6 +196,7 @@ namespace FileUploadAndValidation.Repository
             var location = @"../data/uservalidationresult/";
             var path = Path.Combine(location, fileName);
 
+
             try
             {
                 if (File.Exists(path))
@@ -222,6 +229,9 @@ namespace FileUploadAndValidation.Repository
             var fileName = batchId + "_validationresult.csv";
 
             var path = Path.Combine(location, fileName);
+
+            if (!Directory.Exists(location))
+                Directory.CreateDirectory(location);
 
             try
             {
