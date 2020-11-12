@@ -21,7 +21,7 @@ namespace FileUploadAndValidation
             };
         }
 
-        public Task<ValidationResult<AutoPayRow>> Validate(string requestIdentifier, IEnumerable<AutoPayRow> validRows, string clientToken = "")
+        public Task<ValidationResult<AutoPayRow>> Validate(string requestIdentifier, IEnumerable<AutoPayRow> validRows, long businessId = 0, string clientToken = "")
         {
             throw new System.NotImplementedException();
         }

@@ -50,6 +50,7 @@ namespace FileUploadAndValidation.Repository
                                    upload_date = fileDetail.UploadDate,
                                    content_type = fileDetail.ContentType,
                                    userid = fileDetail.UserId,
+                                   businessid = fileDetail.BusinessId,
                                    product_code = fileDetail.ProductCode,
                                    product_name = fileDetail.ProductName,
                                    file_name = fileDetail.CustomerFileName

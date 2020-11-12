@@ -14,6 +14,7 @@ namespace FileUploadAndValidation.Models
         public string TransactionStatus { get; set; }
 
         public string ItemType { get; set; }
+        public long BusinessId { get; set; }
 
         public int NumOfRecords { get; set; }
 

@@ -56,7 +56,7 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
 
         var batchId = GenericHelpers.GenerateBatchId("QTB_FCTIRS", DateTime.Now);
 
-        var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows, clientToken);
+        var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows, context.BusinessId, clientToken);
 
         var finalResult = localValidationResult.MergeResults(remoteValidationResult);
 

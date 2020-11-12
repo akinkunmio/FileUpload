@@ -39,6 +39,7 @@ namespace FileUploadAndValidation.Models
         public string BusinessTin { get; set; }
         public string ItemType { get; set; }
         public string ContentType { get; set; }
+        public long BusinessId { get; set; }
     }
 
    

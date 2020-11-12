@@ -116,7 +116,7 @@ namespace FileUploadAndValidation.UploadServices
             var validateResponse =  new ValidationResponse();
             try
             {
-                var requestBody = ConstructValidateRequestString(greaterThanFifty, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin, fileProperty.BatchId);
+                var requestBody = ConstructValidateRequestString(greaterThanFifty,fileProperty.BusinessId, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin, fileProperty.BatchId);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ItemType))
                 {
@@ -164,7 +164,7 @@ namespace FileUploadAndValidation.UploadServices
             }
         }
 
-        private string ConstructValidateRequestString(bool check, string url, string contentType, string itemType = null, string businessTin = null, string batchId = null)
+        private string ConstructValidateRequestString(bool check,long businessId, string url, string contentType, string itemType = null, string businessTin = null, string batchId = null)
         {
             string result = "";
             if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
@@ -174,13 +174,15 @@ namespace FileUploadAndValidation.UploadServices
                 {
                     DataStore = 1,
                     DataStoreUrl = url,
-                    BatchId = batchId
+                    BatchId = batchId,
+                    BusinessId = businessId
                 })
                 :
                 JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
-                    DataStoreUrl = url
+                    DataStoreUrl = url,
+                    BusinessId = businessId
                 });
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
@@ -191,7 +193,8 @@ namespace FileUploadAndValidation.UploadServices
                     DataStore = 1,
                     DataStoreUrl = url,
                     TaxTypeCode = itemType.ToLower(),
-                    BusinessTin = businessTin
+                    BusinessTin = businessTin,
+                    BusinessId = businessId
                 });
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
@@ -200,7 +203,8 @@ namespace FileUploadAndValidation.UploadServices
                 {
                     DataStore = 1,
                     DataStoreUrl = url,
-                    BatchId = batchId
+                    BatchId = batchId,
+                    BusinessId = businessId
                 });
 
             if (contentType.ToLower().Equals(GenericConstants.ManualCapture)
@@ -209,7 +213,8 @@ namespace FileUploadAndValidation.UploadServices
                 {
                     DataStore = 1,
                     DataStoreUrl = url,
-                    BatchId = batchId
+                    BatchId = batchId,
+                    BusinessId = businessId
                 });
 
             if (contentType.ToLower().Equals(GenericConstants.Lasg)
@@ -218,7 +223,8 @@ namespace FileUploadAndValidation.UploadServices
                 {
                     DataStore = 1,
                     DataStoreUrl = url,
-                    BatchId = batchId
+                    BatchId = batchId,
+                    BusinessId = businessId
                 });
 
             return result;

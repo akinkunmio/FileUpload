@@ -55,7 +55,7 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
 
         var batchId = GenericHelpers.GenerateBatchId("QTB_LASG", DateTime.Now);
 
-        var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows, token);
+        var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows,context.BusinessId, token);
 
         var finalResult = localValidationResult.MergeResults(remoteValidationResult);
 
@@ -69,6 +69,7 @@ public partial class LASGPaymentBatchProcessor : IBatchFileProcessor<LASGPayment
             ProductCode = context.ProductCode,
             ProductName = context.ProductName,
             UserId = context.UserId,
+            BusinessId = context.BusinessId,
             TransactionStatus = GenericConstants.PendingValidation,
             UploadSuccessful = true,
             Status = RemoteValidationUtil.GetStatusFromRemoteResponseCode(remoteValidationResult.CompletionStatus.Status),

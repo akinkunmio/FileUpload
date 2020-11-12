@@ -29,7 +29,7 @@ namespace FileUploadAndValidation.BillPayments
             return _isBackground;
         }
 
-        public async Task<ValidationResult<LASGPaymentRow>> Validate(string requestIdentifier, IEnumerable<LASGPaymentRow> validRows, string clientToken = "")
+        public async Task<ValidationResult<LASGPaymentRow>> Validate(string requestIdentifier, IEnumerable<LASGPaymentRow> validRows,long businessId, string clientToken = "")
         {
             var fileProperty = await _nasRepository.SaveFileToValidate<LASGPaymentRow>(batchId: requestIdentifier, rowDetails: validRows.ToList());
             ValidationResponse validationResponse;
@@ -37,6 +37,7 @@ namespace FileUploadAndValidation.BillPayments
             {
                 fileProperty.ContentType = GenericConstants.Lasg;
                 fileProperty.ItemType = GenericConstants.Lasg;
+                fileProperty.BusinessId = businessId;
                 validationResponse = await _httpService.ValidateRecords(fileProperty, clientToken, true);
             }
             catch (AppException ex)
