@@ -68,6 +68,7 @@ namespace FileUploadAndValidation.Repository
                 content_type = fileDetail.ContentType,
                 nas_raw_file = fileDetail.NasRawFile,
                 userid = fileDetail.UserId,
+                businessid = fileDetail.BusinessId,
                 product_code = fileDetail.ProductCode,
                 product_name = fileDetail.ProductName,
                 file_name = fileDetail.FileName, 

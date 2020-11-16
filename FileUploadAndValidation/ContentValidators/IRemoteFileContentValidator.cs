@@ -8,6 +8,6 @@ namespace FileUploadApi.Services
     {
         bool IsBackground();
 
-        Task<ValidationResult<T>> Validate(string requestIdentifier, IEnumerable<T> validRows, string clientToken ="");
+        Task<ValidationResult<T>> Validate(string requestIdentifier, IEnumerable<T> validRows, long businessId = 0, string clientToken ="");
     }
 }

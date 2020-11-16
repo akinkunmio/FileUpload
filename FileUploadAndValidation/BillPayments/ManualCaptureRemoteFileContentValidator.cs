@@ -27,7 +27,7 @@ namespace FileUploadAndValidation.BillPayments
             return _isBackground;
         }
 
-        public async Task<ValidationResult<ManualCaptureRow>> Validate(string requestIdentifier, IEnumerable<ManualCaptureRow> validRows, string clientToken)
+        public async Task<ValidationResult<ManualCaptureRow>> Validate(string requestIdentifier, IEnumerable<ManualCaptureRow> validRows, long businessId, string clientToken)
         {
             var fileProperty = await _nasRepository.SaveFileToValidate<ManualCaptureRow>(batchId: requestIdentifier, rowDetails: validRows.ToList());
 
@@ -36,6 +36,7 @@ namespace FileUploadAndValidation.BillPayments
             {
                 fileProperty.ItemType = GenericConstants.ManualCapture;
                 fileProperty.ContentType = GenericConstants.ManualCapture;
+                fileProperty.BusinessId = businessId;
                 validationResponse = await _httpService.ValidateRecords(fileProperty, clientToken, true);
 
             }
