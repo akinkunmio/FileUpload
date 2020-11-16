@@ -19,7 +19,7 @@
     <None Remove="Scripts\1597075803_lasg_lirs_tables_procs.sql" />
     <None Remove="Scripts\1597075829_lasg_getbatchSummary.sql" />
     <None Remove="Scripts\1597075866_validation_data_update_procedures.sql" />
-    <None Remove="Scripts\1605518183_update_insert_queries_with_businessid.sql" />
+    <None Remove="Scripts\1605521359_update_insert_queries_with_businessid.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +28,7 @@
     <EmbeddedResource Include="Scripts\1597075795_manualcapture.sql" />
     <EmbeddedResource Include="Scripts\1597075829_lasg_getbatchSummary.sql" />
     <EmbeddedResource Include="Scripts\1597075866_validation_data_update_procedures.sql" />
-    <EmbeddedResource Include="Scripts\1605518183_update_insert_queries_with_businessid.sql" />
+    <EmbeddedResource Include="Scripts\1605521359_update_insert_queries_with_businessid.sql" />
   </ItemGroup>
 
   <ItemGroup>
