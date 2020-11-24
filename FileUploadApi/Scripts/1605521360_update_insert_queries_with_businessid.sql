@@ -336,3 +336,27 @@ BEGIN
 END
 
 go
+
+
+IF (OBJECT_ID('sp_update_bill_payment_upload_summary') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_update_bill_payment_upload_summary
+END
+GO
+
+
+CREATE PROCEDURE [dbo].[sp_update_bill_payment_upload_summary]
+@batch_id  NVARCHAR (256),
+@num_of_valid_records INT,
+@status NVARCHAR (50),
+@modified_date NVARCHAR (50),
+@nas_tovalidate_file NVARCHAR(MAX),
+@valid_amount_sum  NVARCHAR (50),
+@convenienceFee  decimal(18,4)
+AS
+	UPDATE tbl_transactions_summary 
+	SET num_of_valid_records=@num_of_valid_records, transaction_status=@status, modified_date=@modified_date, nas_tovalidate_file=@nas_tovalidate_file, 
+	valid_amount_sum=@valid_amount_sum, convenience_fee = @convenienceFee
+	OUTPUT INSERTED.Id
+	WHERE batch_id=@batch_id;
+GO
