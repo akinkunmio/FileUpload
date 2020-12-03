@@ -14,6 +14,7 @@ namespace FileUploadAndValidation.Models
         public string TransactionStatus { get; set; }
 
         public string ItemType { get; set; }
+        public long BusinessId { get; set; }
 
         public int NumOfRecords { get; set; }
 
@@ -38,6 +39,7 @@ namespace FileUploadAndValidation.Models
         public string NasUserValidationFile { get; set; }
 
         public decimal ValidAmountSum { get; set; }
+        public decimal ConvenienceFee { get; set; }
 
         public string ProductName { get; set; }
 
@@ -45,7 +47,7 @@ namespace FileUploadAndValidation.Models
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string NameOfFile { get; set; }
-
+        
         public bool? UploadSuccessful { get; set; }
     }
 

@@ -106,6 +106,7 @@ namespace FileUploadApi.ApiServices
                         BatchId = batchId,
                         ContentType = fileSummary.ContentType,
                         ItemType = fileSummary.ItemType,
+                        BusinessId = fileSummary.BusinessId,
                         Url = $"validate/{batchId}_validate.json"
                     }, authToken);
 
@@ -113,9 +114,11 @@ namespace FileUploadApi.ApiServices
                 }
 
                 var paymentStatus = await _dbRepository.GetPaymentRowStatuses(batchId, pagination);
-
+                var valid = paymentStatus.Where(x => x.RowStatus == "Valid").FirstOrDefault();
+                
                 paymentStatuses.TotalRowsCount = fileSummary.NumOfRecords;
                 paymentStatuses.TotalAmountSum = fileSummary.ValidAmountSum;
+                paymentStatuses.ConvenienceFee = fileSummary.ConvenienceFee;
                 paymentStatuses.ProductCode = fileSummary.ProductCode;
                 paymentStatuses.ProductName = fileSummary.ProductName;
                 paymentStatuses.ItemType = fileSummary.ItemType;
@@ -134,6 +137,10 @@ namespace FileUploadApi.ApiServices
                             s.CustomerId,
                             s.ItemCode,
                             s.ProductCode,
+                            s.CustomerName,
+                            s.Surcharge,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
                             ErrorDescription = s.Error,
                             Row = s.RowNum,
                             Status = s.RowStatus
@@ -154,6 +161,8 @@ namespace FileUploadApi.ApiServices
                             s.WhtAmount,
                             s.PeriodCovered,
                             s.InvoiceNumber,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
                             ErrorDescription = s.Error,
                             Row = s.RowNum,
                             Status = s.RowStatus
@@ -177,6 +186,8 @@ namespace FileUploadApi.ApiServices
                             s.TaxAccountNumber,
                             s.WvatRate,
                             s.WvatValue,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
                             ErrorDescription = s.Error,
                             Row = s.RowNum,
                             Status = s.RowStatus
@@ -203,6 +214,9 @@ namespace FileUploadApi.ApiServices
                            s.Comment,
                            s.DocumentNumber,
                            s.PayerTin,
+                           s.PayerName,
+                           s.TransactionConvenienceFee,
+                           s.BatchConvenienceFee,
                            s.TaxType,
                            ErrorDescription = s.Error,
                            Status = s.RowStatus
@@ -217,11 +231,14 @@ namespace FileUploadApi.ApiServices
                            s.ProductCode,
                            s.ItemCode,
                            s.CustomerId,
-                           s.CustomerName,
+                           s.CustomerName,                          
                            s.Amount,
                            Desc = s.TaxType,
                            s.PhoneNumber,
                            s.Email,
+                           s.Surcharge,
+                           s.TransactionConvenienceFee,
+                           s.BatchConvenienceFee,
                            Address = s.AddressInfo,
                            ErrorDescription = s.Error,
                            Status = s.RowStatus
@@ -239,6 +256,10 @@ namespace FileUploadApi.ApiServices
                            s.PayerId,
                            s.RevenueCode,
                            s.AgencyCode,
+                           s.CustomerName,
+                           s.Surcharge,
+                           s.TransactionConvenienceFee,
+                           s.BatchConvenienceFee,
                            s.Amount,
                            s.StartPeriod,
                            s.EndPeriod,

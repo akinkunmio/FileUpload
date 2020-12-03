@@ -86,6 +86,7 @@ namespace FilleUploadCore.UploadManagers
         public string ProductId { get; set; }
 
         public string ProductCode { get; set; }
+        public decimal Fee { get; set; }
 
         public string CurrencyCode { get; set; }
     }

@@ -40,6 +40,7 @@ namespace FileUploadAndValidation.Repository
                 ItemType = request.ItemType,
                 ContentType = request.ContentType,
                 UserId = (long)request.UserId,
+                BusinessId = (long) request.BusinessId,
                 ProductName = request.ProductName,
                 ProductCode = request.ProductCode
             }, uploadResult.ValidRows, uploadResult.Failures);
@@ -50,6 +51,7 @@ namespace FileUploadAndValidation.Repository
             fileProperty.BusinessTin = request.BusinessTin;
             fileProperty.ContentType = request.ContentType;
             fileProperty.ItemType = request.ItemType;
+            fileProperty.BusinessId = (long)request.BusinessId;
 
             var validationResponse = await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
 

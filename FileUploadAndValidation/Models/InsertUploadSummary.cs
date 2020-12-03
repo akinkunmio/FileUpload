@@ -28,5 +28,6 @@ namespace FileUploadApi
         public string ProductName { get; set; }
 
         public string FileName { get; set; }
+        public long BusinessId { get; internal set; }
     }
 }

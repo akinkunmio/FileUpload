@@ -275,6 +275,8 @@ namespace FileUploadAndValidation.Models
         public int TotalRowsCount { get; set; }
 
         public decimal TotalAmountSum { get; set; }
+        public decimal ConvenienceFee { get; set; }
+        public decimal Fee { get; set; }
 
         public string ContentType { get; set; }
 

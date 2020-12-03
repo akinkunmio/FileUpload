@@ -190,6 +190,86 @@ PRIMARY KEY CLUSTERED
 end
 GO
 
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_transactions_summary'
+AND COLUMN_NAME = 'convenience_fee')
+BEGIN
+	ALTER TABLE tbl_transactions_summary ADD [convenience_fee] decimal default(0)
+END
+GO
+
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_firs_multi_tax_transactions_detail'
+AND COLUMN_NAME = 'payer_name')
+BEGIN
+	ALTER TABLE tbl_firs_multi_tax_transactions_detail ADD [payer_name] varchar(250) Null
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_firs_multi_tax_transactions_detail'
+AND COLUMN_NAME = 'transaction_convenience_fee')
+BEGIN
+	ALTER TABLE tbl_firs_multi_tax_transactions_detail ADD [transaction_convenience_fee] decimal default(0)
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_firs_multi_tax_transactions_detail'
+AND COLUMN_NAME = 'batch_convenience_fee')
+BEGIN
+	ALTER TABLE tbl_firs_multi_tax_transactions_detail ADD [batch_convenience_fee] decimal default(0)
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_fctirs_multi_tax_transactions_detail'
+AND COLUMN_NAME = 'surcharge')
+BEGIN
+	ALTER TABLE tbl_fctirs_multi_tax_transactions_detail ADD [surcharge] decimal default(0)
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_fctirs_multi_tax_transactions_detail'
+AND COLUMN_NAME = 'transaction_convenience_fee')
+BEGIN
+	ALTER TABLE tbl_fctirs_multi_tax_transactions_detail ADD [transaction_convenience_fee] decimal default(0)
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_fctirs_multi_tax_transactions_detail'
+AND COLUMN_NAME = 'batch_convenience_fee')
+BEGIN
+	ALTER TABLE tbl_fctirs_multi_tax_transactions_detail ADD [batch_convenience_fee] decimal default(0)
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_bill_payment_transactions_detail'
+AND COLUMN_NAME = 'surcharge')
+BEGIN
+	ALTER TABLE tbl_bill_payment_transactions_detail ADD [surcharge] decimal default(0)
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_bill_payment_transactions_detail'
+AND COLUMN_NAME = 'customer_name')
+BEGIN
+	ALTER TABLE tbl_bill_payment_transactions_detail ADD [customer_name] varchar(250) Null
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_bill_payment_transactions_detail'
+AND COLUMN_NAME = 'transaction_convenience_fee')
+BEGIN
+	ALTER TABLE tbl_bill_payment_transactions_detail ADD [transaction_convenience_fee] decimal default(0)
+END
+GO
+
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_bill_payment_transactions_detail'
+AND COLUMN_NAME = 'batch_convenience_fee')
+BEGIN
+	ALTER TABLE tbl_bill_payment_transactions_detail ADD [batch_convenience_fee] decimal default(0)
+END
+GO
+
+
+
 /****** Object:  StoredProcedure [dbo].[sp_get_batch_upload_summaries_by_user_id]    Script Date: 06/06/2020 12:57:10 PM ******/
 
 IF (OBJECT_ID('sp_get_batch_upload_summaries_by_user_id') IS NOT NULL)
@@ -269,7 +349,8 @@ GO
 CREATE PROCEDURE [dbo].[sp_get_confirmed_bill_payments_by_transactions_summary_id]
 @transactions_summary_id bigint
 AS
-	SELECT [row_num],[product_code],[item_code],[customer_id],[amount] 
+	SELECT [row_num],[product_code],[item_code],[customer_id],[amount], [customer_name],[surcharge], 
+	[batch_convenience_fee],[transaction_convenience_fee]
 	FROM tbl_bill_payment_transactions_detail (NOLOCK)
 	WHERE [transactions_summary_id] = @transactions_summary_id and row_status = 'Valid';
 GO
@@ -303,7 +384,10 @@ AS
 	comment,
 	document_number,
 	tax_type,
-	payer_tin
+	payer_tin,
+	payer_name,
+	batch_convenience_fee,
+	transaction_convenience_fee
 	FROM tbl_firs_multi_tax_transactions_detail (NOLOCK)
 	WHERE [transactions_summary_id] = @transactions_summary_id and row_status = 'Valid';
 GO
@@ -376,6 +460,9 @@ AS
 					document_number,
 					tax_type,
 					payer_tin,
+					payer_name,
+					batch_convenience_fee,
+					transaction_convenience_fee,
 					error,
 					row_status,
 					row_num
@@ -407,6 +494,9 @@ AS
 							document_number,
 							tax_type,
 							payer_tin,
+							payer_name,
+							batch_convenience_fee,
+							transaction_convenience_fee,
 							error,
 							row_status,
 							row_num,
@@ -439,6 +529,9 @@ AS
 							document_number,
 							tax_type,
 							payer_tin,
+							payer_name,
+							batch_convenience_fee,
+							transaction_convenience_fee,
 							error,
 							row_status,
 							row_num,
@@ -475,6 +568,9 @@ AS
 					document_number,
 					tax_type,
 					payer_tin,
+					payer_name,
+					batch_convenience_fee,
+					transaction_convenience_fee,
 					error,
 					row_status,
 					row_num
@@ -506,6 +602,9 @@ AS
 							document_number,
 							tax_type,
 							payer_tin,
+							payer_name,
+							batch_convenience_fee,
+							transaction_convenience_fee,
 							error,
 							row_status,
 							row_num,
@@ -538,6 +637,9 @@ AS
 							document_number,
 							tax_type,
 							payer_tin,
+							payer_name,
+							batch_convenience_fee,
+							transaction_convenience_fee,
 							error,
 							row_status,
 							row_num,
@@ -726,7 +828,7 @@ CREATE PROCEDURE [dbo].[sp_get_payments_status_by_transactions_summary_id]
 AS
 	if(@status = 0)
 		begin
-			SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num]
+			SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num],[surcharge],[customer_name],[batch_convenience_fee],[transaction_convenience_fee]
 			FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
 				  FROM      tbl_bill_payment_transactions_detail(NOLOCK)
 				  WHERE     transactions_summary_id = @transactions_summary_id
@@ -739,7 +841,7 @@ AS
 		begin
 			if(@status = 1)
 				begin
-					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num]
+					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num],[surcharge],[customer_name],[batch_convenience_fee],[transaction_convenience_fee]
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
 						  FROM      tbl_bill_payment_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Valid'
@@ -750,7 +852,7 @@ AS
 				end
 			else
 				begin
-					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num]
+					SELECT [product_code],[item_code],[customer_id],[amount],[error],[row_status],[row_num], [surcharge],[customer_name], [batch_convenience_fee],[transaction_convenience_fee]
 					FROM    ( SELECT   *, ROW_NUMBER() over (order by Id asc) AS RowNum
 						  FROM      tbl_bill_payment_transactions_detail(NOLOCK)
 						  WHERE     transactions_summary_id = @transactions_summary_id and row_status = 'Invalid'
@@ -1448,10 +1550,12 @@ CREATE PROCEDURE [dbo].[sp_update_bill_payment_upload_summary]
 @status NVARCHAR (50),
 @modified_date NVARCHAR (50),
 @nas_tovalidate_file NVARCHAR(MAX),
-@valid_amount_sum  NVARCHAR (50)
+@valid_amount_sum  NVARCHAR (50),
+@convenienceFee  decimal
 AS
 	UPDATE tbl_transactions_summary 
-	SET num_of_valid_records=@num_of_valid_records, transaction_status=@status, modified_date=@modified_date, nas_tovalidate_file=@nas_tovalidate_file, valid_amount_sum=@valid_amount_sum
+	SET num_of_valid_records=@num_of_valid_records, transaction_status=@status, modified_date=@modified_date, nas_tovalidate_file=@nas_tovalidate_file, 
+	valid_amount_sum=@valid_amount_sum, convenience_fee = @convenienceFee
 	OUTPUT INSERTED.Id
 	WHERE batch_id=@batch_id;
 GO

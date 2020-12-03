@@ -190,6 +190,10 @@ public class FirsRowDetail : RowDetail
         public string Desc { get; set; }
 
         public string CustomerName { get; set; }
+        public string PayerName { get; set; }
+        public decimal Surcharge { get; set; }
+        public decimal BatchConvenienceFee { get; set; }
+        public decimal TransactionConvenienceFee { get; set; }
 
         public string PhoneNumber { get; set; }
 
