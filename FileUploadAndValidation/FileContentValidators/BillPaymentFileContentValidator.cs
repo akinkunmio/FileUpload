@@ -197,10 +197,10 @@ namespace FileUploadAndValidation.FileServices
             {
                 validateRowModel = await ValidateRow(row, columnContracts);
 
-                if (validateRowModel.isValid)
-                    validRows.Add(validateRowModel.Valid);
+                if (validateRowModel.IsValid)
+                    validRows.Add(validateRowModel.ValidRow);
 
-                if (!validateRowModel.isValid)
+                if (!validateRowModel.IsValid)
                     failures.Add(validateRowModel.Failure);
             }
 
@@ -212,8 +212,6 @@ namespace FileUploadAndValidation.FileServices
             var validationResult = GenericHelpers.ValidateRowCell(row, columnContracts);
             var result = new ValidateRowModel();
             
-            var failure = new Failure();
-
             var rowDetail = new RowDetail
             {
                 RowNum = row.Index,
@@ -223,11 +221,11 @@ namespace FileUploadAndValidation.FileServices
                 Amount = row.Columns[3].Value
             };
 
-            result.isValid = validationResult.Validity;
+            result.IsValid = validationResult.IsValid;
 
-            if (validationResult.Validity)
+            if (validationResult.IsValid)
             {
-                result.Valid = rowDetail;
+                result.ValidRow = rowDetail;
             }
             else
             {

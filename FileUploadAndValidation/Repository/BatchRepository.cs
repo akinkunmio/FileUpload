@@ -27,66 +27,72 @@ namespace FileUploadAndValidation.Repository
 
         public async Task Save(UploadResult uploadResult, FileUploadRequest request)
         {
-
-            var totalNoOfRows = uploadResult.ValidRows.Count + uploadResult.Failures.Count;
-         
-            await _dbRepository.InsertAllUploadRecords(new UploadSummaryDto
+            try
             {
-                BatchId = uploadResult.BatchId,
-                NumOfAllRecords = totalNoOfRows,
-                Status = GenericConstants.PendingValidation,
-                UploadDate = DateTime.Now.ToString(),
-                CustomerFileName = request.FileName,
-                ItemType = request.ItemType,
-                ContentType = request.ContentType,
-                UserId = (long)request.UserId,
-                BusinessId = (long) request.BusinessId,
-                ProductName = request.ProductName,
-                ProductCode = request.ProductCode
-            }, uploadResult.ValidRows, uploadResult.Failures);
+                var totalNoOfRows = uploadResult.ValidRows.Count + uploadResult.Failures.Count;
 
-
-            FileProperty fileProperty = await _nasRepository.SaveFileToValidate(uploadResult.BatchId, request.ContentType, request.ItemType, uploadResult.ValidRows.AsEnumerable());
-
-            fileProperty.BusinessTin = request.BusinessTin;
-            fileProperty.ContentType = request.ContentType;
-            fileProperty.ItemType = request.ItemType;
-            fileProperty.BusinessId = (long)request.BusinessId;
-
-            var validationResponse = await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
-
-            string validationResultFileName;
-
-            if (validationResponse.ResponseData.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.ResponseData.Results.Any() && validationResponse.ResponseData.ResultMode.ToLower().Equals("json"))
-            {
-                var entValidatedRecordsCount = validationResponse.ResponseData.Results.Where(v => v.Status.ToLower().Equals("valid")).Count();
-                
-                await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
+                await _dbRepository.InsertAllUploadRecords(new UploadSummaryDto
                 {
                     BatchId = uploadResult.BatchId,
-                    NasToValidateFile = fileProperty.Url,
-                    ModifiedDate = DateTime.Now.ToString(),
-                    NumOfValidRecords = entValidatedRecordsCount,
-                    Status = (entValidatedRecordsCount > 0) ? GenericConstants.AwaitingInitiation : GenericConstants.NoValidRecord,
-                    RowStatuses = validationResponse.ResponseData.Results,
-                });
+                    NumOfAllRecords = totalNoOfRows,
+                    Status = GenericConstants.PendingValidation,
+                    UploadDate = DateTime.Now.ToString(),
+                    CustomerFileName = request.FileName,
+                    ItemType = request.ItemType,
+                    ContentType = request.ContentType,
+                    UserId = (long)request.UserId,
+                    BusinessId = request.BusinessId ?? 0,
+                    ProductName = request.ProductName,
+                    ProductCode = request.ProductCode
+                }, uploadResult.ValidRows, uploadResult.Failures);
 
-                var validationResult = await _dbRepository.GetPaymentRowStatuses(uploadResult.BatchId, 
-                    new PaginationFilter
+
+                FileProperty fileProperty = await _nasRepository.SaveFileToValidate(uploadResult.BatchId, request.ContentType, request.ItemType, uploadResult.ValidRows.AsEnumerable());
+
+                fileProperty.BusinessTin = request.BusinessTin;
+                fileProperty.ContentType = request.ContentType;
+                fileProperty.ItemType = request.ItemType;
+                fileProperty.BusinessId = request.BusinessId ?? 0;
+
+                var validationResponse = await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
+
+                string validationResultFileName;
+
+                if (validationResponse.ResponseData.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.ResponseData.Results.Any() && validationResponse.ResponseData.ResultMode.ToLower().Equals("json"))
+                {
+                    var entValidatedRecordsCount = validationResponse.ResponseData.Results.Where(v => v.Status.ToLower().Equals("valid")).Count();
+
+                    await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
                     {
-                        PageSize = totalNoOfRows,
-                        PageNumber = 1,
-                        ItemType = request.ItemType,
-                        ContentType = request.ContentType
+                        BatchId = uploadResult.BatchId,
+                        NasToValidateFile = fileProperty.Url,
+                        ModifiedDate = DateTime.Now.ToString(),
+                        NumOfValidRecords = entValidatedRecordsCount,
+                        Status = (entValidatedRecordsCount > 0) ? GenericConstants.AwaitingInitiation : GenericConstants.NoValidRecord,
+                        RowStatuses = validationResponse.ResponseData.Results,
                     });
 
-                validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, request.ItemType, request.ContentType, validationResult);
+                    var validationResult = await _dbRepository.GetPaymentRowStatuses(uploadResult.BatchId,
+                        new PaginationFilter
+                        {
+                            PageSize = totalNoOfRows,
+                            PageNumber = 1,
+                            ItemType = request.ItemType,
+                            ContentType = request.ContentType
+                        });
 
-                await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
+                    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, request.ItemType, request.ContentType, validationResult);
+
+                    await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
-
     }
-    
 
 }
+    
+

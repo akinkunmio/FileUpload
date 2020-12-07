@@ -33,10 +33,10 @@ namespace FileUploadAndValidation.FileContentValidators
             {
                 validateRowModel = await ValidateRow(authority, row);
 
-                if (validateRowModel.isValid)
-                    validRows.Add(validateRowModel.Valid);
+                if (validateRowModel.IsValid)
+                    validRows.Add(validateRowModel.ValidRow);
 
-                if (!validateRowModel.isValid)
+                if (!validateRowModel.IsValid)
                     failures.Add(validateRowModel.Failure);
             }
 
@@ -56,7 +56,7 @@ namespace FileUploadAndValidation.FileContentValidators
             if (string.IsNullOrWhiteSpace(rowTaxType))
                 return new ValidateRowModel
                 {
-                    isValid = false,
+                    IsValid = false,
                     Failure = new Failure
                     {
                         ColumnValidationErrors = new List<ValidationError> {
@@ -126,11 +126,11 @@ namespace FileUploadAndValidation.FileContentValidators
                     TaxType = row.Columns[15].Value
                 };
 
-            result.isValid = validationResult.Validity;
+            result.IsValid = validationResult.IsValid;
 
-            if (validationResult.Validity)
+            if (validationResult.IsValid)
             {
-                result.Valid = rowDetail;
+                result.ValidRow = rowDetail;
             }
             else
             {
