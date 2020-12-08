@@ -32,10 +32,10 @@ namespace FileUploadAndValidation.FileServices
             {
                 validateRowModel = await ValidateRow(itemType, row, columnContracts);
 
-                if (validateRowModel.isValid)
-                    validRows.Add(validateRowModel.Valid);
+                if (validateRowModel.IsValid)
+                    validRows.Add(validateRowModel.ValidRow);
 
-                if (!validateRowModel.isValid)
+                if (!validateRowModel.IsValid)
                     failures.Add(validateRowModel.Failure);
             }
 
@@ -87,11 +87,11 @@ namespace FileUploadAndValidation.FileServices
                 };
             }
 
-            result.isValid = validationResult.Validity;
+            result.IsValid = validationResult.IsValid;
 
-            if (validationResult.Validity)
+            if (validationResult.IsValid)
             {
-                result.Valid = rowDetail;
+                result.ValidRow = rowDetail;
             }
             else
             {
