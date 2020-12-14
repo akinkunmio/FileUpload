@@ -63,11 +63,11 @@ namespace FileUploadApi.Controllers
                                     .Replace(".", string.Empty)
                                     .ToLower(),
                     UserId = long.Parse(userId),
-                    ProductCode = Request.Form["productCode"].ToString() ??"AIRTEL",
-                    ProductName = Request.Form["productName"].ToString() ?? "AIRTEL",
+                    ProductCode = Request.Form["productCode"].ToString() /*?? "AIRTEL"*/,
+                    ProductName = Request.Form["productName"].ToString() /*?? "AIRTEL"*/,
                     BusinessTin = Request.Form["businessTin"].ToString() ?? "00771252-0001",
                     FileSize = Request.Form.Files.First().Length,
-                    HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool()
+                    HasHeaderRow = Request.Form["HasHeaderRow"].ToString().ToBool() /*true*/
                 };
 
                 response = await _batchProcessor.UploadFileAsync(request);
@@ -76,18 +76,13 @@ namespace FileUploadApi.Controllers
             {
                 _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                var result = new ObjectResult(new { ex.Message })
-                {
-                    StatusCode = ex.StatusCode,
-                };
-
-                return result;
+                return Utils.ResponseHandler.HandleException(ex);
             }
             catch (Exception ex)
             {
                 _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
 
-                return BadRequest(new { errorMessage = "An error occured. Please retry!." });
+                return Utils.ResponseHandler.HandleException(ex);
             }
 
             return Ok(response);

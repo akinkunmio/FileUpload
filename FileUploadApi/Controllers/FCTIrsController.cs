@@ -88,7 +88,10 @@ namespace FileUploadApi.Controllers
         {
             return new ManualCaptureRowConfig
             {
-                IsPhoneNumberRequired = true
+                IsPhoneNumberRequired = true,
+                AutogenerateCustomerId = true,
+                IsAddressRequired = true,
+                IsEmailRequired = true
             };
         }
     }

@@ -385,7 +385,7 @@ namespace FileUploadAndValidation.Helpers
                 }
             }
 
-            return new ValidateRowResult { ValidationErrors = validationErrors, Validity = isValid };
+            return new ValidateRowResult { ValidationErrors = validationErrors, IsValid = isValid };
         }
 
         public static Dictionary<string, Type> ColumnDataTypes()
@@ -501,6 +501,6 @@ namespace FileUploadAndValidation.Helpers
     public class ValidateRowResult
     {
         public List<ValidationError> ValidationErrors { get; set; }
-        public bool Validity { get; set; }
+        public bool IsValid { get; set; }
     }
 }
