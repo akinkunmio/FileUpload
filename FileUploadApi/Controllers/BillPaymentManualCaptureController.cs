@@ -39,7 +39,7 @@ namespace FileUploadApi.Controllers
         {
             try
             {
-                var productCode = _appConfig.FCTIRSProductCode;
+                var productCode = _appConfig.ManualCaptureProductCode;
                 var request = FileUploadRequest.FromRequestForFCTIRS(Request);
                 request.ProductCode = productCode;
                 request.ProductName = productCode;
