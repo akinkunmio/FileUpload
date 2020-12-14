@@ -37,6 +37,8 @@ namespace FileUploadAndValidation.Utils
 
         public string PassportRsaPublicKey => _configuration["AppConfig:RsaPublicKey"];
 
+        public string ManualCaptureProductCode => _configuration["AppConfig:ManualCaptureProductCode"];
+
     }
 
     public interface IAppConfig
@@ -54,5 +56,7 @@ namespace FileUploadAndValidation.Utils
         string ProxyPort { get; }
         string RabbitMqUrl { get; }
         string PassportRsaPublicKey { get; }
+        string ManualCaptureProductCode { get; }
+
     }
 }
