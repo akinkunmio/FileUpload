@@ -1,30 +1,30 @@
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using FileUploadAndValidation.Models;
-using FilleUploadCore.FileReaders;
-using System;
-using FilleUploadCore.Exceptions;
-using Microsoft.Extensions.Logging;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FileUploadAndValidation;
-using FileUploadApi.Processors;
 using FileUploadAndValidation.BillPayments;
+using FileUploadAndValidation.Models;
 using FileUploadAndValidation.Utils;
-using FileUploadAndValidation.UploadServices;
+using FileUploadApi.Processors;
+using FilleUploadCore.Exceptions;
+using FilleUploadCore.FileReaders;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace FileUploadApi.Controllers
-{    
-    [Route("/qbupload/api/v1/billpayment/fct-irs")]
+{
+    [Route("/qbupload/api/v1/billpayment/manualcapture")]
     [ApiController]
-    public class FCTIrsController : ControllerBase
+    public class BillPaymentManualCaptureController : ControllerBase
     {
         private readonly IBatchFileProcessor<ManualCustomerCaptureContext> _batchProcessor;
         private readonly ILogger<FCTIrsController> _logger;
         private readonly IEnumerable<IFileReader> _fileReaders;
         private readonly IAppConfig _appConfig;
 
-        public FCTIrsController(IBatchFileProcessor<ManualCustomerCaptureContext> batchProcessor,
+        public BillPaymentManualCaptureController(IBatchFileProcessor<ManualCustomerCaptureContext> batchProcessor,
                                          IEnumerable<IFileReader> fileReaders, IAppConfig appConfig,
                                          ILogger<FCTIrsController> logger)
         {
@@ -33,7 +33,6 @@ namespace FileUploadApi.Controllers
             _fileReaders = fileReaders;
             _appConfig = appConfig;
         }
-
 
         [HttpPost("file")]
         public async Task<IActionResult> UploadFile()
@@ -64,7 +63,7 @@ namespace FileUploadApi.Controllers
 
                 var context = new ManualCustomerCaptureContext
                 {
-                    Configuration = GetFCTIRSConfiguration(),
+                    Configuration = GetManualCaptureConfiguration(),
                     UserId = request.UserId ?? 0,
                     BusinessId = request.BusinessId ?? 0
                 };
@@ -84,12 +83,14 @@ namespace FileUploadApi.Controllers
             }
         }
 
-        private ManualCaptureRowConfig GetFCTIRSConfiguration()
+        private ManualCaptureRowConfig GetManualCaptureConfiguration()
         {
             return new ManualCaptureRowConfig
             {
                 IsPhoneNumberRequired = true,
-              
+                IsEmailRequired = true,
+                IsAddressRequired = true,
+                AutogenerateCustomerId = true
             };
         }
     }
