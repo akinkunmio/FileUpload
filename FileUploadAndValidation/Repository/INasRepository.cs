@@ -98,12 +98,12 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<string> SaveRawFile(string batchId, Stream stream, string extension)
+        public async Task<string> SaveTemplateFile(string fName, Stream stream, string ext)
         {
-            var fileLocation = @"../data/raw/";
-            var fileName = batchId + "_raw." + extension;
+            var fileLocation = @"../data/template/";
 
-            //var path = fileLocation + fileName;
+            var fileName = fName + "." + ext;
+
             if (!Directory.Exists(fileLocation))
                 Directory.CreateDirectory(fileLocation);
 
@@ -120,10 +120,10 @@ namespace FileUploadAndValidation.Repository
             catch (Exception ex)
             {
                 _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                throw new AppException($"An error occured while saving raw file with batch id : {batchId} to NAS ");
+                throw new AppException($"An error occured while saving template file {fName} to NAS ");
             }
 
-            return $"raw/{fileName}";
+            return $"Template file saved!.";
         }
 
         public async Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(PaymentValidateMessage queueMessage)
@@ -437,7 +437,7 @@ namespace FileUploadAndValidation.Repository
 
         Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
 
-        Task<string> SaveRawFile(string batchId, Stream stream, string extension);
+        Task<string> SaveTemplateFile(string fName, Stream stream, string ext);
 
         Task<IEnumerable<RowValidationStatus>> ExtractValidationResult(PaymentValidateMessage queueMessage);
 
