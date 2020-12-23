@@ -39,10 +39,7 @@ namespace FileUploadApi.Controllers
         {
             try
             {
-                var productCode = _appConfig.ManualCaptureProductCode;
-                var request = FileUploadRequest.FromRequestForFCTIRS(Request);
-                request.ProductCode = productCode;
-                request.ProductName = productCode;
+                var request = FileUploadRequest.FromRequestForManualCapture(Request);
 
                 if (request.BusinessId == null || request.BusinessId < 1)
                     throw new AppException("Invalid BusinessId", "Invalid BusinessId");
@@ -58,14 +55,17 @@ namespace FileUploadApi.Controllers
 
                 foreach (var row in rows)
                 {
-                    row.Columns[0].Value = productCode;
+                    row.Columns[0].Value = request.ProductCode;
                 }
 
                 var context = new ManualCustomerCaptureContext
                 {
                     Configuration = GetManualCaptureConfiguration(),
                     UserId = request.UserId ?? 0,
-                    BusinessId = request.BusinessId ?? 0
+                    BusinessId = request.BusinessId ?? 0,
+                    ContentType = request.ContentType,
+                    ProductCode = request.ProductCode,
+                    ProductName = request.ProductName
                 };
 
                 var uploadResult = await _batchProcessor.UploadAsync(rows, context, HttpContext.Request.Headers["Authorization"]);

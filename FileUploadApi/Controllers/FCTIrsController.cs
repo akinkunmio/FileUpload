@@ -66,7 +66,10 @@ namespace FileUploadApi.Controllers
                 {
                     Configuration = GetFCTIRSConfiguration(),
                     UserId = request.UserId ?? 0,
-                    BusinessId = request.BusinessId ?? 0
+                    BusinessId = request.BusinessId ?? 0,
+                    ContentType = request.ContentType,
+                    ProductCode = request.ProductCode,
+                    ProductName = request.ProductName
                 };
 
                 var uploadResult = await _batchProcessor.UploadAsync(rows, context, HttpContext.Request.Headers["Authorization"]);
