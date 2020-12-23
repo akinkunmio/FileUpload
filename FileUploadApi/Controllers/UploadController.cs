@@ -1,5 +1,6 @@
 ﻿using FileUploadAndValidation.Helpers;
 using FileUploadAndValidation.Models;
+using FileUploadAndValidation.Repository;
 using FileUploadApi.ApiServices;
 using FileUploadApi.Models;
 using FilleUploadCore.Exceptions;
@@ -26,17 +27,20 @@ namespace FileUploadApi.Controllers
         private readonly IGenericUploadService _genericUploadService;
         private readonly IBatchProcessor _batchProcessor;
         private readonly ILogger<UploadController> _logger;
+        private readonly INasRepository _nasRepository;
 
 
         public UploadController(IBatchProcessor batchProcessor,
             ILogger<UploadController> logger,
             IGenericUploadService genericUploadService,
-            IMultiTaxProcessor multiTaxProcessor)
+            IMultiTaxProcessor multiTaxProcessor,
+            INasRepository nasRepository)
         {
             _logger = logger;
             _batchProcessor = batchProcessor;
             _genericUploadService = genericUploadService;
             _multiTaxProcessor = multiTaxProcessor;
+            _nasRepository = nasRepository;
         }
 
         [HttpPost("uploadfile/{contentType}/{itemType}")]
@@ -88,6 +92,41 @@ namespace FileUploadApi.Controllers
             return Ok(response);
         }
        
+        [HttpPost("template")]
+        public async Task<IActionResult> TemplateUploadAsync()
+        {
+            string response = default ;
+            try {
+                var fName = Request.Form.Files
+                                        .First().FileName
+                                        .Split('.')[0];
+
+                var ext = Path.GetExtension(Request.Form.Files.First().FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower();
+
+                var fileRef = Request.Form.Files.First();
+
+                using (var contentStream = fileRef.OpenReadStream())
+                {
+                    response = await _nasRepository.SaveTemplateFile(fName, contentStream, ext);
+                }
+            }
+            catch (AppException ex)
+            {
+                _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                return Utils.ResponseHandler.HandleException(ex);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                return Utils.ResponseHandler.HandleException(ex);
+            }
+            return Ok(response);
+        }
 
         [HttpPost("multitax/{authority}")]
         public async Task<IActionResult> PostMultiTaxPaymentUploadAsync(string authority)

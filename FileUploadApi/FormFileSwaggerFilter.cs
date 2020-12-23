@@ -27,6 +27,20 @@ namespace FileUploadApi
                 operation.Consumes.Add("multipart/form-data");
             }
 
+            if (operation.OperationId == nameof(UploadController.TemplateUploadAsync))
+            {
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "file",
+                    In = "formData",
+                    Description = "Upload File",
+                    Required = true,
+                    Type = "file"
+                });
+
+                operation.Consumes.Add("multipart/form-data");
+            }
+
             if (operation.OperationId == nameof(UploadController.PostMultiTaxPaymentUploadAsync))
             {
                 operation.Parameters.Add(new NonBodyParameter
