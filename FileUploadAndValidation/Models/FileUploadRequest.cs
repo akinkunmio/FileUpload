@@ -146,6 +146,42 @@ namespace FileUploadAndValidation.Models
             };
         }
 
+        public static FileUploadRequest FromRequestForManualCapture(HttpRequest request)
+        {
+            var file = request.Form.Files.FirstOrDefault();
+            if (file == null) throw new AppException("No file uploaded", "No file uploaded");
+
+            bool isUserIdValid = long.TryParse(request.Form["id"].ToString(), out long number);
+            bool isBusinessIdValid = long.TryParse(request.Form["businessId"].ToString(), out long businessNumber);
+
+            if (!isUserIdValid)
+                throw new AppException($"Invalid UserId.", 400);
+
+            if (!isBusinessIdValid)
+                throw new AppException($"Invalid BusinesId.", 400);
+
+            return new FileUploadRequest
+            {
+                ItemType = GenericConstants.ManualCapture,
+                ContentType = GenericConstants.ManualCapture,
+                AuthToken = request.Headers["Authorization"].ToString(),
+                FileRef = file,
+                FileName = file.FileName.Split('.')[0],
+                FileExtension = Path.GetExtension(file.FileName)
+                                    .Replace(".", string.Empty)
+                                    .ToLower(),
+                UserId = long.Parse(request.Form["id"]),
+                User = new UserContext
+                {
+                    Username = request.Headers["userName"]
+                },
+                BusinessId = long.Parse(request.Form["businessId"]),
+                ProductCode = request.Form["productCode"].ToString(),
+                ProductName = request.Form["productName"].ToString(),
+                FileSize = file.Length
+            };
+        }
+
         public static FileUploadRequest FromRequestForLASG(HttpRequest request)
         {
             var file = request.Form.Files.FirstOrDefault();

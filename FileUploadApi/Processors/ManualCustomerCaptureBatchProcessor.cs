@@ -54,7 +54,7 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             throw new AppException("User is not enabled to upload a file", 400);
 
 
-        var batchId = GenericHelpers.GenerateBatchId("QTB_FCTIRS", DateTime.Now);
+        var batchId = GenericHelpers.GenerateBatchId($"QTB_{context.ContentType.ToUpper()}", DateTime.Now);
 
         var remoteValidationResult = await remoteValidator.Validate(batchId, localValidationResult.ValidRows, context.BusinessId, clientToken);
 
@@ -67,8 +67,8 @@ public partial class ManualCustomerCaptureBatchProcessor : IBatchFileProcessor<M
             ContentType = GenericConstants.ManualCapture,
             UploadDate = DateTime.Now.ToString(),
             ModifiedDate = DateTime.Now.ToString(),
-            ProductCode = _appConfig.FCTIRSProductCode,
-            ProductName = "FCT-IRS",
+            ProductCode = context.ProductCode,
+            ProductName = GenericConstants.FctIrs.Equals(context.ContentType) ? "FCT-IRS" : context.ProductName,
             UserId = context.UserId,
             TransactionStatus = GenericConstants.PendingValidation,
             NameOfFile = string.Empty,
