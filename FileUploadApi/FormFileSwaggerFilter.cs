@@ -24,7 +24,49 @@ namespace FileUploadApi
                     Type = "file"
                 });
 
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "id",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "hasHeaderRow",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "productCode",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "productName",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+
+                operation.Parameters.Add(new NonBodyParameter
+                {
+                    Name = "businessId",
+                    In = "formData",
+                    Required = true,
+                    Type = "string"
+                });
+                
                 operation.Consumes.Add("multipart/form-data");
+                operation.Consumes.Add("string/form-data");
+
             }
 
             if (operation.OperationId == nameof(UploadController.TemplateUploadAsync))

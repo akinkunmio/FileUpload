@@ -182,10 +182,11 @@ namespace FileUploadAndValidation.Models
             };
         }
 
-        public static FileUploadRequest FromRequestForLASG(HttpRequest request)
+        public static FileUploadRequest FromRequestForEntBillPayment(HttpRequest request, string itemType, string contentType)
         {
             var file = request.Form.Files.FirstOrDefault();
-            if(file == null) throw new AppException("No file uploaded", "No file uploaded");
+            if (file == default)
+                throw new AppException("Please upload a file.");
 
             bool isUserIdValid = long.TryParse(request.Form["id"].ToString(), out long number);
             bool isBusinessIdValid = long.TryParse(request.Form["businessId"].ToString(), out long businessNumber);
@@ -196,11 +197,16 @@ namespace FileUploadAndValidation.Models
             if (!isBusinessIdValid)
                 throw new AppException($"Invalid BusinesId.", 400);
 
+            if (string.IsNullOrWhiteSpace(request.Form["HasHeaderRow"].ToString()))
+                throw new AppException("Value must be passed for 'HasHeaderRow'.");
+
             return new FileUploadRequest 
             {
-                ItemType = GenericConstants.FctIrs,
-                ContentType = GenericConstants.FctIrs,
+                ItemType = itemType,
+                ContentType = contentType,
                 AuthToken = request.Headers["Authorization"].ToString(),
+                ProductCode = request.Form["productCode"].ToString() /*?? "AIRTEL"*/,
+                ProductName = request.Form["productName"].ToString() /*?? "AIRTEL"*/,
                 FileRef = file,
                 FileName = file.FileName.Split('.')[0],
                 FileExtension = Path.GetExtension(file.FileName)
@@ -210,11 +216,13 @@ namespace FileUploadAndValidation.Models
                 User = new UserContext {
                     Username = request.Headers["userName"]
                 },
-                BusinessId = long.Parse(request.Form["id"]),
-                FileSize = file.Length
+                BusinessId = long.Parse(request.Form["businessId"]),
+                BusinessTin = request.Form["businessTin"].ToString(),
+                FileSize = file.Length,
+                HasHeaderRow = request.Form["HasHeaderRow"].ToString().ToBool() /*true*/
+
             };
         }
-
         public static FileUploadRequest FromRequestForMultiple(HttpRequest request) 
         {
             var userId = /*request.Form["id"].ToString() ??*/ "255";
