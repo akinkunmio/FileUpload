@@ -54,7 +54,7 @@ namespace FileUploadAndValidation.Repository
                 fileProperty.ItemType = request.ItemType;
                 fileProperty.BusinessId = request.BusinessId ?? 0;
 
-                var validationResponse = await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
+                var validationResponse = await _httpService.ValidateRecords(fileProperty, request.AuthToken);
 
                 string validationResultFileName;
 

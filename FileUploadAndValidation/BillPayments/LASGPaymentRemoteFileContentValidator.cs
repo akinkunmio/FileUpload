@@ -38,7 +38,7 @@ namespace FileUploadAndValidation.BillPayments
                 fileProperty.ContentType = GenericConstants.Lasg;
                 fileProperty.ItemType = GenericConstants.Lasg;
                 fileProperty.BusinessId = businessId;
-                validationResponse = await _httpService.ValidateRecords(fileProperty, clientToken, true);
+                validationResponse = await _httpService.ValidateRecords(fileProperty, clientToken);
             }
             catch (AppException ex)
             {

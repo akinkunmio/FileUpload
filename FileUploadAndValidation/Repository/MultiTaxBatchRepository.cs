@@ -57,8 +57,7 @@ namespace FileUploadAndValidation.Repository
             fileProperty.BusinessId = request.BusinessId == null ? 0 : Convert.ToInt64(request.BusinessId);
 
             await _httpService.ValidateRecords(fileProperty, 
-                request.AuthToken, 
-                uploadResult.ValidRows.Count() > 50);
+                request.AuthToken);
         }
     }
 }
