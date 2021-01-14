@@ -54,37 +54,38 @@ namespace FileUploadAndValidation.Repository
                 fileProperty.ItemType = request.ItemType;
                 fileProperty.BusinessId = request.BusinessId ?? 0;
 
-                var validationResponse = await _httpService.ValidateRecords(fileProperty, request.AuthToken, uploadResult.ValidRows.Count() > 50);
+                /*var validationResponse = */
+                await _httpService.ValidateRecords(fileProperty, request.AuthToken);
 
-                string validationResultFileName;
+                //string validationResultFileName;
 
-                if (validationResponse.ResponseData.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.ResponseData.Results.Any() && validationResponse.ResponseData.ResultMode.ToLower().Equals("json"))
-                {
-                    var entValidatedRecordsCount = validationResponse.ResponseData.Results.Where(v => v.Status.ToLower().Equals("valid")).Count();
+                //if (validationResponse.ResponseData.NumOfRecords <= GenericConstants.RECORDS_SMALL_SIZE && validationResponse.ResponseData.Results.Any() && validationResponse.ResponseData.ResultMode.ToLower().Equals("json"))
+                //{
+                //    var entValidatedRecordsCount = validationResponse.ResponseData.Results.Where(v => v.Status.ToLower().Equals("valid")).Count();
 
-                    await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
-                    {
-                        BatchId = uploadResult.BatchId,
-                        NasToValidateFile = fileProperty.Url,
-                        ModifiedDate = DateTime.Now.ToString(),
-                        NumOfValidRecords = entValidatedRecordsCount,
-                        Status = (entValidatedRecordsCount > 0) ? GenericConstants.AwaitingInitiation : GenericConstants.NoValidRecord,
-                        RowStatuses = validationResponse.ResponseData.Results,
-                    });
+                //    await _dbRepository.UpdateValidationResponse(new UpdateValidationResponseModel
+                //    {
+                //        BatchId = uploadResult.BatchId,
+                //        NasToValidateFile = fileProperty.Url,
+                //        ModifiedDate = DateTime.Now.ToString(),
+                //        NumOfValidRecords = entValidatedRecordsCount,
+                //        Status = (entValidatedRecordsCount > 0) ? GenericConstants.AwaitingInitiation : GenericConstants.NoValidRecord,
+                //        RowStatuses = validationResponse.ResponseData.Results,
+                //    });
 
-                    var validationResult = await _dbRepository.GetPaymentRowStatuses(uploadResult.BatchId,
-                        new PaginationFilter
-                        {
-                            PageSize = totalNoOfRows,
-                            PageNumber = 1,
-                            ItemType = request.ItemType,
-                            ContentType = request.ContentType
-                        });
+                //    var validationResult = await _dbRepository.GetPaymentRowStatuses(uploadResult.BatchId,
+                //        new PaginationFilter
+                //        {
+                //            PageSize = totalNoOfRows,
+                //            PageNumber = 1,
+                //            ItemType = request.ItemType,
+                //            ContentType = request.ContentType
+                //        });
 
-                    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, request.ItemType, request.ContentType, validationResult);
+                //    validationResultFileName = await _nasRepository.SaveValidationResultFile(uploadResult.BatchId, request.ItemType, request.ContentType, validationResult);
 
-                    await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
-                }
+                //    await _dbRepository.UpdateUploadSuccess(uploadResult.BatchId, validationResultFileName);
+                //}
             }
             catch (Exception ex)
             {

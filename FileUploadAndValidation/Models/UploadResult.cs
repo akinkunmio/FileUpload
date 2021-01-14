@@ -73,7 +73,9 @@ namespace FileUploadAndValidation.Models
                 }).ToList(),
                 ErrorMessage = uploadResult.ErrorMessage,
                 FileName = uploadResult.FileName,
-                RowsCount = uploadResult.RowsCount
+                RowsCount = uploadResult.RowsCount,
+                ProductCode = uploadResult.ProductCode,
+                ProductName = uploadResult.ProductName
             };
         }
     }

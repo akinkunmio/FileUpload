@@ -245,7 +245,8 @@ namespace FileUploadApi
         {
             if (path.StartsWithSegments("/health") 
                 || path.StartsWithSegments("/api-docs") 
-                || path.StartsWithSegments("/swagger"))
+                || path.StartsWithSegments("/swagger")
+                || path.StartsWithSegments("/qbupload/api/v1/"))
                 return true;
 
             return false;

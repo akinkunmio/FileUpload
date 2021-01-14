@@ -111,12 +111,12 @@ namespace FileUploadAndValidation.UploadServices
             
         }
 
-        public async Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty = true)
+        public async Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken)
         {
             var validateResponse =  new ValidationResponse();
             try
             {
-                var requestBody = ConstructValidateRequestString(greaterThanFifty,fileProperty.BusinessId, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin, fileProperty.BatchId);
+                var requestBody = ConstructValidateRequestString(fileProperty.BusinessId, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin, fileProperty.BatchId);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ItemType))
                 {
@@ -164,24 +164,16 @@ namespace FileUploadAndValidation.UploadServices
             }
         }
 
-        private string ConstructValidateRequestString(bool check,long businessId, string url, string contentType, string itemType = null, string businessTin = null, string batchId = null)
+        private string ConstructValidateRequestString(long businessId, string url, string contentType, string itemType = null, string businessTin = null, string batchId = null)
         {
             string result = "";
             if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
-                result =  (check) 
-                ?
+                result =
                 JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
                     DataStoreUrl = url,
                     BatchId = batchId,
-                    BusinessId = businessId
-                })
-                :
-                JsonConvert.SerializeObject(new
-                {
-                    DataStore = 1,
-                    DataStoreUrl = url,
                     BusinessId = businessId
                 });
 
@@ -329,15 +321,15 @@ namespace FileUploadAndValidation.UploadServices
                 _logger.LogError("Error occured while making http request to initiate payment with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
                 throw new AppException("An error occured. Please, retry!.", 400);
             }
-
         }
     }
 
     public interface IHttpService
     {
-        Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken, bool greaterThanFifty = true);
+        Task<ValidationResponse> ValidateRecords(FileProperty fileProperty, string authToken);
 
         Task<ConfirmedBillResponse> InitiatePayment(FileProperty fileProperty, InitiatePaymentOptions initiatePaymentOptions);
+
         Task<ApprovalConfigResponseList> GetApprovalConfiguration(long? businessId);
     }
 
