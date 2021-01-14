@@ -511,9 +511,8 @@ namespace FileUploadAndValidation.Repository
 
         private string GetSPForGetConfirmedPayments(string itemType, string contentType)
         {
-            if (contentType.ToLower().Equals(GenericConstants.Firs) 
-                && (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
-                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
+            if ((contentType.ToLower().Equals(GenericConstants.BillPayment) || contentType.ToLower().Equals(GenericConstants.Firs))  
+                 && (itemType.ToLower().Equals(GenericConstants.BillPaymentId) || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
             {
                 return @"sp_get_confirmed_bill_payments_by_transactions_summary_id";
             }
