@@ -137,7 +137,7 @@ namespace FileUploadAndValidation.Helpers
             {
                 result = new 
                 {
-                    r.Amount,
+                    Amount = decimal.Parse(r.Amount),
                     r.CustomerId,
                     r.ItemCode,
                     r.ProductCode,
