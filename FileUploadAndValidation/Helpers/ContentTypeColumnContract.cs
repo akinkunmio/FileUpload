@@ -10,10 +10,10 @@ namespace FileUploadAndValidation.Helpers
         {
             return new[]
            {
-                new ColumnContract{ ColumnName="ProductCode", DataType="string", Max=256, Required = true },
-                new ColumnContract{ ColumnName="ItemCode", DataType="string", Max=256, Required=true },
-                new ColumnContract{ ColumnName="CustomerId", DataType="string", Max=15, Required=true },
-                new ColumnContract{ ColumnName="Amount", DataType="integer", Max=100, Required=true },
+                new ColumnContract{ ColumnName="ProductCode", DataType="string", Max=256, Required = true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ItemCode", DataType="string", Max=256, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="CustomerId", DataType="string", Max=15, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="Amount", DataType="integer", Max=100, Required=true, ValidateCell = true },
             };
         }
 
@@ -21,10 +21,10 @@ namespace FileUploadAndValidation.Helpers
         {
             return new[]
            {
-                new ColumnContract{ ColumnName="ProductCode", DataType="string", Max=256, Required=true },
-                new ColumnContract{ ColumnName="ItemCode", DataType="string", Max=256 },
-                new ColumnContract{ ColumnName="CustomerId", DataType="string", Max=15, Required=true },
-                new ColumnContract{ ColumnName="Amount", DataType="integer", Max=100, Required=true },
+                new ColumnContract{ ColumnName="ProductCode", DataType="string", Max=256, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="ItemCode", DataType="string", Max=256, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="CustomerId", DataType="string", Max=15, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="Amount", DataType="integer", Max=100, Required=true, ValidateCell = true },
             };
         }
 

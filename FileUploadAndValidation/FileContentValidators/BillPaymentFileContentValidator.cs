@@ -27,6 +27,7 @@ namespace FileUploadAndValidation.FileServices
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
             ArgumentGuard.NotNullOrEmpty(rows, nameof(rows));
+            ArgumentGuard.NotNullOrWhiteSpace(request.ProductCode, nameof(request.ProductCode));
 
             var headerRow = new Row();
             IEnumerable<RowDetail> billPayments = new List<RowDetail>();
@@ -153,19 +154,25 @@ namespace FileUploadAndValidation.FileServices
 
                 }
 
-                uploadResult.Failures = uploadResult.Failures.Select(f => new Failure 
-                { 
-                    Row = new RowDetail
+                //uploadResult.Failures = uploadResult.Failures.Select(f => new Failure 
+                //{ 
+                //    Row = new RowDetail
+                //    {
+                //        Amount = f.Row.Amount,
+                //        CreatedDate = dateTimeNow.ToString(),
+                //        CustomerId = f.Row.CustomerId,
+                //        ItemCode = f.Row.ItemCode,
+                //        ProductCode = f.Row.ProductCode,
+                //        RowNum = f.Row.RowNum,
+                //        ErrorDescription = GenericHelpers.ConstructValidationError(f)
+                //    }
+                //}).ToList();
+
+                if (uploadResult.Failures.Any())
+                    foreach (var failure in uploadResult.Failures)
                     {
-                        Amount = f.Row.Amount,
-                        CreatedDate = dateTimeNow.ToString(),
-                        CustomerId = f.Row.CustomerId,
-                        ItemCode = f.Row.ItemCode,
-                        ProductCode = f.Row.ProductCode,
-                        RowNum = f.Row.RowNum,
-                        ErrorDescription = GenericHelpers.ConstructValidationError(f)
+                        failure.Row.ErrorDescription = GenericHelpers.ConstructValidationError(failure);
                     }
-                }).ToList();
 
                 if (uploadResult.ValidRows.Count() == 0)
                     throw new AppException("All records are invalid", 400);
