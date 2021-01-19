@@ -37,6 +37,9 @@ namespace FileUploadAndValidation.FileServices
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.", 400);
 
+                if (string.IsNullOrEmpty(request.ProductCode))
+                    throw new AppException("Please provide ProductCode!", 400);
+
                 var columnContracts = new ColumnContract[] { };
 
                 if (request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
