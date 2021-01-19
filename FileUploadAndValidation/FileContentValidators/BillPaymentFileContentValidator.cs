@@ -27,6 +27,7 @@ namespace FileUploadAndValidation.FileServices
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
             ArgumentGuard.NotNullOrEmpty(rows, nameof(rows));
+            ArgumentGuard.NotNullOrWhiteSpace(request.ProductCode, nameof(request.ProductCode));
 
             var headerRow = new Row();
             IEnumerable<RowDetail> billPayments = new List<RowDetail>();
@@ -36,9 +37,6 @@ namespace FileUploadAndValidation.FileServices
             {
                 if (!rows.Any())
                     throw new AppException("Empty file was uploaded!.", 400);
-
-                if (string.IsNullOrEmpty(request.ProductCode))
-                    throw new AppException("Please provide ProductCode!", 400);
 
                 var columnContracts = new ColumnContract[] { };
 
