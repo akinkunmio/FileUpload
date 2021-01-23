@@ -19,6 +19,7 @@ namespace FileUploadAndValidation.Helpers
         public const string FirsWht = "firswht";
         public const string FirsWvat = "firswvat";
         public const string FirsPayee = "firspayee";
+        public const string FirsOther = "FirsOther";
         public const string Payee = "payee";
         public const string Wht = "wht";
         public const string Wvat = "wvat";
@@ -26,6 +27,7 @@ namespace FileUploadAndValidation.Helpers
         public const string Edt = "edt";
         public const string PreOpLevy = "pol";
         public const string Vat = "vat";
+        public const string Other = "other";
 
 
         public const string Autopay = "autopay";
@@ -60,6 +62,7 @@ namespace FileUploadAndValidation.Helpers
         public static string ValidationResultFile = "ValidationResult.csv";
         public static string FirsWhtCsvTemplate = "FirsWhtCsvTemplate.csv";
         public static string FirsWvatCsvTemplate = "FirsWVATCsvTemplate.csv";
+        public static string FirsOtherCsvTemplate = "FirsOtherCsvTemplate.csv";
         public static string FctIrsCsvTemplate = "FctIrsCsvTemplate.csv";
         public static string LasgCsvTemplate = "LasgCsvTemplate.csv";
         public static string All = "all";

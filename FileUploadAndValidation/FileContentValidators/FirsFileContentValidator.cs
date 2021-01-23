@@ -65,8 +65,8 @@ namespace FileUploadAndValidation.FileServices
                     WhtRate = row.Columns[9].Value,
                     WhtAmount = row.Columns[10].Value
                 };
-            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
-            {
+
+            if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
                 rowDetail = new RowDetail
                 {
                     RowNum = row.Index,
@@ -85,7 +85,17 @@ namespace FileUploadAndValidation.FileServices
                     WvatValue = row.Columns[12].Value,
                     TaxAccountNumber = row.Columns[13].Value,
                 };
-            }
+
+            if (itemType.ToLower().Equals(GenericConstants.Other.ToLower()))
+                rowDetail = new RowDetail
+                {
+                    RowNum = row.Index,
+                    Amount = row.Columns[0].Value,
+                    Comment = row.Columns[1].Value,
+                    DocumentNumber = row.Columns[2].Value,
+                    CustomerName = row.Columns[3].Value,
+                    CustomerTin = row.Columns[4].Value
+                };
 
             result.IsValid = validationResult.IsValid;
 
@@ -126,6 +136,9 @@ namespace FileUploadAndValidation.FileServices
 
                 if (request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
                     columnContract = ContentTypeColumnContract.FirsWvat();
+
+                if (request.ItemType.ToLower().Equals(GenericConstants.Other.ToLower()))
+                    columnContract = ContentTypeColumnContract.FirsTaxOther();
 
                 uploadResult.RowsCount = rows.Count();
                 var contentRows = rows;
@@ -232,6 +245,39 @@ namespace FileUploadAndValidation.FileServices
                                 }
                         });
                 }
+
+                if (uploadResult.ValidRows.Count() > 0
+                    && uploadResult.ValidRows.Any()
+                    && request.ItemType.ToLower().Equals(GenericConstants.Other))
+                {
+                    failedItemTypeValidationBills = uploadResult.ValidRows
+                         ?.GroupBy(b => new { b.CustomerTin })
+                         .Where(g => g.Count() > 1)
+                         .SelectMany(r => r);
+
+                    foreach (var nonDistinct in failedItemTypeValidationBills)
+                        uploadResult.Failures.Add(new Failure
+                        {
+                            Row = new RowDetail
+                            {
+                                RowNum = nonDistinct.RowNum,
+                                Amount = nonDistinct.ContractDescription,
+                                Comment = nonDistinct.ContractorAddress,
+                                DocumentNumber = nonDistinct.ContractorTin,
+                                CustomerTin = nonDistinct.ContractorName,
+                                CreatedDate = dateTimeNow.ToString()
+                            },
+                            ColumnValidationErrors = new List<ValidationError>
+                                {
+                                    new ValidationError
+                                    {
+                                        PropertyName = "CustomerTin",
+                                        ErrorMessage = "Values should be unique"
+                                    }
+                                }
+                        });
+                }
+
 
                 uploadResult.ValidRows = uploadResult.ValidRows
                         .Where(b => !failedItemTypeValidationBills.Any(n => n.RowNum == b.RowNum))

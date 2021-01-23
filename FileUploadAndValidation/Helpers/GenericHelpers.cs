@@ -72,7 +72,17 @@ namespace FileUploadAndValidation.Helpers
                     WvatRate = r.WvatRate,
                     WvatValue = r.WvatValue
                 };
-
+            if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.Other))
+                result = new FirsOtherUntyped
+                {
+                    Row = r.RowNum,
+                    Amount = r.Amount,
+                    Comment = r.Comment,
+                    DocumentNumber = r.DocumentNumber,
+                    CustomerName = r.CustomerName,
+                    CustomerTin = r.CustomerTin
+                };
             if (contentType.ToLower().Equals(GenericConstants.BillPayment)
                 && (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
                 || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))

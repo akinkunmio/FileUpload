@@ -167,4 +167,19 @@ namespace FileUploadAndValidation.Models
         public string WvatValue { get; set; }
     }
 
+    public class FirsOtherUntyped
+    {
+        public int Row { get; set; }
+
+        public string Amount { get; set; }
+
+        public string Comment { get; set; }
+
+        public string DocumentNumber { get; set; }
+
+        public string CustomerName { get; set; }
+
+        public string CustomerTin { get; set; }
+    }
+
 }

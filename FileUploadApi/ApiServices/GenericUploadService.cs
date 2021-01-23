@@ -192,8 +192,23 @@ namespace FileUploadApi.ApiServices
                             Row = s.RowNum,
                             Status = s.RowStatus
                         });
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.Other))
+                    paymentStatuses.Data = paymentStatus
+                        .Select(s => new
+                        {
+                            s.Amount,
+                            s.Comment,
+                            s.DocumentNumber,
+                            s.CustomerTin,
+                            s.CustomerName,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
+                            ErrorDescription = s.Error,
+                            Row = s.RowNum,
+                            Status = s.RowStatus
+                        });
 
-                if(fileSummary.ItemType.ToLower().Equals(GenericConstants.MultiTax)
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.MultiTax)
                     && fileSummary.ContentType.ToLower().Equals(GenericConstants.Firs))
                     paymentStatuses.Data = paymentStatus
                        .Select(s => new

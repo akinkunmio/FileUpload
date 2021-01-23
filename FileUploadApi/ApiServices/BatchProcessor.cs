@@ -37,7 +37,8 @@ namespace FileUploadApi.ApiServices
             if (!request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
                 && !request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
                 && !request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
-                && !request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
+                && !request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower())
+                && !request.ItemType.ToLower().Equals(GenericConstants.Other.ToLower()))
                 throw new AppException("Invalid Content Type specified", 400);
 
             if (request.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
@@ -87,10 +88,10 @@ namespace FileUploadApi.ApiServices
             {
                 case "billpayment":
                     await _fileContentValidators.ToArray()[0].Validate(request, rows, uploadResult);
-                    break;
+                    return;
                 case "firs":
                     await _fileContentValidators.ToArray()[1].Validate(request, rows, uploadResult);
-                    break;
+                    return;
                 default:
                     throw new AppException("Content type not supported!.", 400);
             }
