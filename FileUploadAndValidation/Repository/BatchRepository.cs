@@ -51,7 +51,7 @@ namespace FileUploadAndValidation.Repository
                 fileProperty.BatchId = uploadResult.BatchId;
                 fileProperty.BusinessTin = request.BusinessTin;
                 fileProperty.ContentType = request.ContentType;
-                fileProperty.ItemType = request.ItemType.ToLower();
+                fileProperty.ItemType = request.ItemType;
                 fileProperty.BusinessId = request.BusinessId ?? 0;
 
                 /*var validationResponse = */
