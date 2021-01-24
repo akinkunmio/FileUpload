@@ -154,7 +154,7 @@ namespace FileUploadAndValidation.Helpers
                 new ColumnContract{ ColumnName="Comment", DataType="string", Required=false },
                 new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Required=false, ValidateCell = true },
                 new ColumnContract{ ColumnName="CustomerName", DataType="string", Min=1, Required=false },
-                new ColumnContract{ ColumnName="CustomerTin", DataType="string", Min=1, Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="CustomerTin", DataType="string", Min=1, Required=true, ValidateCell = true }
             };
         }
     }

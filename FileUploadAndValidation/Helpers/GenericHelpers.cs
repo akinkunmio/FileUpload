@@ -72,17 +72,20 @@ namespace FileUploadAndValidation.Helpers
                     WvatRate = r.WvatRate,
                     WvatValue = r.WvatValue
                 };
-            if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && itemType.ToLower().Equals(GenericConstants.Other))
+            if (!itemType.ToLower().Equals(GenericConstants.MultiTax) ||
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+                !itemType.ToLower().Equals(GenericConstants.Lasg)
+                && contentType.ToLower().Equals(GenericConstants.Firs))
                 result = new FirsOtherUntyped
                 {
                     Row = r.RowNum,
                     Amount = r.Amount,
                     Comment = r.Comment,
                     DocumentNumber = r.DocumentNumber,
-                    CustomerName = r.CustomerName,
-                    CustomerTin = r.CustomerTin
+                    CustomerTin = r.CustomerTin,
+                    CustomerName = r.CustomerName
                 };
+
             if (contentType.ToLower().Equals(GenericConstants.BillPayment)
                 && (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
                 || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
@@ -118,7 +121,7 @@ namespace FileUploadAndValidation.Helpers
                     r.TaxType
                 };
 
-                return result;
+            return result;
         }
 
         public static string ConstructValidationError(Failure failure)
@@ -207,27 +210,27 @@ namespace FileUploadAndValidation.Helpers
                     Customer = r.PayerName,
                     r.BatchConvenienceFee,
                     r.TransactionConvenienceFee
-                };
+               };
             }
-
             if ((itemType.ToLower().Equals(GenericConstants.Cit)
                 || itemType.ToLower().Equals(GenericConstants.Edt)
                 || itemType.ToLower().Equals(GenericConstants.PreOpLevy)
-                || itemType.ToLower().Equals(GenericConstants.Vat))
-               && contentType.ToLower().Equals(GenericConstants.Firs))
-            {
-                result = new 
+                || itemType.ToLower().Equals(GenericConstants.Vat) ||
+                !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+                !itemType.ToLower().Equals(GenericConstants.Lasg)
+                && contentType.ToLower().Equals(GenericConstants.Firs)))
+                result = new
                 {
                     Row = r.RowNum,
-                    CustomerTin = r.PayerTin,
-                    CustomerName = r.PayerName,
+                    r.CustomerTin,
+                    r.CustomerName,
                     r.Amount,
                     r.Comment,
                     r.DocumentNumber,
                     r.BatchConvenienceFee,
                     r.TransactionConvenienceFee
                 };
-            }
 
             return result;
         }
@@ -312,6 +315,13 @@ namespace FileUploadAndValidation.Helpers
             {
                 return rowDetails
                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wvat, s));
+            }
+
+            else if (contentType.ToLower().Equals(GenericConstants.Firs) && !itemType.ToLower().Equals(GenericConstants.MultiTax) || 
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) || !itemType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return rowDetails
+                   .Select(s => MapToNasValidateObject(contentType, itemType.ToLower(), s));
             }
 
             else if (itemType.ToLower().Equals(GenericConstants.BillPaymentId)

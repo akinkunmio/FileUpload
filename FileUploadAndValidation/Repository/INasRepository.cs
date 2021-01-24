@@ -62,7 +62,7 @@ namespace FileUploadAndValidation.Repository
                 //};
                 throw new AppException($"An error occured while saving file for validation", 400);
             }
-        }  
+        }
 
         public async Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
         {
@@ -263,7 +263,7 @@ namespace FileUploadAndValidation.Repository
         {
             dynamic result = default;
 
-            if (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem) 
+            if (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)
                 || itemType.ToLower().Equals(GenericConstants.BillPaymentId))
             {
                 result = rowDetails
@@ -279,11 +279,11 @@ namespace FileUploadAndValidation.Repository
                     });
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.Wht) 
+            if (itemType.ToLower().Equals(GenericConstants.Wht)
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails
-                    .Select(r => new 
+                    .Select(r => new
                     {
                         Row = r.RowNum,
                         ErrorDescription = r.Error,
@@ -306,7 +306,7 @@ namespace FileUploadAndValidation.Repository
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails
-                    .Select(r => new 
+                    .Select(r => new
                     {
                         Row = r.RowNum,
                         ErrorDescription = r.Error,
@@ -328,11 +328,30 @@ namespace FileUploadAndValidation.Repository
                     });
             }
 
+            if (!itemType.ToLower().Equals(GenericConstants.MultiTax) ||
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+                !itemType.ToLower().Equals(GenericConstants.Lasg)
+                && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                result = rowDetails
+                    .Select(r => new
+                    {
+                        Row = r.RowNum,
+                        ErrorDescription = r.Error,
+                        Status = r.RowStatus,
+                        r.Amount,
+                        r.Comment,
+                        r.DocumentNumber,
+                        r.CustomerName,
+                        r.CustomerTin
+                    });
+            }
+
             if (itemType.ToLower().Equals(GenericConstants.MultiTax)
                && contentType.ToLower().Equals(GenericConstants.Firs))
             {
-                result = rowDetails.Select(r => new 
-                { 
+                result = rowDetails.Select(r => new
+                {
                     Row = r.RowNum,
                     ErrorDescription = r.Error,
                     Status = r.RowStatus,

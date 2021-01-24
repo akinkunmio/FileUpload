@@ -46,12 +46,13 @@ namespace FileUploadAndValidation.Repository
                     ProductCode = request.ProductCode
                 }, uploadResult.ValidRows, uploadResult.Failures);
 
+                var valids = uploadResult.ValidRows.AsEnumerable();
+                FileProperty fileProperty = await _nasRepository.SaveFileToValidate(uploadResult.BatchId, request.ContentType, request.ItemType, valids);
 
-                FileProperty fileProperty = await _nasRepository.SaveFileToValidate(uploadResult.BatchId, request.ContentType, request.ItemType, uploadResult.ValidRows.AsEnumerable());
-
+                fileProperty.BatchId = uploadResult.BatchId;
                 fileProperty.BusinessTin = request.BusinessTin;
                 fileProperty.ContentType = request.ContentType;
-                fileProperty.ItemType = request.ItemType;
+                fileProperty.ItemType = request.ItemType.ToLower();
                 fileProperty.BusinessId = request.BusinessId ?? 0;
 
                 /*var validationResponse = */

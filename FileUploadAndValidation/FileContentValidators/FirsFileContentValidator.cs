@@ -66,7 +66,7 @@ namespace FileUploadAndValidation.FileServices
                     WhtAmount = row.Columns[10].Value
                 };
 
-            if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
                 rowDetail = new RowDetail
                 {
                     RowNum = row.Index,
@@ -85,8 +85,7 @@ namespace FileUploadAndValidation.FileServices
                     WvatValue = row.Columns[12].Value,
                     TaxAccountNumber = row.Columns[13].Value,
                 };
-
-            if (itemType.ToLower().Equals(GenericConstants.Other.ToLower()))
+            else
                 rowDetail = new RowDetail
                 {
                     RowNum = row.Index,
@@ -134,11 +133,13 @@ namespace FileUploadAndValidation.FileServices
                 if (request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower()))
                     columnContract = ContentTypeColumnContract.FirsWht();
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
+                else if (request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower()))
                     columnContract = ContentTypeColumnContract.FirsWvat();
 
-                if (request.ItemType.ToLower().Equals(GenericConstants.Other.ToLower()))
+                else
                     columnContract = ContentTypeColumnContract.FirsTaxOther();
+                //if (request.ItemType.ToLower().Equals(GenericConstants.Other.ToLower()))
+                //    columnContract = ContentTypeColumnContract.FirsTaxOther();
 
                 uploadResult.RowsCount = rows.Count();
                 var contentRows = rows;
@@ -204,7 +205,7 @@ namespace FileUploadAndValidation.FileServices
                         });
                 }
 
-                if (uploadResult.ValidRows.Count() > 0 
+                else if (uploadResult.ValidRows.Count() > 0 
                     && uploadResult.ValidRows.Any() 
                     && request.ItemType.ToLower().Equals(GenericConstants.Wvat))
                 {
@@ -246,37 +247,18 @@ namespace FileUploadAndValidation.FileServices
                         });
                 }
 
-                if (uploadResult.ValidRows.Count() > 0
-                    && uploadResult.ValidRows.Any()
-                    && request.ItemType.ToLower().Equals(GenericConstants.Other))
-                {
-                    failedItemTypeValidationBills = uploadResult.ValidRows
-                         ?.GroupBy(b => new { b.CustomerTin })
-                         .Where(g => g.Count() > 1)
-                         .SelectMany(r => r);
+                //if (uploadResult.ValidRows.Count() > 0
+                //    && uploadResult.ValidRows.Any()
+                //    && request.ItemType.ToLower().Equals(GenericConstants.Other))
+                //{
+                //    var taxTypes = uploadResult.ValidRows.Select(s => s.TaxType).ToArray();
+                //    bool allEqual = taxTypes.Skip(1)
+                //                                    .All(s => string
+                //                                    .Equals(taxTypes.FirstOrDefault(), s, StringComparison.InvariantCultureIgnoreCase));
+                //    if (!allEqual)
+                //        throw new AppException("Taxtype must be same for all records", 400);
 
-                    foreach (var nonDistinct in failedItemTypeValidationBills)
-                        uploadResult.Failures.Add(new Failure
-                        {
-                            Row = new RowDetail
-                            {
-                                RowNum = nonDistinct.RowNum,
-                                Amount = nonDistinct.ContractDescription,
-                                Comment = nonDistinct.ContractorAddress,
-                                DocumentNumber = nonDistinct.ContractorTin,
-                                CustomerTin = nonDistinct.ContractorName,
-                                CreatedDate = dateTimeNow.ToString()
-                            },
-                            ColumnValidationErrors = new List<ValidationError>
-                                {
-                                    new ValidationError
-                                    {
-                                        PropertyName = "CustomerTin",
-                                        ErrorMessage = "Values should be unique"
-                                    }
-                                }
-                        });
-                }
+                //}
 
 
                 uploadResult.ValidRows = uploadResult.ValidRows

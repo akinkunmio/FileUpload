@@ -36,10 +36,12 @@ namespace FileUploadApi.ApiServices
 
             if (!request.ItemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem.ToLower())
                 && !request.ItemType.ToLower().Equals(GenericConstants.BillPaymentId.ToLower())
-                && !request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
-                && !request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower())
-                && !request.ItemType.ToLower().Equals(GenericConstants.Other.ToLower()))
+                && !request.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
+                //&& !request.ItemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
+                //&& !request.ItemType.ToLower().Equals(GenericConstants.Wht.ToLower())
+                //&& !request.ItemType.ToLower().Equals(GenericConstants.Other.ToLower()))
                 throw new AppException("Invalid Content Type specified", 400);
+
 
             if (request.ContentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
                 ArgumentGuard.NotNullOrWhiteSpace(request.BusinessTin, nameof(request.BusinessTin));
