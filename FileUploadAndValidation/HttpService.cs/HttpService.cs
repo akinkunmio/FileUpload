@@ -46,8 +46,8 @@ namespace FileUploadAndValidation.UploadServices
                 return GenericConstants.ValidateFirsUrl;
 
             else if (itemType.ToLower().Equals(GenericConstants.Wht) || 
-                itemType.ToLower().Equals(GenericConstants.Wvat) || !itemType.ToLower().Equals(GenericConstants.MultiTax) || 
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture) || !itemType.ToLower().Equals(GenericConstants.Lasg))
+                itemType.ToLower().Equals(GenericConstants.Wvat) && !itemType.ToLower().Equals(GenericConstants.MultiTax) && 
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) && !itemType.ToLower().Equals(GenericConstants.Lasg))
                 return GenericConstants.ValidateFirsUrl;
 
             else if (itemType.ToLower().Equals(GenericConstants.MultiTax))

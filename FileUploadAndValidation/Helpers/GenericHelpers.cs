@@ -498,6 +498,31 @@ namespace FileUploadAndValidation.Helpers
                         + (valids.Select(s => s.Surcharge).Sum())
                         + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
                     );
+
+                if (contentType.ToLower().Equals(GenericConstants.Firs)
+                    && itemType.ToLower().Equals(GenericConstants.Wht))
+                    totalAmount = (
+                        (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.WhtAmount)).Sum())
+                        + (valids.Select(s => s.Surcharge).Sum())
+                        + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
+                    );
+                if (contentType.ToLower().Equals(GenericConstants.Firs)
+                    && itemType.ToLower().Equals(GenericConstants.Wvat))
+                    totalAmount = (
+                        (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.WvatValue)).Sum())
+                        + (valids.Select(s => s.Surcharge).Sum())
+                        + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
+                    );
+
+                if (contentType.ToLower().Equals(GenericConstants.Firs)
+                    && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
+                    !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+                    !itemType.ToLower().Equals(GenericConstants.Lasg))
+                    totalAmount = (
+                        (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.Amount)).Sum())
+                        + (valids.Select(s => s.Surcharge).Sum())
+                        + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
+                    );
             }
 
             return totalAmount;
