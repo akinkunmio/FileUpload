@@ -205,7 +205,53 @@ namespace FileUploadAndValidation.Repository
                                 }
                             }
 
-                            if(fileDetail.ContentType.ToLower().Equals(GenericConstants.Firs)
+                            if (fileDetail.ContentType.ToLower().Equals(GenericConstants.Firs)
+                                && !fileDetail.ItemType.ToLower().Equals(GenericConstants.MultiTax) || 
+                                !fileDetail.ItemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+                                !fileDetail.ItemType.ToLower().Equals(GenericConstants.Lasg))
+                            {
+                                foreach (var valid in payments)
+                                {
+                                    await connection.ExecuteAsync(sql: "sp_insert_valid_firs_other",
+                                        param: new
+                                        {
+                                            amount = valid.Amount,
+                                            comment = valid.Comment,
+                                            document_number = valid.DocumentNumber,
+                                            customer_name = valid.CustomerName,
+                                            customer_tin = valid.CustomerTin,
+                                            created_date = valid.CreatedDate,
+                                            row_num = valid.RowNum,
+                                            transactions_summary_Id = transactionSummaryId,
+                                            initial_validation_status = "Valid"
+                                        },
+                                        transaction: sqlTransaction,
+                                        commandType: System.Data.CommandType.StoredProcedure);
+                                }
+
+                                foreach (var invalid in invalidPayments)
+                                {
+                                    await connection.ExecuteAsync(sql: "sp_insert_invalid_firs_other",
+                                        param: new
+                                        {
+                                            amount = invalid.Row.Amount,
+                                            comment = invalid.Row.Comment,
+                                            document_number = invalid.Row.DocumentNumber,
+                                            customer_name = invalid.Row.CustomerName,
+                                            customer_tin = invalid.Row.CustomerTin,
+                                            row_status = "Invalid",
+                                            created_date = invalid.Row.CreatedDate,
+                                            row_num = invalid.Row.RowNum,
+                                            transactions_summary_Id = transactionSummaryId,
+                                            initial_validation_status = "Invalid",
+                                            error = invalid.Row.ErrorDescription
+                                        },
+                                        transaction: sqlTransaction,
+                                        commandType: System.Data.CommandType.StoredProcedure);
+                                }
+                            }
+
+                            if (fileDetail.ContentType.ToLower().Equals(GenericConstants.Firs)
                                 && fileDetail.ItemType.ToLower().Equals(GenericConstants.MultiTax))
                             {
                                
@@ -527,6 +573,13 @@ namespace FileUploadAndValidation.Repository
                 return @"sp_get_confirmed_firs_wvat_by_transactions_summary_id";
             }
             else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+                !itemType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return @"sp_get_confirmed_firs_other_by_transactions_summary_id";
+            }
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && itemType.ToLower().Equals(GenericConstants.MultiTax))
             {
                 return @"sp_get_confirmed_firs_multitax_by_transactions_summary_id";
@@ -625,6 +678,13 @@ namespace FileUploadAndValidation.Repository
                  && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_get_firs_wvat_payments_status_by_transactions_summary_id";
+            }
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+                !itemType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return @"sp_get_firs_other_payments_status_by_transactions_summary_id";
             }
             else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
                  && contentType.ToLower().Equals(GenericConstants.Firs))
@@ -798,6 +858,13 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_update_firs_wvat_payments_detail";
             }
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+                !itemType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return @"sp_update_firs_other_payments_detail";
+            }
             else if (itemType.ToLower().Equals(GenericConstants.MultiTax)
                  && contentType.ToLower().Equals(GenericConstants.Firs))
             {
@@ -833,6 +900,13 @@ namespace FileUploadAndValidation.Repository
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return @"sp_update_firs_wvat_detail_enterprise_error";
+            }
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+                !itemType.ToLower().Equals(GenericConstants.Lasg))
+            {
+                return @"sp_update_firs_other_detail_enterprise_error";
             }
             else if(itemType.ToLower().Equals(GenericConstants.MultiTax)
                 && contentType.ToLower().Equals(GenericConstants.Firs))

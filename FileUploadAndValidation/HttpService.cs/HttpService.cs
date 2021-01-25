@@ -45,6 +45,11 @@ namespace FileUploadAndValidation.UploadServices
             else if(itemType.ToLower().Equals(GenericConstants.Firs))
                 return GenericConstants.ValidateFirsUrl;
 
+            else if (itemType.ToLower().Equals(GenericConstants.Wht) || 
+                itemType.ToLower().Equals(GenericConstants.Wvat) && !itemType.ToLower().Equals(GenericConstants.MultiTax) && 
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture) && !itemType.ToLower().Equals(GenericConstants.Lasg))
+                return GenericConstants.ValidateFirsUrl;
+
             else if (itemType.ToLower().Equals(GenericConstants.MultiTax))
                 return GenericConstants.ValidateMultitaxUrl;
             else if (itemType.ToLower().Equals(GenericConstants.ManualCapture))
@@ -179,14 +184,18 @@ namespace FileUploadAndValidation.UploadServices
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && (itemType.ToLower().Equals(GenericConstants.Wht)
-                || itemType.ToLower().Equals(GenericConstants.Wvat)))
+                || itemType.ToLower().Equals(GenericConstants.Wvat)|| 
+                !itemType.ToLower().Equals(GenericConstants.MultiTax)||
+                !itemType.ToLower().Equals(GenericConstants.ManualCapture)||
+                !itemType.ToLower().Equals(GenericConstants.Lasg)))
                 result = JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
                     DataStoreUrl = url,
                     TaxTypeCode = itemType.ToLower(),
                     BusinessTin = businessTin,
-                    BusinessId = businessId
+                    BusinessId = businessId,
+                    BatchId = batchId
                 });
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)

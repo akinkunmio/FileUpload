@@ -210,6 +210,7 @@ public class FirsRowDetail : RowDetail
         public string StartPeriod { get; set; }
         public string EndPeriod { get; set; }
         public string Narration { get; set; }
+        public string CustomerTin { get; set; }
 
     }
 
