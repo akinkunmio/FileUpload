@@ -72,10 +72,26 @@ namespace FileUploadAndValidation.Helpers
                     WvatRate = r.WvatRate,
                     WvatValue = r.WvatValue
                 };
-            if (!itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-                !itemType.ToLower().Equals(GenericConstants.Lasg)
-                && contentType.ToLower().Equals(GenericConstants.Firs))
+            //if (!itemType.ToLower().Equals(GenericConstants.MultiTax) ||
+            //    !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
+            //    !itemType.ToLower().Equals(GenericConstants.Lasg)
+            //    && contentType.ToLower().Equals(GenericConstants.Firs) 
+            //    && !itemType.ToLower().Equals(GenericConstants.Wht) 
+            //    && !itemType.ToLower().Equals(GenericConstants.Wvat))
+            //if ((!itemType.ToLower().Equals(GenericConstants.MultiTax)
+            //    || !itemType.ToLower().Equals(GenericConstants.ManualCapture)
+            //    || (!itemType.ToLower().Equals(GenericConstants.Lasg)
+            //    || !itemType.ToLower().Equals(GenericConstants.Vat)
+            //    || (!itemType.ToLower().Equals(GenericConstants.Wht)
+            //   && contentType.ToLower().Equals(GenericConstants.Firs))
+            //   && (!itemType.ToLower().Equals(GenericConstants.Wvat)
+            //   && (!itemType.ToLower().Equals(GenericConstants.Wht)))
+            if ((!itemType.ToLower().Equals(GenericConstants.ManualCapture)
+                || (!itemType.ToLower().Equals(GenericConstants.MultiTax))
+                || (!itemType.ToLower().Equals(GenericConstants.Lasg))
+               && contentType.ToLower().Equals(GenericConstants.Firs))
+               && !itemType.ToLower().Equals(GenericConstants.Wvat)
+               && (!itemType.ToLower().Equals(GenericConstants.Wht)))
                 result = new FirsOtherUntyped
                 {
                     Row = r.RowNum,
@@ -212,14 +228,14 @@ namespace FileUploadAndValidation.Helpers
                     r.TransactionConvenienceFee
                };
             }
+
             if ((itemType.ToLower().Equals(GenericConstants.Cit)
                 || itemType.ToLower().Equals(GenericConstants.Edt)
                 || itemType.ToLower().Equals(GenericConstants.PreOpLevy)
-                || itemType.ToLower().Equals(GenericConstants.Vat) ||
-                !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-                !itemType.ToLower().Equals(GenericConstants.Lasg)
-                && contentType.ToLower().Equals(GenericConstants.Firs)))
+                || itemType.ToLower().Equals(GenericConstants.Vat))
+               && contentType.ToLower().Equals(GenericConstants.Firs)
+               && !itemType.ToLower().Equals(GenericConstants.Wvat) 
+               && (!itemType.ToLower().Equals(GenericConstants.Wht)))
                 result = new
                 {
                     Row = r.RowNum,
@@ -317,8 +333,12 @@ namespace FileUploadAndValidation.Helpers
                    .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wvat, s));
             }
 
-            else if (contentType.ToLower().Equals(GenericConstants.Firs) && !itemType.ToLower().Equals(GenericConstants.MultiTax) || 
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture) || !itemType.ToLower().Equals(GenericConstants.Lasg))
+            else if ((!itemType.ToLower().Equals(GenericConstants.ManualCapture))
+                || (!itemType.ToLower().Equals(GenericConstants.MultiTax))
+                || (!itemType.ToLower().Equals(GenericConstants.Lasg))
+                || (!itemType.ToLower().Equals(GenericConstants.BillPaymentId))
+                || (!itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
+               && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 return rowDetails
                    .Select(s => MapToNasValidateObject(contentType, itemType.ToLower(), s));
@@ -499,25 +519,12 @@ namespace FileUploadAndValidation.Helpers
                         + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
                     );
 
-                if (contentType.ToLower().Equals(GenericConstants.Firs)
-                    && itemType.ToLower().Equals(GenericConstants.Wht))
-                    totalAmount = (
-                        (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.WhtAmount)).Sum())
-                        + (valids.Select(s => s.Surcharge).Sum())
-                        + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
-                    );
-                if (contentType.ToLower().Equals(GenericConstants.Firs)
-                    && itemType.ToLower().Equals(GenericConstants.Wvat))
-                    totalAmount = (
-                        (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.WvatValue)).Sum())
-                        + (valids.Select(s => s.Surcharge).Sum())
-                        + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
-                    );
-
-                if (contentType.ToLower().Equals(GenericConstants.Firs)
-                    && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-                    !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-                    !itemType.ToLower().Equals(GenericConstants.Lasg))
+                if ((!itemType.ToLower().Equals(GenericConstants.MultiTax)
+                    || itemType.ToLower().Equals(GenericConstants.Lasg)
+                    || itemType.ToLower().Equals(GenericConstants.ManualCapture))
+                   && contentType.ToLower().Equals(GenericConstants.Firs)
+                   && (!itemType.ToLower().Equals(GenericConstants.Wvat)
+                   || !itemType.ToLower().Equals(GenericConstants.Wht)))
                     totalAmount = (
                         (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => decimal.Parse(s.Amount)).Sum())
                         + (valids.Select(s => s.Surcharge).Sum())

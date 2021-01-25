@@ -208,7 +208,9 @@ namespace FileUploadAndValidation.Repository
                             if (fileDetail.ContentType.ToLower().Equals(GenericConstants.Firs)
                                 && !fileDetail.ItemType.ToLower().Equals(GenericConstants.MultiTax) || 
                                 !fileDetail.ItemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-                                !fileDetail.ItemType.ToLower().Equals(GenericConstants.Lasg))
+                                !fileDetail.ItemType.ToLower().Equals(GenericConstants.Lasg) 
+                                && !fileDetail.ItemType.ToLower().Equals(GenericConstants.Wht) 
+                                || !fileDetail.ItemType.ToLower().Equals(GenericConstants.Wvat))
                             {
                                 foreach (var valid in payments)
                                 {

@@ -70,6 +70,7 @@ namespace FileUploadAndValidation.Repository
             {
                 //var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
                 var fileLocation = @"../data/confirmed/";
+                // var fileLocation = @"C:/test_nas/qtb/confirmed/";
                 var fileName = batchId + "_confirmed.json";
 
                 if (!Directory.Exists(fileLocation))
@@ -330,7 +331,9 @@ namespace FileUploadAndValidation.Repository
 
             if (!itemType.ToLower().Equals(GenericConstants.MultiTax) ||
                 !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-                !itemType.ToLower().Equals(GenericConstants.Lasg)
+                !itemType.ToLower().Equals(GenericConstants.Lasg) ||
+                !itemType.ToLower().Equals(GenericConstants.Wht) ||
+                !itemType.ToLower().Equals(GenericConstants.Wvat)
                 && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails
