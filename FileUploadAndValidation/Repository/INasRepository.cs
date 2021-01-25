@@ -70,7 +70,6 @@ namespace FileUploadAndValidation.Repository
             {
                 //var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
                 var fileLocation = @"../data/confirmed/";
-                // var fileLocation = @"C:/test_nas/qtb/confirmed/";
                 var fileName = batchId + "_confirmed.json";
 
                 if (!Directory.Exists(fileLocation))
