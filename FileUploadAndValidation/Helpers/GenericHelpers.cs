@@ -72,20 +72,6 @@ namespace FileUploadAndValidation.Helpers
                     WvatRate = r.WvatRate,
                     WvatValue = r.WvatValue
                 };
-            //if (!itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-            //    !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-            //    !itemType.ToLower().Equals(GenericConstants.Lasg)
-            //    && contentType.ToLower().Equals(GenericConstants.Firs) 
-            //    && !itemType.ToLower().Equals(GenericConstants.Wht) 
-            //    && !itemType.ToLower().Equals(GenericConstants.Wvat))
-            //if ((!itemType.ToLower().Equals(GenericConstants.MultiTax)
-            //    || !itemType.ToLower().Equals(GenericConstants.ManualCapture)
-            //    || (!itemType.ToLower().Equals(GenericConstants.Lasg)
-            //    || !itemType.ToLower().Equals(GenericConstants.Vat)
-            //    || (!itemType.ToLower().Equals(GenericConstants.Wht)
-            //   && contentType.ToLower().Equals(GenericConstants.Firs))
-            //   && (!itemType.ToLower().Equals(GenericConstants.Wvat)
-            //   && (!itemType.ToLower().Equals(GenericConstants.Wht)))
             if ((!itemType.ToLower().Equals(GenericConstants.ManualCapture)
                 || (!itemType.ToLower().Equals(GenericConstants.MultiTax))
                 || (!itemType.ToLower().Equals(GenericConstants.Lasg))
