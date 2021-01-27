@@ -182,14 +182,14 @@ namespace FileUploadApi.Controllers
             }
             catch (AppException ex)
             {
-                _logger.LogError("Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}", batchId, ex.Message, ex.StackTrace);
+                _logger.LogError($"Could not get the statuses of rows with BatchId {batchId} : {ex.Message} | {ex.StackTrace}");
 
                 return Utils.ResponseHandler.HandleException(ex);
 
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"An Error occured during the Upload File Process: {ex.Message} | {ex.StackTrace}");
 
                 return Utils.ResponseHandler.HandleException(ex);
             }
@@ -230,7 +230,7 @@ namespace FileUploadApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"An Error occured during initiate transactions approval: {ex.Message} | {ex.StackTrace}");
 
                 return Utils.ResponseHandler.HandleException(ex);
 
@@ -256,13 +256,13 @@ namespace FileUploadApi.Controllers
             }
             catch (AppException ex)
             {
-                _logger.LogError("An Error occured during the Template Download File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}", ex.Value, ex.Message, ex.StackTrace);
+                _logger.LogError($"An Error occured during the Template Download File Process:{ex.Value} | {ex.Message} | {ex.StackTrace}");
                 
                 return Utils.ResponseHandler.HandleException(ex);
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Error occured during the Template Download File Process: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"An Error occured during the Template Download File Process: {ex.Message} | {ex.StackTrace}");
 
                 return Utils.ResponseHandler.HandleException(ex);
             }
@@ -313,13 +313,13 @@ namespace FileUploadApi.Controllers
             }
             catch (AppException ex)
             {
-                _logger.LogError("An Error occured  {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"An Error occured  {ex.Message} | {ex.StackTrace}");
 
                 return Utils.ResponseHandler.HandleException(ex);
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"An Error occured: {ex.Message} | {ex.StackTrace}");
              
                 return Utils.ResponseHandler.HandleException(ex);
             }
@@ -344,13 +344,13 @@ namespace FileUploadApi.Controllers
             }
             catch (AppException ex)
             {
-                _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"An Error occured {ex.Message} | {ex.StackTrace}");
 
                 return Utils.ResponseHandler.HandleException(ex);
             }
             catch (Exception ex)
             {
-                _logger.LogError("An Error occured {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"An Error occured {ex.Message} | {ex.StackTrace}");
                 
                 return Utils.ResponseHandler.HandleException(ex);
             }

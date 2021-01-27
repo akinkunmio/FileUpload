@@ -53,7 +53,7 @@ namespace FileUploadAndValidation.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 //return new FileProperty
                 //{
                 //    BatchId = batchId,
@@ -93,7 +93,7 @@ namespace FileUploadAndValidation.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 throw new AppException($"An error occured while saving file. Please, retry!.", 400);
             }
         }
@@ -119,7 +119,7 @@ namespace FileUploadAndValidation.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 throw new AppException($"An error occured while saving template file {fName} to NAS ");
             }
 
@@ -148,12 +148,12 @@ namespace FileUploadAndValidation.Repository
             }
             catch (AppException ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 throw ex;
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 throw new AppException($"An error occured while extracting file validation result", 400);
             }
 
@@ -181,12 +181,12 @@ namespace FileUploadAndValidation.Repository
             }
             catch (AppException ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 throw ex;
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 throw new AppException($"An error occured while downloading template file. Please, retry!.", 400);
             }
         }
@@ -211,12 +211,12 @@ namespace FileUploadAndValidation.Repository
             }
             catch (AppException ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 throw ex;
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 throw new AppException($"An error occured while extracting validation result", 400);
             }
         }
@@ -246,12 +246,12 @@ namespace FileUploadAndValidation.Repository
             }
             catch (AppException ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 throw ex;
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 // return "uservalidationresult/firs_wvt_X1KTNC_202005091720288960_validate.json";
                 throw new AppException($"An error occured while saving the validation result file", 400);
             }
@@ -438,7 +438,7 @@ namespace FileUploadAndValidation.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("Log information {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
                 //return new FileProperty
                 //{
                 //    BatchId = batchId,
