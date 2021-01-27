@@ -21,6 +21,7 @@
     <None Remove="Scripts\1597075866_validation_data_update_procedures.sql" />
     <None Remove="Scripts\1605521360_update_insert_queries_with_businessid.sql" />
     <None Remove="Scripts\1605521372_firs_other_proc.sql" />
+    <None Remove="Scripts\1611742389_modified_payment_items.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,7 @@
     <EmbeddedResource Include="Scripts\1597075866_validation_data_update_procedures.sql" />
     <EmbeddedResource Include="Scripts\1605521360_update_insert_queries_with_businessid.sql" />
     <EmbeddedResource Include="Scripts\1605521372_firs_other_proc.sql" />
+    <EmbeddedResource Include="Scripts\1611742389_modified_payment_items.sql" />
   </ItemGroup>
 
   <ItemGroup>

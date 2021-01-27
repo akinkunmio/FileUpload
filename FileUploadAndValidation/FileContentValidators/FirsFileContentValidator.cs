@@ -283,7 +283,7 @@ namespace FileUploadAndValidation.FileServices
             }
             catch (Exception exception)
             {
-                _logger.LogError("Error occured while uploading bill payment file with error message {ex.message} | {ex.StackTrace}", exception.Message, exception.StackTrace);
+                _logger.LogError($"Error occured while uploading bill payment file with error message {exception.Message} | {exception.StackTrace}", exception.Message, exception.StackTrace);
                 uploadResult.ErrorMessage = exception.Message;
                 throw new AppException(exception.Message, 400, uploadResult);
             }

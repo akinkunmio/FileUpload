@@ -48,7 +48,7 @@ namespace FileUploadAndValidation.QueueServices
                     )
                 );
 
-                _logger.LogInformation("Log information {queueMessage.RequestId} | {queueMessage.ResultLocation} | {queueMessage.CreatedAt}", batchId, queueMessage.ResultLocation, queueMessage.CreatedAt);
+                _logger.LogInformation($"Log information {queueMessage.RequestId} | {queueMessage.ResultLocation} | {queueMessage.CreatedAt}", batchId, queueMessage.ResultLocation, queueMessage.CreatedAt);
 
                 var validRowsCount = validationStatuses
                                                     .Where(v => v.Status.ToLower().Equals("valid"))
@@ -75,11 +75,11 @@ namespace FileUploadAndValidation.QueueServices
             }
             catch (AppException ex)
             {
-                _logger.LogError("Error occured while updating payment items from queue in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"Error occured while updating payment items from queue in database with error message {ex.Message} | {ex.StackTrace}");
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occured while updating payment items from queue in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"Error occured while updating payment items from queue in database with error message {ex.Message} | {ex.StackTrace}");
             }
         }
     }

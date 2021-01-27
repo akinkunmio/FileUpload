@@ -49,8 +49,8 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Update Successful Upload operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
-                    throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
+                    _logger.LogError($"Error occured while performing Update Successful Upload operation from database with error message {ex.Message} | {ex.StackTrace}");
+                    throw new AppException($"An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
             }
         }
@@ -103,7 +103,7 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while Getting Batch Upload Summary from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
             }
@@ -141,7 +141,7 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while Getting Batch Upload Summary from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
             }
@@ -171,7 +171,7 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
                 }
             }

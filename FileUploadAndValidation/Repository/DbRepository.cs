@@ -359,7 +359,7 @@ namespace FileUploadAndValidation.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occured while inserting payment items in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"Error occured while inserting payment items in database with error message {ex.Message} | {ex.StackTrace}");
                 throw new AppException("An error occured. Please, retry!.", 400);
             }
         }
@@ -389,7 +389,7 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Update Successful Upload operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while performing Update Successful Upload operation from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
@@ -419,7 +419,7 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while Getting Batch Upload Summary from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
@@ -482,7 +482,7 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while Getting Batch Upload Summary from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while Getting Batch Upload Summary from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
@@ -512,7 +512,7 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
@@ -551,7 +551,7 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
@@ -627,12 +627,12 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch(AppException ex)
                 {
-                    _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.Message} | {ex.StackTrace}");
                     throw ex;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while performing Bill Payment Row Statuses operation from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
@@ -837,7 +837,7 @@ namespace FileUploadAndValidation.Repository
                 }    
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Update Bill Payment Validation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while performing Update Bill Payment Validation operation from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }
@@ -861,9 +861,9 @@ namespace FileUploadAndValidation.Repository
                 return @"sp_update_firs_wvat_payments_detail";
             }
             else if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-                !itemType.ToLower().Equals(GenericConstants.Lasg))
+                && (!itemType.ToLower().Equals(GenericConstants.MultiTax)) ||
+                (!itemType.ToLower().Equals(GenericConstants.ManualCapture)) ||
+                (!itemType.ToLower().Equals(GenericConstants.Lasg)))
             {
                 return @"sp_update_firs_other_payments_detail";
             }
@@ -904,9 +904,9 @@ namespace FileUploadAndValidation.Repository
                 return @"sp_update_firs_wvat_detail_enterprise_error";
             }
             else if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-                !itemType.ToLower().Equals(GenericConstants.Lasg))
+                && (!itemType.ToLower().Equals(GenericConstants.MultiTax)) ||
+                (!itemType.ToLower().Equals(GenericConstants.ManualCapture)) ||
+                (!itemType.ToLower().Equals(GenericConstants.Lasg)))
             {
                 return @"sp_update_firs_other_detail_enterprise_error";
             }
@@ -957,7 +957,7 @@ namespace FileUploadAndValidation.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error occured while performing Update Bill Payment Initiation operation from database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                    _logger.LogError($"Error occured while performing Update Bill Payment Initiation operation from database with error message {ex.Message} | {ex.StackTrace}");
                     throw new AppException("An error occured. Please, retry!.", 400);
                 }
             }

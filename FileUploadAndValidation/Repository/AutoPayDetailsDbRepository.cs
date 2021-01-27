@@ -74,7 +74,7 @@ namespace FileUploadAndValidation.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occured while inserting payment items in database with error message {ex.message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+                _logger.LogError($"Error occured while inserting payment items in database with error message {ex.Message} | {ex.StackTrace}");
                 throw new AppException("An error occured while querying the DB", (int)HttpStatusCode.InternalServerError);
             }
         }     
