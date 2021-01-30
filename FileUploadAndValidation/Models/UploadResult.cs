@@ -180,10 +180,6 @@ public class FirsRowDetail : RowDetail
 
         public string TaxAccountNumber { get; set; }
 
-        public string WvatRate { get; set; }
-
-        public string WvatValue { get; set; }
-
         public string TaxType { get; set; }
 
         public string DocumentNumber { get; set; }

@@ -81,8 +81,8 @@ namespace FileUploadAndValidation.FileServices
                     CurrencyInvoicedValue = row.Columns[8].Value,
                     CurrencyExchangeRate = row.Columns[9].Value,
                     TransactionInvoicedValue = row.Columns[10].Value,
-                    WvatRate = row.Columns[11].Value,
-                    WvatValue = row.Columns[12].Value,
+                    WVATRate = row.Columns[11].Value,
+                    WVATValue = row.Columns[12].Value,
                     TaxAccountNumber = row.Columns[13].Value,
                 };
             else
@@ -232,8 +232,8 @@ namespace FileUploadAndValidation.FileServices
                                 TransactionCurrency = nonDistinct.TransactionCurrency,
                                 InvoiceNumber = nonDistinct.InvoiceNumber,
                                 TransactionDate = nonDistinct.TransactionDate,
-                                WvatRate = nonDistinct.WvatRate,
-                                WvatValue = nonDistinct.WvatValue,
+                                WVATRate = nonDistinct.WVATRate,
+                                WVATValue = nonDistinct.WVATValue,
                                 CreatedDate = dateTimeNow.ToString()
                             },
                             ColumnValidationErrors = new List<ValidationError>

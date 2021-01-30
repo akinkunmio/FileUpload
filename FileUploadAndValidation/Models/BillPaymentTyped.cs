@@ -162,10 +162,9 @@ namespace FileUploadAndValidation.Models
         public string CurrencyExchangeRate { get; set; }
 
         public string TaxAccountNumber { get; set; }
+        public string WVATRate { get; set; }
 
-        public string WvatRate { get; set; }
-
-        public string WvatValue { get; set; }
+        public string WVATValue { get; set; }
         public string TaxType { get; set; }
     }
 

@@ -69,8 +69,8 @@ namespace FileUploadAndValidation.Helpers
                     TransactionCurrency = r.TransactionCurrency,
                     TransactionDate = r.TransactionDate,
                     TransactionInvoicedValue = r.TransactionInvoicedValue,
-                    WvatRate = r.WvatRate,
-                    WvatValue = r.WvatValue
+                    WVATRate = r.WVATRate,
+                    WVATValue = r.WVATValue
                };
 
             else if (contentType.ToLower().Equals(GenericConstants.Firs)
@@ -200,8 +200,8 @@ namespace FileUploadAndValidation.Helpers
                     TransactionInvoicedValue = decimal.Parse(r.TransactionInvoicedValue),
                     CurrencyExchangeRate = decimal.Parse(r.CurrencyExchangeRate),
                     r.TaxAccountNumber,
-                    WVATRate = decimal.Parse(r.WvatRate),
-                    WVATValue = decimal.Parse(r.WvatValue),
+                    WVATRate = decimal.Parse(r.WVATRate),
+                    WVATValue = decimal.Parse(r.WVATValue),
                     BusinessTin = r.PayerTin,
                     Customer = r.PayerName,
                     r.BatchConvenienceFee,
@@ -507,7 +507,7 @@ namespace FileUploadAndValidation.Helpers
             if (GenericConstants.Wht.Equals(row.TaxType.ToLower()))
                 return decimal.Parse(row.WhtAmount);
             else if (GenericConstants.Wvat.Equals(row.TaxType.ToLower()))
-                return decimal.Parse(row.WvatValue);
+                return decimal.Parse(row.WVATValue);
             else
                 return decimal.Parse(row.Amount);
         }

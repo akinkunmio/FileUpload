@@ -323,8 +323,8 @@ namespace FileUploadAndValidation.Repository
                         TransactionInvoicedValue = r.TransactionInvoicedValue,
                         CurrencyExchangeRate = r.CurrencyExchangeRate,
                         TaxAccountNumber = r.TaxAccountNumber,
-                        WvatRate = r.WvatRate,
-                        WvatValue = r.WvatValue
+                        WvatRate = r.WVATRate,
+                        WvatValue = r.WVATValue
                     });
             }
 
