@@ -611,8 +611,14 @@ namespace FileUploadAndValidation.Repository
                    
                         result = await sqlConnection.QueryAsync<RowDetail>(
                           sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
-                          param: GetStatusBySummaryIdParam(summary.ContentType, summary.ItemType, summaryId, 
-                          pagination.PageSize, pagination.PageNumber, pagination.Status, pagination.TaxType),
+                          param: new
+                          {
+                              transactions_summary_id = summaryId,
+                              page_size = pagination.PageSize,
+                              page_number = pagination.PageNumber,
+                              status = pagination.Status,
+                              tax_type = pagination.TaxType ?? GenericConstants.All
+                          },
                           commandType: CommandType.StoredProcedure);
 
                     return result;
@@ -673,13 +679,6 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_firs_wvat_payments_status_by_transactions_summary_id";
             }
-            //else if (contentType.ToLower().Equals(GenericConstants.Firs)
-            //    && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-            //    !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-            //    !itemType.ToLower().Equals(GenericConstants.Lasg))
-            //{
-            //    return @"sp_get_firs_other_payments_status_by_transactions_summary_id";
-            //}
             else if (itemType.ToLower().Equals(GenericConstants.SingleTax)
                  && contentType.ToLower().Equals(GenericConstants.Firs))
             {

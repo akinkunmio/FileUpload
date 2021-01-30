@@ -48,7 +48,7 @@ namespace FileUploadAndValidation.QueueServices
                     )
                 );
 
-                _logger.LogInformation($"Log information {queueMessage.RequestId} | {queueMessage.ResultLocation} | {queueMessage.CreatedAt}", batchId, queueMessage.ResultLocation, queueMessage.CreatedAt);
+                _logger.LogInformation($"Log information {queueMessage.RequestId} | {queueMessage.ResultLocation} | {queueMessage.CreatedAt}");
 
                 var validRowsCount = validationStatuses
                                                     .Where(v => v.Status.ToLower().Equals("valid"))
