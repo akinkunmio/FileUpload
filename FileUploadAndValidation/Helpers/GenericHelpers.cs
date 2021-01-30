@@ -33,7 +33,6 @@ namespace FileUploadAndValidation.Helpers
         public static dynamic RowMarshaller(RowDetail r, string contentType, string itemType)
         {
             dynamic result = default;
-
             if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && itemType.ToLower().Equals(GenericConstants.Wht))
                 result = new FirsWhtUntyped
@@ -49,13 +48,14 @@ namespace FileUploadAndValidation.Helpers
                     InvoiceNumber = r.InvoiceNumber,
                     PeriodCovered = r.PeriodCovered,
                     WhtAmount = r.WhtAmount,
-                    WhtRate = r.WhtRate
+                    WhtRate = r.WhtRate,
+                    TaxType = r.TaxType
                 };
 
-            if (contentType.ToLower().Equals(GenericConstants.Firs)
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && itemType.ToLower().Equals(GenericConstants.Wvat))
-                result = new FirsWVatUntyped
-                {
+               result = new FirsWVatUntyped
+               {
                     Row = r.RowNum,
                     ContractorAddress = r.ContractorAddress,
                     ContractorName = r.ContractorName,
@@ -71,37 +71,10 @@ namespace FileUploadAndValidation.Helpers
                     TransactionInvoicedValue = r.TransactionInvoicedValue,
                     WvatRate = r.WvatRate,
                     WvatValue = r.WvatValue
-                };
-            if ((!itemType.ToLower().Equals(GenericConstants.ManualCapture)
-                || (!itemType.ToLower().Equals(GenericConstants.MultiTax))
-                || (!itemType.ToLower().Equals(GenericConstants.Lasg))
-               && contentType.ToLower().Equals(GenericConstants.Firs))
-               && !itemType.ToLower().Equals(GenericConstants.Wvat)
-               && (!itemType.ToLower().Equals(GenericConstants.Wht)))
-                result = new FirsOtherUntyped
-                {
-                    Row = r.RowNum,
-                    Amount = r.Amount,
-                    Comment = r.Comment,
-                    DocumentNumber = r.DocumentNumber,
-                    CustomerTin = r.CustomerTin,
-                    CustomerName = r.CustomerName
-                };
+               };
 
-            if (contentType.ToLower().Equals(GenericConstants.BillPayment)
-                && (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
-                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
-                result = new BillPaymentUntyped
-                {
-                    RowNumber = r.RowNum,
-                    Amount = r.Amount,
-                    CustomerId = r.CustomerId,
-                    ItemCode = r.ItemCode,
-                    ProductCode = r.ProductCode
-                };
-
-            if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && itemType.ToLower().Equals(GenericConstants.MultiTax))
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                  && itemType.ToLower().Equals(GenericConstants.MultiTax))
                 result = new
                 {
                     RowNumber = r.RowNum,
@@ -123,6 +96,27 @@ namespace FileUploadAndValidation.Helpers
                     r.TaxType
                 };
 
+            else if (contentType.ToLower().Equals(GenericConstants.BillPayment)
+                && (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)))
+                result = new BillPaymentUntyped
+                {
+                    RowNumber = r.RowNum,
+                    Amount = r.Amount,
+                    CustomerId = r.CustomerId,
+                    ItemCode = r.ItemCode,
+                    ProductCode = r.ProductCode
+                };
+            else
+                result = new FirsOtherUntyped
+                {
+                    RowNumber = r.RowNum,
+                    Amount = r.Amount,
+                    Comment = r.Comment,
+                    DocumentNumber = r.DocumentNumber,
+                    CustomerTin = r.CustomerTin,
+                    TaxType = r.TaxType
+                };
             return result;
         }
 
@@ -146,13 +140,13 @@ namespace FileUploadAndValidation.Helpers
 
             if ((contentType.ToLower().Equals(GenericConstants.BillPayment)
                 && (itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem)
-                || itemType.ToLower().Equals(GenericConstants.BillPaymentId))) 
+                || itemType.ToLower().Equals(GenericConstants.BillPaymentId)))
                 || (contentType.ToLower().Equals(GenericConstants.ManualCapture) && itemType.ToLower().Equals(GenericConstants.ManualCapture))
                 || (contentType.ToLower().Equals(GenericConstants.Lasg) && itemType.ToLower().Equals(GenericConstants.Lasg)))
             {
-                result = new 
+                result = new
                 {
-                    Amount = decimal.Parse(r.Amount),
+                    r.Amount,
                     r.CustomerId,
                     r.ItemCode,
                     r.ProductCode,
@@ -164,7 +158,7 @@ namespace FileUploadAndValidation.Helpers
                 };
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower())
+            else if (itemType.ToLower().Equals(GenericConstants.Wht.ToLower())
                 && contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
             {
                 result = new
@@ -188,10 +182,10 @@ namespace FileUploadAndValidation.Helpers
                 };
             }
 
-            if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
+            else if (itemType.ToLower().Equals(GenericConstants.Wvat.ToLower())
                 && contentType.ToLower().Equals(GenericConstants.Firs.ToLower()))
-            {
-                result = new 
+             {
+                result = new
                 {
                     Row = r.RowNum,
                     r.ContractorName,
@@ -212,33 +206,34 @@ namespace FileUploadAndValidation.Helpers
                     Customer = r.PayerName,
                     r.BatchConvenienceFee,
                     r.TransactionConvenienceFee
-               };
+                };
             }
 
-            if ((itemType.ToLower().Equals(GenericConstants.Cit)
-                || itemType.ToLower().Equals(GenericConstants.Edt)
-                || itemType.ToLower().Equals(GenericConstants.PreOpLevy)
-                || itemType.ToLower().Equals(GenericConstants.Vat))
-               && contentType.ToLower().Equals(GenericConstants.Firs)
-               && !itemType.ToLower().Equals(GenericConstants.Wvat) 
-               && (!itemType.ToLower().Equals(GenericConstants.Wht)))
+            else
+            {
                 result = new
                 {
                     Row = r.RowNum,
-                    r.CustomerTin,
-                    r.CustomerName,
+                    CustomerTin = r.PayerTin,
+                    CustomerName = r.PayerName,
                     r.Amount,
                     r.Comment,
                     r.DocumentNumber,
                     r.BatchConvenienceFee,
                     r.TransactionConvenienceFee
                 };
+            }
 
             return result;
         }
 
-        public static dynamic GetSaveToNasFileContent(string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
+        public static dynamic GetSaveToNasFileContent(string contentType, string itemType, IEnumerable<RowDetail> rowDetails, string additionalData = null)
         {
+            if (itemType.ToLower().Equals(GenericConstants.SingleTax))
+            {
+                return rowDetails
+                    .Select(s => MapToNasValidateObject(contentType, additionalData.ToLower(), s));
+            }
 
             if (itemType.ToLower().Equals(GenericConstants.MultiTax))
             {
@@ -305,29 +300,6 @@ namespace FileUploadAndValidation.Helpers
                 });
 
                 return result;
-            }
-
-            else if (itemType.ToLower().Equals(GenericConstants.Wht))
-            {
-                return rowDetails
-                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wht, s));
-            }
-
-            else if (itemType.ToLower().Equals(GenericConstants.Wvat))
-            {
-                return rowDetails
-                   .Select(s => MapToNasValidateObject(contentType, GenericConstants.Wvat, s));
-            }
-
-            else if ((!itemType.ToLower().Equals(GenericConstants.ManualCapture))
-                || (!itemType.ToLower().Equals(GenericConstants.MultiTax))
-                || (!itemType.ToLower().Equals(GenericConstants.Lasg))
-                || (!itemType.ToLower().Equals(GenericConstants.BillPaymentId))
-                || (!itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
-               && contentType.ToLower().Equals(GenericConstants.Firs))
-            {
-                return rowDetails
-                   .Select(s => MapToNasValidateObject(contentType, itemType.ToLower(), s));
             }
 
             else if (itemType.ToLower().Equals(GenericConstants.BillPaymentId)
@@ -533,6 +505,16 @@ namespace FileUploadAndValidation.Helpers
                 return decimal.Parse(s.Amount);
 
             return 0;
+        }
+
+        public static decimal GetAmountFromSingleTaxRow(RowDetail row)
+        {
+            if (GenericConstants.Wht.Equals(row.TaxType.ToLower()))
+                return decimal.Parse(row.WhtAmount);
+            else if (GenericConstants.Wvat.Equals(row.TaxType.ToLower()))
+                return decimal.Parse(row.WvatValue);
+            else
+                return decimal.Parse(row.Amount);
         }
     }
 

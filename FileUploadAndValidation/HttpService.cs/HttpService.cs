@@ -42,11 +42,7 @@ namespace FileUploadAndValidation.UploadServices
                 || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
                 return GenericConstants.ValidateBillPaymentUrl;
 
-            else if(itemType.ToLower().Equals(GenericConstants.Firs))
-                return GenericConstants.ValidateFirsUrl;
-
-            else if (!itemType.ToLower().Equals(GenericConstants.MultiTax) && 
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture) && !itemType.ToLower().Equals(GenericConstants.Lasg))
+            else if(itemType.ToLower().Equals(GenericConstants.SingleTax))
                 return GenericConstants.ValidateFirsUrl;
 
             else if (itemType.ToLower().Equals(GenericConstants.MultiTax))
@@ -120,7 +116,7 @@ namespace FileUploadAndValidation.UploadServices
             var validateResponse =  new ValidationResponse();
             try
             {
-                var requestBody = ConstructValidateRequestString(fileProperty.BusinessId, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin, fileProperty.BatchId);
+                var requestBody = ConstructValidateRequestString(fileProperty.BusinessId, fileProperty.Url, fileProperty.ContentType, fileProperty.ItemType, fileProperty.BusinessTin, fileProperty.BatchId, fileProperty.AdditionalData);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, GetValidateUrl(fileProperty.ItemType))
                 {
@@ -168,7 +164,7 @@ namespace FileUploadAndValidation.UploadServices
             }
         }
 
-        private string ConstructValidateRequestString(long businessId, string url, string contentType, string itemType = null, string businessTin = null, string batchId = null)
+        private string ConstructValidateRequestString(long businessId, string url, string contentType, string itemType = null, string businessTin = null, string batchId = null, string additionalData = null)
         {
             string result = "";
             if (contentType.ToLower().Equals(GenericConstants.BillPayment.ToLower()))
@@ -182,19 +178,15 @@ namespace FileUploadAndValidation.UploadServices
                 });
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)
-                && (itemType.ToLower().Equals(GenericConstants.Wht)
-                || itemType.ToLower().Equals(GenericConstants.Wvat)|| 
-                !itemType.ToLower().Equals(GenericConstants.MultiTax)||
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture)||
-                !itemType.ToLower().Equals(GenericConstants.Lasg)))
+                && itemType.ToLower().Equals(GenericConstants.SingleTax))
                 result = JsonConvert.SerializeObject(new
                 {
                     DataStore = 1,
                     DataStoreUrl = url,
-                    TaxTypeCode = itemType.ToLower(),
-                    BusinessTin = businessTin,
+                    BatchId = batchId,
                     BusinessId = businessId,
-                    BatchId = batchId
+                    TaxTypeCode = additionalData.ToLower(),
+                    BusinessTin = businessTin,
                 });
 
             if (contentType.ToLower().Equals(GenericConstants.Firs)

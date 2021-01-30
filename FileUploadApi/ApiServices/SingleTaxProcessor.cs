@@ -14,22 +14,24 @@ using System.Threading.Tasks;
 
 namespace FileUploadApi.ApiServices
 {
-    public class MultiTaxProcessor : IMultiTaxProcessor
+    public interface ISingleTaxProcessor
+    {
+        Task<ResponseResult> UploadFileAsync(FileUploadRequest uploadRequest);
+    }
+    public class SingleTaxProcessor : ISingleTaxProcessor
     {
         private readonly IBatchRepository _batchRepository;
         private readonly IEnumerable<IFileReader> _fileReaders;
         private readonly IEnumerable<IFileContentValidator> _fileContentValidators;
         private readonly ApprovalUtil _approvalUtil;
 
-
-        public MultiTaxProcessor(IEnumerable<IFileReader> fileReaders,
+        public SingleTaxProcessor(IEnumerable<IFileReader> fileReaders,
             IEnumerable<IFileContentValidator> fileContentValidators,
-            IEnumerable<IBatchRepository> batchRepositories, ApprovalUtil approvalUtil
-            )
+            IEnumerable<IBatchRepository> batchRepositories, ApprovalUtil approvalUtil)
         {
             _fileReaders = fileReaders;
             _fileContentValidators = fileContentValidators;
-            _batchRepository = batchRepositories.ToArray()[1];
+            _batchRepository = batchRepositories.ToArray()[2];
             _approvalUtil = approvalUtil;
         }
 
@@ -37,8 +39,6 @@ namespace FileUploadApi.ApiServices
         {
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
-            //ArgumentGuard.NotNullOrWhiteSpace(request.ProductCode, nameof(request.ProductCode));
-            //ArgumentGuard.NotNullOrWhiteSpace(request.ProductName, nameof(request.ProductName));
             ArgumentGuard.NotNullOrWhiteSpace(request.AuthToken, nameof(request.AuthToken));
 
             if (!request.ContentType.ToLower().Equals(GenericConstants.Firs)
@@ -51,24 +51,25 @@ namespace FileUploadApi.ApiServices
                 FileName = request.FileName
             };
 
-            uploadResult.BatchId = GenericHelpers.GenerateBatchId("QTB_FIRS", DateTime.Now);
-
             using (var contentStream = request.FileRef.OpenReadStream())
             {
                 IEnumerable<Row> rows = ExtractFileContent(request.FileExtension, contentStream);
 
                 await ValidateFileContentAsync(request, rows, uploadResult);
 
-                var totalAmount = (long)uploadResult.ValidRows.Select(p =>GenericHelpers.GetAmountFromMultiTaxRow(p)).ToList().Sum(s => s);
-                
+                var totalAmount = (long)uploadResult.ValidRows.Select(p => GenericHelpers.GetAmountFromSingleTaxRow(p)).ToList().Sum(s => s);
+
                 var approvalResponse = await _approvalUtil.GetApprovalConfiguration(request.BusinessId, request.UserId, totalAmount);
 
                 if (!approvalResponse)
                     throw new AppException("User is not enabled to upload a file", 400);
 
-                await _batchRepository.Save(uploadResult, request);
+                var itemType = uploadResult.ValidRows.Count > 0 ? uploadResult.ValidRows.FirstOrDefault().TaxType : uploadResult.Failures.FirstOrDefault().Row.TaxType;
 
-                return ResponseResult.CreateResponseResult(uploadResult, request.ContentType, request.ItemType);
+                uploadResult.BatchId = GenericHelpers.GenerateBatchId($"QTB_FIRS_{itemType}", DateTime.Now);
+                await _batchRepository.Save(uploadResult, request);
+                
+                return ResponseResult.CreateResponseResult(uploadResult, request.ContentType, itemType);
             }
 
         }
@@ -78,16 +79,12 @@ namespace FileUploadApi.ApiServices
             switch (request.ContentType.ToLower())
             {
                 case GenericConstants.Firs:
-                    await _fileContentValidators.ToArray()[2].Validate(request, rows, uploadResult);
-                    return;
-                case GenericConstants.FctIrs:
-                    await _fileContentValidators.ToArray()[3].Validate(request, rows, uploadResult);
+                    await _fileContentValidators.ToArray()[4].Validate(request, rows, uploadResult);
                     return;
                 default:
                     throw new AppException("Authority type not supported!.");
             }
         }
-
 
         private IEnumerable<Row> ExtractFileContent(string fileExtension, Stream contentStream)
         {

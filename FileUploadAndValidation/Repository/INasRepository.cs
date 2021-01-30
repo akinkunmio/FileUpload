@@ -328,28 +328,9 @@ namespace FileUploadAndValidation.Repository
                     });
             }
 
-            if (!itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-                !itemType.ToLower().Equals(GenericConstants.Lasg) ||
-                !itemType.ToLower().Equals(GenericConstants.Wht) ||
-                !itemType.ToLower().Equals(GenericConstants.Wvat)
-                && contentType.ToLower().Equals(GenericConstants.Firs))
-            {
-                result = rowDetails
-                    .Select(r => new
-                    {
-                        Row = r.RowNum,
-                        ErrorDescription = r.Error,
-                        Status = r.RowStatus,
-                        r.Amount,
-                        r.Comment,
-                        r.DocumentNumber,
-                        r.CustomerName,
-                        r.CustomerTin
-                    });
-            }
 
-            if (itemType.ToLower().Equals(GenericConstants.MultiTax)
+            if (itemType.ToLower().Equals(GenericConstants.MultiTax) 
+              || itemType.ToLower().Equals(GenericConstants.SingleTax)
                && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails.Select(r => new
@@ -448,6 +429,44 @@ namespace FileUploadAndValidation.Repository
                 throw new AppException($"An error occured while saving file for validation", 400);
             }
         }
+
+        public async Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails, string additionalData = null)
+        {
+            try
+            {
+                //var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
+                var fileLocation = @"../data/validate/";
+                var fileName = batchId + "_validate.json";
+                var path = fileLocation + fileName;
+
+                if (!Directory.Exists(fileLocation))
+                    Directory.CreateDirectory(fileLocation);
+
+                string jsonString = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails, additionalData));
+
+                await File.WriteAllTextAsync(path, jsonString);
+
+                return new FileProperty
+                {
+                    BatchId = batchId,
+                    DataStore = 1,
+                    Url = $"validate/{fileName}"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
+                //return new FileProperty
+                //{
+                //    BatchId = batchId,
+                //    DataStore = 1,
+                //    Url = $"validate/firs_multitax1_ZMWYAA_202005290823495638_validate.json"
+                //};
+                throw new AppException($"An error occured while saving file for validation", 400);
+            }
+        }
+
+
     }
 
     public interface INasRepository
@@ -455,6 +474,8 @@ namespace FileUploadAndValidation.Repository
         Task<FileProperty> SaveFileToValidate<T>(string batchId, IList<T> rowDetails);
 
         Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
+
+        Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails, string additionalData);
 
         Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
 

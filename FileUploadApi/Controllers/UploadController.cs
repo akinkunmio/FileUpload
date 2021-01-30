@@ -25,6 +25,7 @@ namespace FileUploadApi.Controllers
     {
         private readonly IMultiTaxProcessor _multiTaxProcessor;
         private readonly IGenericUploadService _genericUploadService;
+        private readonly ISingleTaxProcessor _singleTaxProcessor;
         private readonly IBatchProcessor _batchProcessor;
         private readonly ILogger<UploadController> _logger;
         private readonly INasRepository _nasRepository;
@@ -34,6 +35,7 @@ namespace FileUploadApi.Controllers
             ILogger<UploadController> logger,
             IGenericUploadService genericUploadService,
             IMultiTaxProcessor multiTaxProcessor,
+            ISingleTaxProcessor singleTaxProcessor,
             INasRepository nasRepository)
         {
             _logger = logger;
@@ -41,6 +43,7 @@ namespace FileUploadApi.Controllers
             _genericUploadService = genericUploadService;
             _multiTaxProcessor = multiTaxProcessor;
             _nasRepository = nasRepository;
+            _singleTaxProcessor = singleTaxProcessor;
         }
 
         [HttpPost("uploadfile/{contentType}/{itemType}")]
@@ -136,6 +139,34 @@ namespace FileUploadApi.Controllers
             return Ok(response);
         }
 
+
+        [HttpPost("singletax/{authority}")]
+        public async Task<IActionResult> PostSingleTaxPaymentUploadAsync(string authority)
+        {
+            ResponseResult response;
+
+            try
+            {
+                var request = FileUploadRequest.FromRequestForFirsSingletax(Request, authority);
+
+                response = await _singleTaxProcessor.UploadFileAsync(request);
+            }
+            catch (AppException ex)
+            {
+                _logger.LogError("An Error occured: {ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                return Utils.ResponseHandler.HandleException(ex);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An Unexpected Error occured ex.Message} | {ex.StackTrace}", ex.Message, ex.StackTrace);
+
+                return Utils.ResponseHandler.HandleException(ex);
+            }
+
+            return Ok(response);
+        }
 
         [HttpGet("{batchId}/status")]
         public async Task<IActionResult> GetFileUploadResult(string batchId, [FromQuery] PaginationQuery pagination)
