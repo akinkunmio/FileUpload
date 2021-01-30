@@ -1,3 +1,26 @@
+IF (OBJECT_ID('sp_update_firs_multitax_payments_detail') IS NOT NULL)
+BEGIN
+	DROP PROCEDURE sp_update_firs_multitax_payments_detail
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_update_firs_multitax_payments_detail]
+@transactions_summary_id BIGINT,
+@error NVARCHAR (Max),
+@row_num INT,
+@surcharge decimal(18, 4),
+@batchFee decimal(18, 4),
+@transactionFee decimal(18, 4),
+@customerName varchar(250),
+@row_status NVARCHAR (50)
+AS
+	UPDATE tbl_firs_multi_tax_transactions_detail 
+	SET error=@error, row_status=@row_status, payer_name = @customerName, batch_convenience_fee=@batchFee, 
+	transaction_convenience_fee  = @transactionFee
+	WHERE transactions_summary_id=@transactions_summary_id and row_num=@row_num;
+GO
+
+
 IF OBJECT_ID('tbl_firs_single_tax_transactions_detail','U') IS NULL 
 begin
 CREATE TABLE [dbo].[tbl_firs_single_tax_transactions_detail](
@@ -138,9 +161,9 @@ AS
 	WHERE transactions_summary_id=@transactions_summary_id and initial_validation_status = 'Valid';
 GO
 
-IF (OBJECT_ID('sp_update_firs_multitax_payments_detail') IS NOT NULL)
+IF (OBJECT_ID('sp_update_firs_singletax_payments_detail') IS NOT NULL)
 BEGIN
-	DROP PROCEDURE sp_update_firs_multitax_payments_detail
+	DROP PROCEDURE sp_update_firs_singletax_payments_detail
 END
 GO
 
@@ -148,13 +171,17 @@ CREATE PROCEDURE [dbo].[sp_update_firs_singletax_payments_detail]
 @transactions_summary_id BIGINT,
 @error NVARCHAR (Max),
 @row_num INT,
+@surcharge decimal(18, 4),
+@batchFee decimal(18, 4),
+@transactionFee decimal(18, 4),
+@customerName varchar(250),
 @row_status NVARCHAR (50)
 AS
 	UPDATE tbl_firs_single_tax_transactions_detail 
-	SET error=@error, row_status=@row_status
+	SET error=@error, row_status=@row_status, payer_name = @customerName, batch_convenience_fee=@batchFee, 
+	transaction_convenience_fee  = @transactionFee
 	WHERE transactions_summary_id=@transactions_summary_id and row_num=@row_num;
 GO
-
 
 IF (OBJECT_ID('sp_get_firs_singletax_payments_status_by_transactions_summary_id') IS NOT NULL)
 BEGIN
