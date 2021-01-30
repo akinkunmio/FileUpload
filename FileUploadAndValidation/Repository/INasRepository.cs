@@ -323,8 +323,8 @@ namespace FileUploadAndValidation.Repository
                         TransactionInvoicedValue = r.TransactionInvoicedValue,
                         CurrencyExchangeRate = r.CurrencyExchangeRate,
                         TaxAccountNumber = r.TaxAccountNumber,
-                        WvatRate = r.WVATRate,
-                        WvatValue = r.WVATValue
+                        WVATRate = r.WVATRate,
+                        WVATValue = r.WVATValue
                     });
             }
 
@@ -338,13 +338,25 @@ namespace FileUploadAndValidation.Repository
                     Row = r.RowNum,
                     ErrorDescription = r.Error,
                     Status = r.RowStatus,
+                    r.ContractorName,
+                    r.ContractorAddress,
+                    r.ContractorTin,
+                    r.ContractDescription,
+                    r.TransactionDate,
+                    r.NatureOfTransaction,
+                    r.InvoiceNumber,
+                    r.TransactionCurrency,
+                    CurrencyInvoicedValue = decimal.Parse(r.CurrencyInvoicedValue),
+                    TransactionInvoicedValue = decimal.Parse(r.TransactionInvoicedValue),
+                    CurrencyExchangeRate = decimal.Parse(r.CurrencyExchangeRate),
+                    r.TaxAccountNumber,
+                    WVATRate = decimal.Parse(r.WVATRate),
+                    WVATValue = decimal.Parse(r.WVATValue),
                     r.BeneficiaryTin,
                     r.BeneficiaryName,
                     r.BeneficiaryAddress,
-                    r.ContractDescription,
                     r.ContractDate,
                     r.ContractAmount,
-                    r.InvoiceNumber,
                     r.ContractType,
                     r.PeriodCovered,
                     r.WhtRate,
