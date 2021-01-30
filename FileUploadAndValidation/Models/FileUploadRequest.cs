@@ -130,6 +130,8 @@ namespace FileUploadAndValidation.Models
 
             if (string.IsNullOrWhiteSpace(request.Form["HasHeaderRow"].ToString()))
                 throw new AppException("Value must be passed for 'HasHeaderRow'.");
+            if (string.IsNullOrWhiteSpace(request.Form["BusinessTin"].ToString()))
+                throw new AppException("Value must be passed for 'BusinessTin'.");
 
             var file = request.Form.Files.FirstOrDefault();
 
@@ -151,6 +153,7 @@ namespace FileUploadAndValidation.Models
                 BusinessId = long.Parse(businessId),
                 ProductCode = request.Form["productCode"].ToString(),
                 ProductName = request.Form["productName"].ToString(),
+                BusinessTin = request.Form["BusinnessTin"].ToString(),
                 FileSize = file.Length,
                 HasHeaderRow = request.Form["HasHeaderRow"].ToString().ToBool()
             };

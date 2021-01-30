@@ -56,6 +56,7 @@ namespace FileUploadAndValidation.Repository
             fileProperty.ItemType = request.ItemType;
             fileProperty.BusinessId = request.BusinessId == null ? 0 : Convert.ToInt64(request.BusinessId);
             fileProperty.AdditionalData = uploadResult.ValidRows.FirstOrDefault().TaxType;
+            fileProperty.BusinessTin = request.BusinessTin;
 
             await _httpService.ValidateRecords(fileProperty,
                 request.AuthToken);
