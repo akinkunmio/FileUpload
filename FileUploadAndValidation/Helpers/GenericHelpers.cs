@@ -70,7 +70,8 @@ namespace FileUploadAndValidation.Helpers
                     TransactionDate = r.TransactionDate,
                     TransactionInvoicedValue = r.TransactionInvoicedValue,
                     WVATRate = r.WVATRate,
-                    WVATValue = r.WVATValue
+                    WVATValue = r.WVATValue,
+                    TaxType = r.TaxType
                };
 
             else if (contentType.ToLower().Equals(GenericConstants.Firs)
@@ -482,7 +483,7 @@ namespace FileUploadAndValidation.Helpers
                     totalAmount = (
                         (rowsStatus.Where(r => valids.Any(v => v.Row == r.RowNum)).Select(s => GetAmountFromSingleTaxRow(s)).Sum())
                         + (valids.FirstOrDefault().BatchConvenienceFee == 0 ? valids.Select(s => s.TransactionConvenienceFee).Sum() : valids.FirstOrDefault().BatchConvenienceFee)
-                        );
+                  );
             }
 
             return totalAmount;
