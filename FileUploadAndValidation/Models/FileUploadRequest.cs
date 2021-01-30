@@ -153,7 +153,7 @@ namespace FileUploadAndValidation.Models
                 BusinessId = long.Parse(businessId),
                 ProductCode = request.Form["productCode"].ToString(),
                 ProductName = request.Form["productName"].ToString(),
-                BusinessTin = request.Form["BusinnessTin"].ToString(),
+                BusinessTin = request.Form["BusinessTin"].ToString(),
                 FileSize = file.Length,
                 HasHeaderRow = request.Form["HasHeaderRow"].ToString().ToBool()
             };
