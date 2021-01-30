@@ -41,6 +41,7 @@ namespace FileUploadAndValidation.Repository
                 ContentType = request.ContentType,
                 UserId = (long)request.UserId,
                 BusinessId = (long)request.BusinessId,
+                BusinessTin = request.BusinessTin,
                 ProductName = request.ProductName,
                 ProductCode = request.ProductCode
             }, uploadResult.ValidRows, uploadResult.Failures);

@@ -107,6 +107,7 @@ namespace FileUploadApi.ApiServices
                         ContentType = fileSummary.ContentType,
                         ItemType = fileSummary.ItemType,
                         BusinessId = fileSummary.BusinessId,
+                        BusinessTin = fileSummary.BusinessTin,
                         Url = $"validate/{batchId}_validate.json"
                     }, authToken);
 

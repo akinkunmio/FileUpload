@@ -15,6 +15,7 @@ namespace FileUploadAndValidation.Models
 
         public string ItemType { get; set; }
         public long BusinessId { get; set; }
+        public string BusinessTin { get; set; }
 
         public int NumOfRecords { get; set; }
 
