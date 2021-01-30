@@ -43,8 +43,9 @@ namespace FileUploadAndValidation.Repository
                 BusinessId = (long)request.BusinessId,
                 BusinessTin = request.BusinessTin,
                 ProductName = request.ProductName,
-                ProductCode = request.ProductCode
-            }, uploadResult.ValidRows, uploadResult.Failures);
+                ProductCode = request.ProductCode,
+                AdditionalData = uploadResult.ValidRows.Count > 0 ? uploadResult.ValidRows.FirstOrDefault().TaxType : uploadResult.Failures.FirstOrDefault().Row.TaxType,
+            }, uploadResult.ValidRows, uploadResult.Failures) ;
 
 
             FileProperty fileProperty = await _nasRepository
