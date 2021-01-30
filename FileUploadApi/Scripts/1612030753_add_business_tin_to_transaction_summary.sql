@@ -5,6 +5,13 @@ BEGIN
 END
 GO
 
+IF NOT EXISTS( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tbl_transactions_summary'
+AND COLUMN_NAME = 'additional_data')
+BEGIN
+	ALTER TABLE tbl_transactions_summary ADD [additional_data] varchar(250) Null
+END
+GO
+
 IF (OBJECT_ID('sp_insert_payment_transaction_summary') IS NOT NULL)
 BEGIN
 	DROP PROCEDURE sp_insert_payment_transaction_summary
@@ -24,9 +31,10 @@ CREATE PROCEDURE [dbo].[sp_insert_payment_transaction_summary]
 @product_code nvarchar(50),
 @product_name nvarchar(50),
 @file_name nvarchar(50),
-@business_tin nvarchar(30)
+@business_tin nvarchar(30),
+@additional_data nvarchar(250)
 AS
-	INSERT INTO tbl_transactions_summary(batch_id, transaction_status, item_type, num_of_records, upload_date, content_type, userid,businessid, product_code, product_name, name_of_file,business_tin) 
-	VALUES(@batch_id,@status,@item_type,@num_of_records,@upload_date,@content_type,@userid,@businessid, @product_code, @product_name, @file_name,@business_tin) 
+	INSERT INTO tbl_transactions_summary(batch_id, transaction_status, item_type, num_of_records, upload_date, content_type, userid,businessid, product_code, product_name, name_of_file,business_tin,additional_data) 
+	VALUES(@batch_id,@status,@item_type,@num_of_records,@upload_date,@content_type,@userid,@businessid, @product_code, @product_name, @file_name,@business_tin,@additional_data) 
 	SELECT SCOPE_IDENTITY();
 GO

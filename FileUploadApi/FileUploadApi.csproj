@@ -21,7 +21,7 @@
     <None Remove="Scripts\1597075866_validation_data_update_procedures.sql" />
     <None Remove="Scripts\1605521360_update_insert_queries_with_businessid.sql" />
     <None Remove="Scripts\1612007856_firs_singletax_multitax_procedure.sql" />
-    <None Remove="Scripts\1612030742_add_business_tin_to_transaction_summary.sql" />
+    <None Remove="Scripts\1612030753_add_business_tin_to_transaction_summary.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,7 +32,7 @@
     <EmbeddedResource Include="Scripts\1597075866_validation_data_update_procedures.sql" />
     <EmbeddedResource Include="Scripts\1605521360_update_insert_queries_with_businessid.sql" />
     <EmbeddedResource Include="Scripts\1612007856_firs_singletax_multitax_procedure.sql" />
-    <EmbeddedResource Include="Scripts\1612030742_add_business_tin_to_transaction_summary.sql" />
+    <EmbeddedResource Include="Scripts\1612030753_add_business_tin_to_transaction_summary.sql" />
   </ItemGroup>
 
   <ItemGroup>

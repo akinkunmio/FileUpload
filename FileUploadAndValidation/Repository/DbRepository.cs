@@ -56,7 +56,8 @@ namespace FileUploadAndValidation.Repository
                                    businessid = fileDetail.BusinessId,
                                    product_code = fileDetail.ProductCode,
                                    product_name = fileDetail.ProductName,
-                                   file_name = fileDetail.CustomerFileName
+                                   file_name = fileDetail.CustomerFileName,
+                                   additional_data = fileDetail.AdditionalData
                                },
                                transaction: sqlTransaction,
                                commandType: System.Data.CommandType.StoredProcedure);
