@@ -66,10 +66,10 @@ namespace FileUploadApi.ApiServices
 
                 var itemType = uploadResult.ValidRows.Count > 0 ? uploadResult.ValidRows.FirstOrDefault().TaxType : uploadResult.Failures.FirstOrDefault().Row.TaxType;
 
-                uploadResult.BatchId = GenericHelpers.GenerateBatchId($"QTB_FIRS_{itemType}", DateTime.Now);
+                uploadResult.BatchId = GenericHelpers.GenerateBatchId($"QTB_FIRS_{itemType.ToUpper()}", DateTime.Now);
                 await _batchRepository.Save(uploadResult, request);
                 
-                return ResponseResult.CreateResponseResult(uploadResult, request.ContentType, itemType);
+                return ResponseResult.CreateResponseResult(uploadResult, request.ContentType, request.ItemType);
             }
 
         }

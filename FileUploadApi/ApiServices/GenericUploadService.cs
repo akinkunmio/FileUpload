@@ -225,44 +225,71 @@ namespace FileUploadApi.ApiServices
                        });
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.SingleTax)
                     && fileSummary.ContentType.ToLower().Equals(GenericConstants.Firs))
-                    paymentStatuses.Data = paymentStatus
-                       .Select(s => new
-                       {
-                           Row = s.RowNum,
-                           s.ContractorName,
-                           s.ContractorAddress,
-                           s.ContractorTin,
-                           s.ContractDescription,
-                           s.NatureOfTransaction,
-                           s.TransactionDate,
-                           s.TransactionCurrency,
-                           s.CurrencyInvoicedValue,
-                           s.CurrencyExchangeRate,
-                           s.TransactionInvoicedValue,
-                           s.WVATRate,
-                           s.WVATValue,
-                           s.TaxAccountNumber,
-                           s.BeneficiaryTin,
-                           s.BeneficiaryName,
-                           s.BeneficiaryAddress,
-                           s.ContractDate,
-                           s.ContractAmount,
-                           s.ContractType,
-                           s.PeriodCovered,
-                           s.InvoiceNumber,
-                           s.WhtRate,
-                           s.WhtAmount,
-                           s.Amount,
-                           s.Comment,
-                           s.DocumentNumber,
-                           s.PayerTin,
-                           s.PayerName,
-                           s.TransactionConvenienceFee,
-                           s.BatchConvenienceFee,
-                           s.TaxType,
-                           ErrorDescription = s.Error,
-                           Status = s.RowStatus
-                       });
+                {
+                    var taxTypeCode = paymentStatus.FirstOrDefault().TaxType.ToLower();
+                    if (taxTypeCode.Equals(GenericConstants.Wht))
+                        paymentStatuses.Data = paymentStatus
+                        .Select(s => new
+                        {
+                            Row = s.RowNum,
+                            s.BeneficiaryTin,
+                            s.BeneficiaryName,
+                            s.BeneficiaryAddress,
+                            s.ContractDate,
+                            s.ContractAmount,
+                            s.ContractType,
+                            s.PeriodCovered,
+                            s.InvoiceNumber,
+                            s.WhtRate,
+                            s.WhtAmount,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
+                            s.TaxType,
+                            ErrorDescription = s.Error,
+                            Status = s.RowStatus
+                        });
+                    else if (taxTypeCode.Equals(GenericConstants.Wvat))
+                        paymentStatuses.Data = paymentStatus
+                        .Select(s => new
+                        {
+                            Row = s.RowNum,
+                            s.ContractorName,
+                            s.ContractorAddress,
+                            s.ContractorTin,
+                            s.ContractDescription,
+                            s.NatureOfTransaction,
+                            s.TransactionDate,
+                            s.TransactionCurrency,
+                            s.CurrencyInvoicedValue,
+                            s.CurrencyExchangeRate,
+                            s.TransactionInvoicedValue,
+                            s.WVATRate,
+                            s.WVATValue,
+                            s.TaxAccountNumber,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
+                            s.TaxType,
+                            ErrorDescription = s.Error,
+                            Status = s.RowStatus
+                        });
+                    else
+                        paymentStatuses.Data = paymentStatus
+                        .Select(s => new
+                        {
+                            Row = s.RowNum,
+                            s.Amount,
+                            s.Comment,
+                            s.DocumentNumber,
+                            s.CustomerTin,
+                            s.CustomerName,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
+                            s.TaxType,
+                            ErrorDescription = s.Error,
+                            Status = s.RowStatus
+                        });
+
+                }
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.ManualCapture)
                     && fileSummary.ContentType.ToLower().Equals(GenericConstants.ManualCapture))

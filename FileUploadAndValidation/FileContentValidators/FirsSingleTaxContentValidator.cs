@@ -154,8 +154,7 @@ namespace FileUploadAndValidation.FileContentValidators
                                 }
                             });
                     }
-                };
-
+                }
 
                 uploadResult.ValidRows = uploadResult.ValidRows?.Except(failDistinctValidation).ToList();
 

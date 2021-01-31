@@ -201,7 +201,7 @@ namespace FileUploadAndValidation.Helpers
                 new ColumnContract{ ColumnName="WhtRate", DataType="decimal", Required=false},
                 new ColumnContract{ ColumnName="WhtAmount", DataType="decimal", Required=false },
                 new ColumnContract{ ColumnName="Amount", DataType="decimal", Required=true, ValidateCell = true },
-                new ColumnContract{ ColumnName="Comment", DataType="string", Required=true, ValidateCell = true },
+                new ColumnContract{ ColumnName="Comment", DataType="string", Required=false },
                 new ColumnContract{ ColumnName="DocumentNumber", DataType="string", Required=true, ValidateCell = true },
                 new ColumnContract{ ColumnName="CustomerTin", DataType="string", Min=1, Required=true, ValidateCell = true },
                 new ColumnContract{ ColumnName="TaxType", DataType="string", Min=1, Required=true, ValidateCell = true }

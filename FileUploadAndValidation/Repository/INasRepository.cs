@@ -69,7 +69,7 @@ namespace FileUploadAndValidation.Repository
             try
             {
                 //var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
-                var fileLocation = @"../data/confirmed/";
+                 var fileLocation = @"../data/confirmed/";
                 var fileName = batchId + "_confirmed.json";
 
                 if (!Directory.Exists(fileLocation))
@@ -288,17 +288,17 @@ namespace FileUploadAndValidation.Repository
                         Row = r.RowNum,
                         ErrorDescription = r.Error,
                         Status = r.RowStatus,
-                        BeneficiaryTin = r.BeneficiaryTin,
-                        BeneficiaryName = r.BeneficiaryName,
-                        BeneficiaryAddress = r.BeneficiaryAddress,
-                        ContractDescription = r.ContractDescription,
-                        ContractDate = r.ContractDate,
-                        ContractAmount = r.ContractAmount,
-                        InvoiceNumber = r.InvoiceNumber,
-                        ContractType = r.ContractType,
-                        PeriodCovered = r.PeriodCovered,
-                        WhtRate = r.WhtRate,
-                        WhtAmount = r.WhtAmount
+                        r.BeneficiaryTin,
+                        r.BeneficiaryName,
+                        r.BeneficiaryAddress,
+                        r.ContractDescription,
+                        r.ContractDate,
+                        r.ContractAmount,
+                        r.InvoiceNumber,
+                        r.ContractType,
+                        r.PeriodCovered,
+                        r.WhtRate,
+                        r.WhtAmount
                     });
             }
 
@@ -323,14 +323,12 @@ namespace FileUploadAndValidation.Repository
                         TransactionInvoicedValue = r.TransactionInvoicedValue,
                         CurrencyExchangeRate = r.CurrencyExchangeRate,
                         TaxAccountNumber = r.TaxAccountNumber,
-                        WVATRate = r.WVATRate,
-                        WVATValue = r.WVATValue
+                        WvatRate = r.WVATRate,
+                        WvatValue = r.WVATValue
                     });
             }
 
-
-            if (itemType.ToLower().Equals(GenericConstants.MultiTax) 
-              || itemType.ToLower().Equals(GenericConstants.SingleTax)
+            if (itemType.ToLower().Equals(GenericConstants.MultiTax)
                && contentType.ToLower().Equals(GenericConstants.Firs))
             {
                 result = rowDetails.Select(r => new
@@ -338,25 +336,13 @@ namespace FileUploadAndValidation.Repository
                     Row = r.RowNum,
                     ErrorDescription = r.Error,
                     Status = r.RowStatus,
-                    r.ContractorName,
-                    r.ContractorAddress,
-                    r.ContractorTin,
-                    r.ContractDescription,
-                    r.TransactionDate,
-                    r.NatureOfTransaction,
-                    r.InvoiceNumber,
-                    r.TransactionCurrency,
-                    CurrencyInvoicedValue = decimal.Parse(r.CurrencyInvoicedValue),
-                    TransactionInvoicedValue = decimal.Parse(r.TransactionInvoicedValue),
-                    CurrencyExchangeRate = decimal.Parse(r.CurrencyExchangeRate),
-                    r.TaxAccountNumber,
-                    WVATRate = decimal.Parse(r.WVATRate),
-                    WVATValue = decimal.Parse(r.WVATValue),
                     r.BeneficiaryTin,
                     r.BeneficiaryName,
                     r.BeneficiaryAddress,
+                    r.ContractDescription,
                     r.ContractDate,
                     r.ContractAmount,
+                    r.InvoiceNumber,
                     r.ContractType,
                     r.PeriodCovered,
                     r.WhtRate,
@@ -365,6 +351,47 @@ namespace FileUploadAndValidation.Repository
                     r.Comment,
                     r.DocumentNumber,
                     r.PayerTin,
+                    r.TaxType
+                });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.SingleTax)
+                && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                result = rowDetails.Select(r => new
+                {
+                    Row = r.RowNum,
+                    ErrorDescription = r.Error,
+
+                    Status = r.RowStatus,
+                    r.ContractorAddress,
+                    r.ContractorName,
+                    r.ContractorTin,
+                    r.CurrencyExchangeRate,
+                    r.CurrencyInvoicedValue,
+                    r.ContractDescription,
+                    r.NatureOfTransaction,
+                    r.TaxAccountNumber,
+                    r.TransactionCurrency,
+                    r.TransactionDate,
+                    r.TransactionInvoicedValue,
+                    r.WVATRate,
+                    r.WVATValue,
+                    r.BeneficiaryTin,
+                    r.BeneficiaryName,
+                    r.BeneficiaryAddress,
+                    r.ContractDate,
+                    r.ContractAmount,
+                    r.InvoiceNumber,
+                    r.ContractType,
+                    r.PeriodCovered,
+                    r.WhtRate,
+                    r.WhtAmount,
+                    r.Amount,
+                    r.Comment,
+                    r.DocumentNumber,
+                    r.CustomerTin,
+                    r.CustomerName,
                     r.TaxType
                 });
             }
@@ -405,7 +432,6 @@ namespace FileUploadAndValidation.Repository
 
             return result;
         }
-
         public async Task<FileProperty> SaveFileToValidate<T>(string batchId, IList<T> rowDetails)
         {
             try
