@@ -40,6 +40,7 @@ namespace FileUploadAndValidation.Models
         public string ItemType { get; set; }
         public string ContentType { get; set; }
         public long BusinessId { get; set; }
+        public string AdditionalData { get; set; }
     }
 
    

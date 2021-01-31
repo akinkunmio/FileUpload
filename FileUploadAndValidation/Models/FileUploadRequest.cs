@@ -112,6 +112,52 @@ namespace FileUploadAndValidation.Models
 
         }
 
+        public static FileUploadRequest FromRequestForFirsSingletax(HttpRequest request, string authority)
+        {
+            var userId = request.Form["id"].ToString();
+            var businessId = request.Form["businessId"].ToString();
+
+            bool success = long.TryParse(userId, out long number);
+            bool isBusinessValid = long.TryParse(businessId, out long businessNumber);
+
+            if (!success)
+            {
+                throw new AppException($"Invalid value '{userId}' passed for 'id'!.", 400);
+            }
+
+            if (!isBusinessValid)
+                throw new AppException($"Invalid value '{businessId}' passed for 'businessId'!.", 400);
+
+            if (string.IsNullOrWhiteSpace(request.Form["HasHeaderRow"].ToString()))
+                throw new AppException("Value must be passed for 'HasHeaderRow'.");
+            if (string.IsNullOrWhiteSpace(request.Form["BusinessTin"].ToString()))
+                throw new AppException("Value must be passed for 'BusinessTin'.");
+
+            var file = request.Form.Files.FirstOrDefault();
+
+            if (file == default)
+                throw new AppException("Please upload a file.");
+
+            return new FileUploadRequest
+            {
+                ItemType = GenericConstants.SingleTax,
+                ContentType = authority,
+                AuthToken = request.Headers["Authorization"].ToString(),
+                FileRef = file,
+                FileName = file.FileName
+                                    .Split('.')[0],
+                FileExtension = Path.GetExtension(file.FileName)
+                                .Replace(".", string.Empty)
+                                .ToLower(),
+                UserId = long.Parse(userId),
+                BusinessId = long.Parse(businessId),
+                ProductCode = request.Form["productCode"].ToString(),
+                ProductName = request.Form["productName"].ToString(),
+                BusinessTin = request.Form["BusinessTin"].ToString(),
+                FileSize = file.Length,
+                HasHeaderRow = request.Form["HasHeaderRow"].ToString().ToBool()
+            };
+        }
 
         public static FileUploadRequest FromRequestForFCTIRS(HttpRequest request)
         {

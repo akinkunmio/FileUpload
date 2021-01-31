@@ -34,6 +34,7 @@ namespace FileUploadAndValidation.Helpers
         public const string Sms = "sms";
         public const string BillPayment = "billpayment";
         public const string MultiTax = "multitax";
+        public const string SingleTax = "singletax";
         public const string ManualCapture = "manual-capture";
 
         public const string Firs = "firs";

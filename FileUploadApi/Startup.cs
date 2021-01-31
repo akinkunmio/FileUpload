@@ -62,6 +62,7 @@ namespace FileUploadApi
             //services.AddScoped<IDbRepository<BillPayment, FailedBillPayment>, BillPaymentRepository>();
             services.AddScoped<INasRepository, NasRepository>();
             services.AddScoped<IBatchProcessor, BatchProcessor>();
+
             //services.AddScoped<IApiUploadService, ApiUploadService>();
 
             //services.AddScoped<FirsWhtFileService>();
@@ -84,6 +85,7 @@ namespace FileUploadApi
 
             services.AddScoped<IBatchProcessor, BatchProcessor>();
             services.AddScoped<IMultiTaxProcessor, MultiTaxProcessor>();
+            services.AddScoped<ISingleTaxProcessor, SingleTaxProcessor>();
 
             //Setup File Readers per file extension
             services.AddScoped<IFileReader, TxtFileReader>();
@@ -96,9 +98,11 @@ namespace FileUploadApi
             services.AddScoped<IFileContentValidator, FirsFileContentValidator>();
             services.AddScoped<IFileContentValidator, FirsMultiTaxContentValidator>();
             services.AddScoped<IFileContentValidator, FctIrsMultiTaxContentValidator>();
+            services.AddScoped<IFileContentValidator, FirsSingleTaxContentValidator>();
 
             services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<IBatchRepository, MultiTaxBatchRepository>();
+            services.AddScoped<IBatchRepository, SingleTaxBatchRepository>();
             #endregion
 
             services.AddScoped<IBatchFileProcessor<AutoPayUploadContext>, AutoPayBatchFileProcessor>();

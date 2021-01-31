@@ -85,6 +85,7 @@ namespace FileUploadAndValidation.Models
         public string WhtRate { get; set; }
 
         public string WhtAmount { get; set; }
+        public string TaxType { get; set; }
     }
 
     public class FirsWVatTyped
@@ -161,15 +162,15 @@ namespace FileUploadAndValidation.Models
         public string CurrencyExchangeRate { get; set; }
 
         public string TaxAccountNumber { get; set; }
+        public string WVATRate { get; set; }
 
-        public string WvatRate { get; set; }
-
-        public string WvatValue { get; set; }
+        public string WVATValue { get; set; }
+        public string TaxType { get; set; }
     }
 
     public class FirsOtherUntyped
     {
-        public int Row { get; set; }
+        public int RowNumber { get; set; }
 
         public string Amount { get; set; }
 
@@ -180,6 +181,7 @@ namespace FileUploadAndValidation.Models
         public string CustomerName { get; set; }
 
         public string CustomerTin { get; set; }
+        public string TaxType { get; set; }
     }
 
 }

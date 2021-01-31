@@ -158,7 +158,8 @@ public class FirsRowDetail : RowDetail
         public string WhtRate { get; set; }
 
         public string WhtAmount { get; set; }
-
+        public string WVATRate { get; set; }
+        public string WVATValue { get; set; }
         public string ContractorName { get; set; }
 
         public string ContractorAddress { get; set; }
@@ -178,10 +179,6 @@ public class FirsRowDetail : RowDetail
         public string CurrencyExchangeRate { get; set; }
 
         public string TaxAccountNumber { get; set; }
-
-        public string WvatRate { get; set; }
-
-        public string WvatValue { get; set; }
 
         public string TaxType { get; set; }
 

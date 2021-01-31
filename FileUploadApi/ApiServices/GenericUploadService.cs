@@ -107,6 +107,8 @@ namespace FileUploadApi.ApiServices
                         ContentType = fileSummary.ContentType,
                         ItemType = fileSummary.ItemType,
                         BusinessId = fileSummary.BusinessId,
+                        BusinessTin = fileSummary.BusinessTin,
+                        AdditionalData = fileSummary.AdditionalData,
                         Url = $"validate/{batchId}_validate.json"
                     }, authToken);
 
@@ -184,27 +186,8 @@ namespace FileUploadApi.ApiServices
                             s.TransactionInvoicedValue,
                             s.CurrencyExchangeRate,
                             s.TaxAccountNumber,
-                            s.WvatRate,
-                            s.WvatValue,
-                            s.TransactionConvenienceFee,
-                            s.BatchConvenienceFee,
-                            ErrorDescription = s.Error,
-                            Row = s.RowNum,
-                            Status = s.RowStatus
-                        });
-                if (fileSummary.ContentType.ToLower().Equals(GenericConstants.Firs) && 
-                    !fileSummary.ItemType.ToLower().Equals(GenericConstants.MultiTax) &&
-                    !fileSummary.ItemType.ToLower().Equals(GenericConstants.ManualCapture) &&
-                    !fileSummary.ItemType.ToLower().Equals(GenericConstants.Lasg)
-                    )
-                    paymentStatuses.Data = paymentStatus
-                        .Select(s => new
-                        {
-                            s.Amount,
-                            s.Comment,
-                            s.DocumentNumber,
-                            s.CustomerTin,
-                            s.CustomerName,
+                            s.WVATRate,
+                            s.WVATValue,
                             s.TransactionConvenienceFee,
                             s.BatchConvenienceFee,
                             ErrorDescription = s.Error,
@@ -240,6 +223,73 @@ namespace FileUploadApi.ApiServices
                            ErrorDescription = s.Error,
                            Status = s.RowStatus
                        });
+                if (fileSummary.ItemType.ToLower().Equals(GenericConstants.SingleTax)
+                    && fileSummary.ContentType.ToLower().Equals(GenericConstants.Firs))
+                {
+                    var taxTypeCode = paymentStatus.FirstOrDefault().TaxType.ToLower();
+                    if (taxTypeCode.Equals(GenericConstants.Wht))
+                        paymentStatuses.Data = paymentStatus
+                        .Select(s => new
+                        {
+                            Row = s.RowNum,
+                            s.BeneficiaryTin,
+                            s.BeneficiaryName,
+                            s.BeneficiaryAddress,
+                            s.ContractDate,
+                            s.ContractAmount,
+                            s.ContractType,
+                            s.PeriodCovered,
+                            s.InvoiceNumber,
+                            s.WhtRate,
+                            s.WhtAmount,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
+                            s.TaxType,
+                            ErrorDescription = s.Error,
+                            Status = s.RowStatus
+                        });
+                    else if (taxTypeCode.Equals(GenericConstants.Wvat))
+                        paymentStatuses.Data = paymentStatus
+                        .Select(s => new
+                        {
+                            Row = s.RowNum,
+                            s.ContractorName,
+                            s.ContractorAddress,
+                            s.ContractorTin,
+                            s.ContractDescription,
+                            s.NatureOfTransaction,
+                            s.TransactionDate,
+                            s.TransactionCurrency,
+                            s.CurrencyInvoicedValue,
+                            s.CurrencyExchangeRate,
+                            s.TransactionInvoicedValue,
+                            s.WVATRate,
+                            s.WVATValue,
+                            s.TaxAccountNumber,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
+                            s.TaxType,
+                            ErrorDescription = s.Error,
+                            Status = s.RowStatus
+                        });
+                    else
+                        paymentStatuses.Data = paymentStatus
+                        .Select(s => new
+                        {
+                            Row = s.RowNum,
+                            s.Amount,
+                            s.Comment,
+                            s.DocumentNumber,
+                            s.CustomerTin,
+                            s.CustomerName,
+                            s.TransactionConvenienceFee,
+                            s.BatchConvenienceFee,
+                            s.TaxType,
+                            ErrorDescription = s.Error,
+                            Status = s.RowStatus
+                        });
+
+                }
 
                 if (fileSummary.ItemType.ToLower().Equals(GenericConstants.ManualCapture)
                     && fileSummary.ContentType.ToLower().Equals(GenericConstants.ManualCapture))

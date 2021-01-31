@@ -69,7 +69,7 @@ namespace FileUploadAndValidation.Repository
             try
             {
                 //var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
-                var fileLocation = @"../data/confirmed/";
+                 var fileLocation = @"../data/confirmed/";
                 var fileName = batchId + "_confirmed.json";
 
                 if (!Directory.Exists(fileLocation))
@@ -288,17 +288,17 @@ namespace FileUploadAndValidation.Repository
                         Row = r.RowNum,
                         ErrorDescription = r.Error,
                         Status = r.RowStatus,
-                        BeneficiaryTin = r.BeneficiaryTin,
-                        BeneficiaryName = r.BeneficiaryName,
-                        BeneficiaryAddress = r.BeneficiaryAddress,
-                        ContractDescription = r.ContractDescription,
-                        ContractDate = r.ContractDate,
-                        ContractAmount = r.ContractAmount,
-                        InvoiceNumber = r.InvoiceNumber,
-                        ContractType = r.ContractType,
-                        PeriodCovered = r.PeriodCovered,
-                        WhtRate = r.WhtRate,
-                        WhtAmount = r.WhtAmount
+                        r.BeneficiaryTin,
+                        r.BeneficiaryName,
+                        r.BeneficiaryAddress,
+                        r.ContractDescription,
+                        r.ContractDate,
+                        r.ContractAmount,
+                        r.InvoiceNumber,
+                        r.ContractType,
+                        r.PeriodCovered,
+                        r.WhtRate,
+                        r.WhtAmount
                     });
             }
 
@@ -323,29 +323,8 @@ namespace FileUploadAndValidation.Repository
                         TransactionInvoicedValue = r.TransactionInvoicedValue,
                         CurrencyExchangeRate = r.CurrencyExchangeRate,
                         TaxAccountNumber = r.TaxAccountNumber,
-                        WvatRate = r.WvatRate,
-                        WvatValue = r.WvatValue
-                    });
-            }
-
-            if (!itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-                !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-                !itemType.ToLower().Equals(GenericConstants.Lasg) ||
-                !itemType.ToLower().Equals(GenericConstants.Wht) ||
-                !itemType.ToLower().Equals(GenericConstants.Wvat)
-                && contentType.ToLower().Equals(GenericConstants.Firs))
-            {
-                result = rowDetails
-                    .Select(r => new
-                    {
-                        Row = r.RowNum,
-                        ErrorDescription = r.Error,
-                        Status = r.RowStatus,
-                        r.Amount,
-                        r.Comment,
-                        r.DocumentNumber,
-                        r.CustomerName,
-                        r.CustomerTin
+                        WvatRate = r.WVATRate,
+                        WvatValue = r.WVATValue
                     });
             }
 
@@ -372,6 +351,47 @@ namespace FileUploadAndValidation.Repository
                     r.Comment,
                     r.DocumentNumber,
                     r.PayerTin,
+                    r.TaxType
+                });
+            }
+
+            if (itemType.ToLower().Equals(GenericConstants.SingleTax)
+                && contentType.ToLower().Equals(GenericConstants.Firs))
+            {
+                result = rowDetails.Select(r => new
+                {
+                    Row = r.RowNum,
+                    ErrorDescription = r.Error,
+
+                    Status = r.RowStatus,
+                    r.ContractorAddress,
+                    r.ContractorName,
+                    r.ContractorTin,
+                    r.CurrencyExchangeRate,
+                    r.CurrencyInvoicedValue,
+                    r.ContractDescription,
+                    r.NatureOfTransaction,
+                    r.TaxAccountNumber,
+                    r.TransactionCurrency,
+                    r.TransactionDate,
+                    r.TransactionInvoicedValue,
+                    r.WVATRate,
+                    r.WVATValue,
+                    r.BeneficiaryTin,
+                    r.BeneficiaryName,
+                    r.BeneficiaryAddress,
+                    r.ContractDate,
+                    r.ContractAmount,
+                    r.InvoiceNumber,
+                    r.ContractType,
+                    r.PeriodCovered,
+                    r.WhtRate,
+                    r.WhtAmount,
+                    r.Amount,
+                    r.Comment,
+                    r.DocumentNumber,
+                    r.CustomerTin,
+                    r.CustomerName,
                     r.TaxType
                 });
             }
@@ -412,7 +432,6 @@ namespace FileUploadAndValidation.Repository
 
             return result;
         }
-
         public async Task<FileProperty> SaveFileToValidate<T>(string batchId, IList<T> rowDetails)
         {
             try
@@ -448,6 +467,44 @@ namespace FileUploadAndValidation.Repository
                 throw new AppException($"An error occured while saving file for validation", 400);
             }
         }
+
+        public async Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails, string additionalData = null)
+        {
+            try
+            {
+                //var fileLocation = _appConfig.NasFolderLocation + @"\validate\";
+                var fileLocation = @"../data/validate/";
+                var fileName = batchId + "_validate.json";
+                var path = fileLocation + fileName;
+
+                if (!Directory.Exists(fileLocation))
+                    Directory.CreateDirectory(fileLocation);
+
+                string jsonString = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails, additionalData));
+
+                await File.WriteAllTextAsync(path, jsonString);
+
+                return new FileProperty
+                {
+                    BatchId = batchId,
+                    DataStore = 1,
+                    Url = $"validate/{fileName}"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"Log information {ex.Message} | {ex.StackTrace}");
+                //return new FileProperty
+                //{
+                //    BatchId = batchId,
+                //    DataStore = 1,
+                //    Url = $"validate/firs_multitax1_ZMWYAA_202005290823495638_validate.json"
+                //};
+                throw new AppException($"An error occured while saving file for validation", 400);
+            }
+        }
+
+
     }
 
     public interface INasRepository
@@ -455,6 +512,8 @@ namespace FileUploadAndValidation.Repository
         Task<FileProperty> SaveFileToValidate<T>(string batchId, IList<T> rowDetails);
 
         Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
+
+        Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails, string additionalData);
 
         Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
 
