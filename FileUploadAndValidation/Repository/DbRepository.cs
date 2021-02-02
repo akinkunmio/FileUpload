@@ -626,14 +626,8 @@ namespace FileUploadAndValidation.Repository
                    
                         result = await sqlConnection.QueryAsync<RowDetail>(
                           sql: GetSPForGetStatusBySummaryId(summary.ItemType, summary.ContentType),
-                          param: new
-                          {
-                              transactions_summary_id = summaryId,
-                              page_size = pagination.PageSize,
-                              page_number = pagination.PageNumber,
-                              status = pagination.Status,
-                              tax_type = pagination.TaxType ?? GenericConstants.All
-                          },
+                          param: GetStatusBySummaryIdParam(summary.ContentType, summary.ItemType, summaryId,
+                          pagination.PageSize, pagination.PageNumber, pagination.Status, pagination.TaxType),
                           commandType: CommandType.StoredProcedure);
 
                     return result;
@@ -654,7 +648,7 @@ namespace FileUploadAndValidation.Repository
         private object GetStatusBySummaryIdParam(string contentType, string itemType, long summaryId,
             int pageSize, int pageNumber, StatusEnum status, string taxType = "")
         {
-            if (!(itemType.ToLower().Equals(GenericConstants.BillPaymentId)
+            if ((itemType.ToLower().Equals(GenericConstants.BillPaymentId)
                || itemType.ToLower().Equals(GenericConstants.BillPaymentIdPlusItem))
                && contentType.ToLower().Equals(GenericConstants.BillPayment))
 
@@ -664,7 +658,6 @@ namespace FileUploadAndValidation.Repository
                     page_size = pageSize,
                     page_number = pageNumber,
                     status,
-                    tax_type = taxType ?? GenericConstants.All
                 };
             else
                 return new
@@ -673,6 +666,7 @@ namespace FileUploadAndValidation.Repository
                     page_size = pageSize,
                     page_number = pageNumber,
                     status,
+                    tax_type = taxType ?? GenericConstants.All
                 };
         }
 

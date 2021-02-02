@@ -408,6 +408,11 @@ namespace FileUploadApi.ApiServices
             {
                 fileName = GenericConstants.LasgCsvTemplate;
             }
+            else if (contentType.ToLower().Equals(GenericConstants.Firs)
+                && itemType.ToLower().Equals(GenericConstants.SingleTax))
+            {
+                fileName = GenericConstants.FirsSingletaxCsvTemplate;
+            }
             else
                 throw new AppException("Template not found!.");
 
