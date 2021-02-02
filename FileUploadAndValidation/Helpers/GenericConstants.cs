@@ -66,6 +66,7 @@ namespace FileUploadAndValidation.Helpers
         public static string FirsOtherCsvTemplate = "FirsOtherCsvTemplate.csv";
         public static string FctIrsCsvTemplate = "FctIrsCsvTemplate.csv";
         public static string LasgCsvTemplate = "LasgCsvTemplate.csv";
+        public static string FirsSingletaxCsvTemplate = "FirsSingleTaxCsvTemplate.csv";
         public static string All = "all";
 
     }
