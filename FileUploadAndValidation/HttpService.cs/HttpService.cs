@@ -254,13 +254,13 @@ namespace FileUploadAndValidation.UploadServices
                     initiatePaymentOptions.CurrencyCode,
                     TaxTypeCode = fileProperty.ItemType.ToLower().Equals(GenericConstants.SingleTax) ? initiatePaymentOptions.TaxTypeName.ToLower() : fileProperty.ItemType.ToUpper(),
                     ProductCode  = fileProperty.ContentType.ToUpper(),
-                    CustomerNumber = initiatePaymentOptions.BusinessTin,
+                    initiatePaymentOptions.CustomerNumber,
+                    initiatePaymentOptions.CustomerName,
                     IsScheduleTaxType = true,
                     initiatePaymentOptions.BusinessId,
                     initiatePaymentOptions.UserId,
                     initiatePaymentOptions.ApprovalConfigId,
                     initiatePaymentOptions.UserName,
-                    initiatePaymentOptions.BusinessTin,
                     DataStore = 1,
                     DataStoreUrl = fileProperty.Url
                 });

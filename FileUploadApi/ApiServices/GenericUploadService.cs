@@ -366,7 +366,11 @@ namespace FileUploadApi.ApiServices
             fileProperty.ContentType = fileSummary.ContentType;
             fileProperty.ItemType = fileSummary.ItemType;
 
-            initiatePaymentOptions.BusinessTin = fileSummary.BusinessTin ?? "";
+            if (confirmedPayments.FirstOrDefault().TaxType.ToLower().Equals(GenericConstants.Wvat) || confirmedPayments.FirstOrDefault().TaxType.ToLower().Equals(GenericConstants.Wht))
+            {
+                initiatePaymentOptions.CustomerNumber = confirmedPayments.FirstOrDefault().CustomerTin;
+                initiatePaymentOptions.CustomerName = confirmedPayments.FirstOrDefault().CustomerName;
+            }
             initiatePaymentOptions.TaxTypeName = fileSummary.AdditionalData ?? "";
             result = await _httpService.InitiatePayment(fileProperty, initiatePaymentOptions);
 

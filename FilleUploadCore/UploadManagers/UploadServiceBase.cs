@@ -77,8 +77,8 @@ namespace FilleUploadCore.UploadManagers
 
         public string ContentType { get; set; }
 
-        public string BusinessTin { get; set; }
-
+        public string CustomerNumber { get; set; }
+        public string CustomerName { get; set; }
         public string TaxTypeId { get; set; }
 
         public string TaxTypeName { get; set; }
