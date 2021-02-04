@@ -69,6 +69,10 @@ namespace FileUploadAndValidation.UploadServices
                 return GenericConstants.InitiateFirsPaymentUrl;
 
             else if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower())
+            && (itemType.ToLower().Equals(GenericConstants.SingleTax)))
+                return GenericConstants.InitiateFirsPaymentUrl;
+
+            else if (contentType.ToLower().Equals(GenericConstants.Firs.ToLower())
                 && (itemType.ToLower().Equals(GenericConstants.MultiTax)))
                 return GenericConstants.InitiateFirsMultitaxPaymentUrl;
             return "";
@@ -248,7 +252,7 @@ namespace FileUploadAndValidation.UploadServices
                     initiatePaymentOptions.TaxTypeName,
                     initiatePaymentOptions.ProductId,
                     initiatePaymentOptions.CurrencyCode,
-                    TaxTypeCode = fileProperty.ItemType.ToUpper(),
+                    TaxTypeCode = fileProperty.ItemType.ToLower().Equals(GenericConstants.SingleTax) ? initiatePaymentOptions.TaxTypeName.ToLower() : fileProperty.ItemType.ToUpper(),
                     ProductCode  = fileProperty.ContentType.ToUpper(),
                     CustomerNumber = initiatePaymentOptions.BusinessTin,
                     IsScheduleTaxType = true,
@@ -256,6 +260,7 @@ namespace FileUploadAndValidation.UploadServices
                     initiatePaymentOptions.UserId,
                     initiatePaymentOptions.ApprovalConfigId,
                     initiatePaymentOptions.UserName,
+                    initiatePaymentOptions.BusinessTin,
                     DataStore = 1,
                     DataStoreUrl = fileProperty.Url
                 });

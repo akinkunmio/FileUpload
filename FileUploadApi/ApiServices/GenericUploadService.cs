@@ -361,12 +361,13 @@ namespace FileUploadApi.ApiServices
 
             var fileSummary = await _dbRepository.GetBatchUploadSummary(batchId);
 
-            var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, fileSummary.ContentType, fileSummary.ItemType, confirmedPayments);
-
+            var fileProperty = await _nasRepository.SaveFileToConfirmed(batchId, fileSummary.ContentType, fileSummary.ItemType, confirmedPayments, fileSummary.AdditionalData);
 
             fileProperty.ContentType = fileSummary.ContentType;
             fileProperty.ItemType = fileSummary.ItemType;
 
+            initiatePaymentOptions.BusinessTin = fileSummary.BusinessTin ?? "";
+            initiatePaymentOptions.TaxTypeName = fileSummary.AdditionalData ?? "";
             result = await _httpService.InitiatePayment(fileProperty, initiatePaymentOptions);
 
             await _dbRepository.UpdatePaymentInitiation(batchId);
