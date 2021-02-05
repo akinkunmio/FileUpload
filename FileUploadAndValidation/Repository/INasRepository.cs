@@ -64,18 +64,18 @@ namespace FileUploadAndValidation.Repository
             }
         }
 
-        public async Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails)
+        public async Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails, string additionalData)
         {
             try
             {
                 //var fileLocation = _appConfig.NasFolderLocation + @"\confirmed\";
-                 var fileLocation = @"../data/confirmed/";
+                var fileLocation = @"../data/confirmed/";
                 var fileName = batchId + "_confirmed.json";
 
                 if (!Directory.Exists(fileLocation))
                     Directory.CreateDirectory(fileLocation);
 
-                string json = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails));
+                string json = JsonConvert.SerializeObject(GenericHelpers.GetSaveToNasFileContent(contentType, itemType, rowDetails, additionalData));
 
                 var path = fileLocation + fileName;
 
@@ -515,7 +515,7 @@ namespace FileUploadAndValidation.Repository
 
         Task<FileProperty> SaveFileToValidate(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails, string additionalData);
 
-        Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails);
+        Task<FileProperty> SaveFileToConfirmed(string batchId, string contentType, string itemType, IEnumerable<RowDetail> rowDetails, string additionalData);
 
         Task<string> SaveTemplateFile(string fName, Stream stream, string ext);
 

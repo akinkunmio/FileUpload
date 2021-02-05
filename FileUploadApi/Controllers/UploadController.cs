@@ -244,10 +244,6 @@ namespace FileUploadApi.Controllers
                     BusinessId = request.BusinessId,
                     UserId = request.UserId,
                     UserName = request.UserName,
-                    BusinessTin = request.BusinessTin,
-                    TaxTypeId = request.TaxTypeId,
-                    TaxTypeName = request.TaxTypeName,
-                    ProductId = request.ProductId,
                     ProductCode = request.ProductCode,
                     CurrencyCode = request.CurrencyCode
                 };

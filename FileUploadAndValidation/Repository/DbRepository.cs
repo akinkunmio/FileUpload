@@ -243,7 +243,7 @@ namespace FileUploadAndValidation.Repository
                                             comment = payment.Comment,
                                             document_number = payment.DocumentNumber,
                                             tax_type = payment.TaxType,
-                                            customer_tin = payment.CustomerTin,
+                                            customer_tin = payment.CustomerTin ?? fileDetail.BusinessTin,
                                             customer_name = payment.CustomerName,
                                             transactions_summary_Id = transactionSummaryId,
                                             row_status = string.IsNullOrWhiteSpace(payment.ErrorDescription) ? "" : "Invalid",
@@ -581,13 +581,6 @@ namespace FileUploadAndValidation.Repository
             {
                 return @"sp_get_confirmed_firs_singletax_by_transactions_summary_id";
             }
-            //else if (contentType.ToLower().Equals(GenericConstants.Firs)
-            //    && !itemType.ToLower().Equals(GenericConstants.MultiTax) ||
-            //    !itemType.ToLower().Equals(GenericConstants.ManualCapture) ||
-            //    !itemType.ToLower().Equals(GenericConstants.Lasg))
-            //{
-            //    return @"sp_get_confirmed_firs_other_by_transactions_summary_id";
-            //}
             else if (contentType.ToLower().Equals(GenericConstants.Firs)
                 && itemType.ToLower().Equals(GenericConstants.MultiTax))
             {
