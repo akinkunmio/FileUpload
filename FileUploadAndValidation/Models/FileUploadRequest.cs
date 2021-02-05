@@ -38,7 +38,7 @@ namespace FileUploadAndValidation.Models
         public string ProductName { get; set; }
 
         public string BusinessTin { get; set; }
-        public string TaxTypeCode { get; set; }
+        public string AdditionalData { get; set; }
 
         public static FileUploadRequest FromRequestForSingle(HttpRequest request)
         {
@@ -49,7 +49,6 @@ namespace FileUploadAndValidation.Models
             var productCode = request.Form["productCode"].ToString();
             var productName = request.Form["productName"].ToString();
             var businessTin = request.Form["businessTin"].ToString();
-            var taxTypeCode = request.Form["TaxTypeCode"].ToString();
 
 
             return new FileUploadRequest
@@ -66,8 +65,7 @@ namespace FileUploadAndValidation.Models
                 UserId = long.Parse(userId),
                 ProductCode = productCode,
                 ProductName = productName,
-                BusinessTin = businessTin,
-                TaxTypeCode = taxTypeCode
+                BusinessTin = businessTin
             };
         }
 
@@ -137,6 +135,7 @@ namespace FileUploadAndValidation.Models
             if (string.IsNullOrWhiteSpace(request.Form["BusinessTin"].ToString()))
                 throw new AppException("Value must be passed for 'BusinessTin'.");
 
+
             var file = request.Form.Files.FirstOrDefault();
 
             if (file == default)
@@ -159,7 +158,8 @@ namespace FileUploadAndValidation.Models
                 ProductName = request.Form["productName"].ToString(),
                 BusinessTin = request.Form["BusinessTin"].ToString(),
                 FileSize = file.Length,
-                HasHeaderRow = request.Form["HasHeaderRow"].ToString().ToBool()
+                HasHeaderRow = request.Form["HasHeaderRow"].ToString().ToBool(),
+                AdditionalData = request.Form["additionalData"].ToString(),
             };
         }
 

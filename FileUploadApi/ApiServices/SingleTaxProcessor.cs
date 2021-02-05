@@ -40,7 +40,7 @@ namespace FileUploadApi.ApiServices
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
             ArgumentGuard.NotNullOrWhiteSpace(request.AuthToken, nameof(request.AuthToken));
-            ArgumentGuard.NotNullOrWhiteSpace(request.TaxTypeCode, nameof(request.TaxTypeCode));
+            ArgumentGuard.NotNullOrWhiteSpace(request.AdditionalData, nameof(request.AdditionalData));
 
             if (!request.ContentType.ToLower().Equals(GenericConstants.Firs)
                && !request.ContentType.ToLower().Equals(GenericConstants.Lasg)
@@ -67,7 +67,7 @@ namespace FileUploadApi.ApiServices
 
                 var itemType = uploadResult.ValidRows.Count > 0 ? uploadResult.ValidRows.FirstOrDefault().TaxType : uploadResult.Failures.FirstOrDefault().Row.TaxType;
 
-                if (!request.TaxTypeCode.ToLower().Equals(itemType.ToLower()))
+                if (!request.AdditionalData.ToLower().Equals(itemType.ToLower()))
                     throw new AppException("Tax selected does not match file content", 400);
 
                 uploadResult.BatchId = GenericHelpers.GenerateBatchId($"QTB_FIRS_{itemType.ToUpper()}", DateTime.Now);
