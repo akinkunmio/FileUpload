@@ -38,6 +38,7 @@ namespace FileUploadAndValidation.Models
         public string ProductName { get; set; }
 
         public string BusinessTin { get; set; }
+        public string TaxTypeCode { get; set; }
 
         public static FileUploadRequest FromRequestForSingle(HttpRequest request)
         {
@@ -48,6 +49,8 @@ namespace FileUploadAndValidation.Models
             var productCode = request.Form["productCode"].ToString();
             var productName = request.Form["productName"].ToString();
             var businessTin = request.Form["businessTin"].ToString();
+            var taxTypeCode = request.Form["TaxTypeCode"].ToString();
+
 
             return new FileUploadRequest
             {
@@ -64,6 +67,7 @@ namespace FileUploadAndValidation.Models
                 ProductCode = productCode,
                 ProductName = productName,
                 BusinessTin = businessTin,
+                TaxTypeCode = taxTypeCode
             };
         }
 

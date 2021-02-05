@@ -66,6 +66,9 @@ namespace FileUploadApi.ApiServices
 
                 var itemType = uploadResult.ValidRows.Count > 0 ? uploadResult.ValidRows.FirstOrDefault().TaxType : uploadResult.Failures.FirstOrDefault().Row.TaxType;
 
+                if (!request.TaxTypeCode.ToLower().Equals(itemType.ToLower()))
+                    throw new AppException("Tax selected does not match file content", 400);
+
                 uploadResult.BatchId = GenericHelpers.GenerateBatchId($"QTB_FIRS_{itemType.ToUpper()}", DateTime.Now);
                 await _batchRepository.Save(uploadResult, request);
                 
