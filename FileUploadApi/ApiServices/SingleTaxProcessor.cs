@@ -40,6 +40,7 @@ namespace FileUploadApi.ApiServices
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
             ArgumentGuard.NotNullOrWhiteSpace(request.AuthToken, nameof(request.AuthToken));
+            ArgumentGuard.NotNullOrWhiteSpace(request.TaxTypeCode, nameof(request.TaxTypeCode));
 
             if (!request.ContentType.ToLower().Equals(GenericConstants.Firs)
                && !request.ContentType.ToLower().Equals(GenericConstants.Lasg)
