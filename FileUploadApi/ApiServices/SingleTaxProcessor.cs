@@ -40,6 +40,7 @@ namespace FileUploadApi.ApiServices
             ArgumentGuard.NotNullOrWhiteSpace(request.ContentType, nameof(request.ContentType));
             ArgumentGuard.NotNullOrWhiteSpace(request.ItemType, nameof(request.ItemType));
             ArgumentGuard.NotNullOrWhiteSpace(request.AuthToken, nameof(request.AuthToken));
+            ArgumentGuard.NotNullOrWhiteSpace(request.AdditionalData, nameof(request.AdditionalData));
 
             if (!request.ContentType.ToLower().Equals(GenericConstants.Firs)
                && !request.ContentType.ToLower().Equals(GenericConstants.Lasg)
@@ -65,6 +66,9 @@ namespace FileUploadApi.ApiServices
                     throw new AppException("User is not enabled to upload a file", 400);
 
                 var itemType = uploadResult.ValidRows.Count > 0 ? uploadResult.ValidRows.FirstOrDefault().TaxType : uploadResult.Failures.FirstOrDefault().Row.TaxType;
+
+                if (!request.AdditionalData.ToLower().Equals(itemType.ToLower()))
+                    throw new AppException("Tax selected does not match file content", 400);
 
                 uploadResult.BatchId = GenericHelpers.GenerateBatchId($"QTB_FIRS_{itemType.ToUpper()}", DateTime.Now);
                 await _batchRepository.Save(uploadResult, request);
