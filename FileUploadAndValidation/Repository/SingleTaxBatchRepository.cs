@@ -47,18 +47,16 @@ namespace FileUploadAndValidation.Repository
                 AdditionalData = uploadResult.ValidRows.Count > 0 ? uploadResult.ValidRows.FirstOrDefault().TaxType : uploadResult.Failures.FirstOrDefault().Row.TaxType,
             }, uploadResult.ValidRows, uploadResult.Failures) ;
 
-
-            var taxCodeUploaded = uploadResult.ValidRows.FirstOrDefault().TaxType;
             FileProperty fileProperty = await _nasRepository
                                                     .SaveFileToValidate(uploadResult.BatchId,
                                                     request.ContentType,
                                                     request.ItemType,
-                                                    uploadResult.ValidRows, taxCodeUploaded);
+                                                    uploadResult.ValidRows, request.AdditionalData.ToUpper());
 
             fileProperty.ContentType = request.ContentType;
             fileProperty.ItemType = request.ItemType;
             fileProperty.BusinessId = request.BusinessId == null ? 0 : Convert.ToInt64(request.BusinessId);
-            fileProperty.AdditionalData = taxCodeUploaded;
+            fileProperty.AdditionalData = request.AdditionalData.ToUpper();
             fileProperty.BusinessTin = request.BusinessTin;
 
             await _httpService.ValidateRecords(fileProperty,
